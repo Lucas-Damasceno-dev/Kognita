@@ -1,51 +1,51 @@
 # Kognita
 
-Sistema de organização de estudos com Spring Boot, Angular, PostgreSQL e Docker.
+Study organization system with Spring Boot, Angular, PostgreSQL, and Docker.
 
 ## Stack
 
 - **Backend:** Java 21 + Spring Boot
 - **Frontend:** Angular
 - **Database:** PostgreSQL
-- **Infraestrutura:** Docker / Docker Compose
+- **Infrastructure:** Docker / Docker Compose
 
-## Estrutura do Projeto
+## Project Structure
 
 ```ascii
 Kognita/
-├── backend/              # API REST Spring Boot
-├── frontend/             # Aplicação Angular
-├── docker/               # Configurações Docker
-│   ├── backend/          # Dockerfile do backend
-│   ├── frontend/         # Dockerfile do frontend
-│   └── postgres/         # Scripts SQL de inicialização
-├── docker-compose.yml    # Orquestração dos containers
-└── .env.example          # Template de variáveis de ambiente
+├── backend/              # Spring Boot REST API
+├── frontend/             # Angular application
+├── docker/               # Docker configuration
+│   ├── backend/          # Backend Dockerfile
+│   ├── frontend/         # Frontend Dockerfile
+│   └── postgres/         # SQL initialization scripts
+├── docker-compose.yml    # Container orchestration
+└── .env.example          # Environment variables template
 ```
 
-## Pré-requisitos
+## Prerequisites
 
-- Docker e Docker Compose instalados
-- Java 21 (para desenvolvimento local)
-- Node.js 22 (para desenvolvimento local)
+- Docker and Docker Compose installed
+- Java 21 (for local development)
+- Node.js 22 (for local development)
 
-## Como executar
+## How to Run
 
 ```bash
-# 1. Configure as variáveis de ambiente
+# 1. Set up environment variables
 cp .env.example .env
 
-# 2. Inicie todos os serviços
+# 2. Start all services
 docker compose up -d
 
-# 3. Acesse:
+# 3. Access:
 #    - Frontend: http://localhost
 #    - API: http://localhost:8080
 #    - PostgreSQL: localhost:5432
 
-# Parar os serviços
+# Stop services
 docker compose down
 
-# Parar e remover volumes (dados)
+# Stop and remove volumes (data)
 docker compose down -v
 ```
