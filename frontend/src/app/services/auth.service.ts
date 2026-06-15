@@ -1,0 +1,65 @@
+import { Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Observable, tap } from 'rxjs';
+import { User } from '../models/user';
+
+interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+@Injectable({ providedIn: 'root' })
+export class AuthService {
+  private readonly api = '/api/auth';
+  private readonly tokenKey = 'kognita_token';
+  private readonly userKey = 'kognita_user';
+
+  readonly user = signal<User | null>(null);
+  readonly isAuthenticated = signal(false);
+
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+  ) {
+    this.loadSession();
+  }
+
+  register(name: string, email: string, password: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.api}/register`, { name, email, password })
+      .pipe(tap(res => this.saveSession(res)));
+  }
+
+  login(email: string, password: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.api}/login`, { email, password })
+      .pipe(tap(res => this.saveSession(res)));
+  }
+
+  logout(): void {
+    localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.userKey);
+    this.user.set(null);
+    this.isAuthenticated.set(false);
+    this.router.navigate(['/login']);
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem(this.tokenKey);
+  }
+
+  private saveSession(res: AuthResponse): void {
+    localStorage.setItem(this.tokenKey, res.token);
+    localStorage.setItem(this.userKey, JSON.stringify(res.user));
+    this.user.set(res.user);
+    this.isAuthenticated.set(true);
+  }
+
+  private loadSession(): void {
+    const token = localStorage.getItem(this.tokenKey);
+    const userJson = localStorage.getItem(this.userKey);
+    if (token && userJson) {
+      this.user.set(JSON.parse(userJson));
+      this.isAuthenticated.set(true);
+    }
+  }
+}
