@@ -40,4 +40,8 @@ public class SubjectService {
     public void delete(UUID id) {
         repository.deleteById(id);
     }
+
+    Subject findEntityById(UUID id) {
+        return repository.findById(id).orElseThrow();
+    }
 }
