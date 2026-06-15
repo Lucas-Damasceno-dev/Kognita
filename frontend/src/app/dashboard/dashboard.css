@@ -1,0 +1,77 @@
+h1 {
+  margin: 0 0 1.5rem;
+  color: #1a1a2e;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.card-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #3b82f6;
+}
+
+.card-label {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.card a {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+section h2 {
+  font-size: 1.1rem;
+  color: #1a1a2e;
+  margin: 0 0 0.75rem;
+}
+
+.task-list {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.9rem;
+}
+
+.task-item:last-child {
+  border: none;
+}
+
+.priority-badge {
+  font-size: 0.7rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priority-badge.high { background: #fef2f2; color: #b91c1c; }
+.priority-badge.medium { background: #fffbeb; color: #b45309; }
+.priority-badge.low { background: #f0fdf4; color: #15803d; }

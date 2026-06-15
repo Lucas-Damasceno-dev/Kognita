@@ -1,0 +1,33 @@
+<h1>Dashboard</h1>
+
+<div class="cards">
+  <div class="card">
+    <span class="card-value">{{ subjects.length }}</span>
+    <span class="card-label">Subjects</span>
+    <a routerLink="/subjects">View all</a>
+  </div>
+  <div class="card">
+    <span class="card-value">{{ pendingTasks.length }}</span>
+    <span class="card-label">Pending tasks</span>
+    <a routerLink="/tasks">View all</a>
+  </div>
+  <div class="card">
+    <span class="card-value">{{ goals.length }}</span>
+    <span class="card-label">Goals</span>
+    <a routerLink="/goals">View all</a>
+  </div>
+</div>
+
+@if (pendingTasks.length > 0) {
+  <section>
+    <h2>Pending tasks</h2>
+    <div class="task-list">
+      @for (task of pendingTasks; track task.id) {
+        <div class="task-item">
+          <span class="priority-badge {{ task.priority }}">{{ task.priority }}</span>
+          <span>{{ task.title }}</span>
+        </div>
+      }
+    </div>
+  </section>
+}

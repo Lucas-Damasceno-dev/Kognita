@@ -1,0 +1,47 @@
+<div class="page-header">
+  <h1>Study Sessions</h1>
+  <button class="btn" (click)="showForm = !showForm">
+    {{ showForm ? 'Cancel' : '+ Session' }}
+  </button>
+</div>
+
+@if (showForm) {
+  <form (ngSubmit)="create()" class="form-card">
+    <label>
+      Subject
+      <select [(ngModel)]="subjectId" name="subjectId" required>
+        <option value="">Select a subject</option>
+        @for (s of subjects; track s.id) {
+          <option [value]="s.id">{{ s.name }}</option>
+        }
+      </select>
+    </label>
+    <label>
+      Duration (minutes)
+      <input type="number" [(ngModel)]="durationMinutes" name="duration" min="1" required />
+    </label>
+    <label>
+      Notes
+      <input type="text" [(ngModel)]="notes" name="notes" />
+    </label>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+}
+
+<div class="list">
+  @for (item of sessions; track item.id) {
+    <div class="list-item">
+      <div>
+        <strong>{{ item.subjectName }}</strong>
+        <span class="duration">{{ item.durationMinutes }} min</span>
+        @if (item.notes) {
+          <p>{{ item.notes }}</p>
+        }
+      </div>
+      <span class="date">{{ item.date }}</span>
+      <button class="btn-icon" (click)="remove(item.id)">✕</button>
+    </div>
+  } @empty {
+    <p class="empty">No sessions yet.</p>
+  }
+</div>

@@ -1,0 +1,51 @@
+<div class="page-header">
+  <h1>Study Goals</h1>
+  <button class="btn" (click)="showForm = !showForm">
+    {{ showForm ? 'Cancel' : '+ Goal' }}
+  </button>
+</div>
+
+@if (showForm) {
+  <form (ngSubmit)="create()" class="form-card">
+    <label>
+      Title
+      <input type="text" [(ngModel)]="title" name="title" required />
+    </label>
+    <label>
+      Description
+      <input type="text" [(ngModel)]="description" name="description" />
+    </label>
+    <label>
+      Target hours
+      <input type="number" [(ngModel)]="targetHours" name="targetHours" min="1" required />
+    </label>
+    <label>
+      Deadline
+      <input type="date" [(ngModel)]="deadline" name="deadline" />
+    </label>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+}
+
+<div class="list">
+  @for (item of goals; track item.id) {
+    <div class="list-item">
+      <div class="goal-info">
+        <strong>{{ item.title }}</strong>
+        @if (item.description) {
+          <p>{{ item.description }}</p>
+        }
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="progressPercent(item)"></div>
+        </div>
+        <span class="progress-text">{{ item.currentHours }} / {{ item.targetHours }}h ({{ progressPercent(item) }}%)</span>
+      </div>
+      <div class="goal-actions">
+        <button class="btn btn-sm" (click)="addHour(item.id)">+1h</button>
+        <button class="btn-icon" (click)="remove(item.id)">✕</button>
+      </div>
+    </div>
+  } @empty {
+    <p class="empty">No goals yet.</p>
+  }
+</div>
