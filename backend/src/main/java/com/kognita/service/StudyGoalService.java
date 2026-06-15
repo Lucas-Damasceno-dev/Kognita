@@ -1,0 +1,46 @@
+package com.kognita.service;
+
+import com.kognita.dto.CreateGoalRequest;
+import com.kognita.dto.GoalResponse;
+import com.kognita.model.StudyGoal;
+import com.kognita.repository.StudyGoalRepository;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.stereotype.Service;
+
+@Service
+public class StudyGoalService {
+
+    private final StudyGoalRepository repository;
+    private final UserService userService;
+
+    public StudyGoalService(StudyGoalRepository repository, UserService userService) {
+        this.repository = repository;
+        this.userService = userService;
+    }
+
+    public List<GoalResponse> findAllByUser(UUID userId) {
+        return repository.findByUserId(userId).stream().map(GoalResponse::from).toList();
+    }
+
+    public GoalResponse create(CreateGoalRequest request, UUID userId) {
+        var user = userService.findEntityById(userId);
+        var goal = new StudyGoal();
+        goal.setTitle(request.title());
+        goal.setDescription(request.description());
+        goal.setTargetHours(request.targetHours());
+        goal.setDeadline(request.deadline());
+        goal.setUser(user);
+        return GoalResponse.from(repository.save(goal));
+    }
+
+    public GoalResponse updateProgress(UUID id, Integer hours) {
+        var goal = repository.findById(id).orElseThrow();
+        goal.setCurrentHours(goal.getCurrentHours() + hours);
+        return GoalResponse.from(repository.save(goal));
+    }
+
+    public void delete(UUID id) {
+        repository.deleteById(id);
+    }
+}
