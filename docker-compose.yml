@@ -26,6 +26,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB:-kognita}
       SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-kognita}
       SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-kognita123}
+      JWT_SECRET: ${JWT_SECRET:-dGhpcyBpcyBhIHZlcnkgbG9uZyBzZWNyZXQga2V5IGZvciBrb2duaXRhIGFwcGxpY2F0aW9uIHVzZSBhIGJldHRlciBvbmUgaW4gcHJvZHVjdGlvbg}
     ports:
       - "${API_PORT:-8080}:8080"
     depends_on:
