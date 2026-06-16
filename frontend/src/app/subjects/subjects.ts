@@ -25,6 +25,7 @@ export class Subjects implements OnInit {
   description = '';
   color = '#3B82F6';
   showForm = false;
+  editingId: string | null = null;
   loading = signal(false);
   saving = false;
 
@@ -66,25 +67,47 @@ export class Subjects implements OnInit {
     });
   }
 
-  create(): void {
+  edit(item: Subject): void {
+    this.editingId = item.id;
+    this.name = item.name;
+    this.description = item.description || '';
+    this.color = item.color;
+    this.showForm = true;
+  }
+
+  cancel(): void {
+    this.resetForm();
+  }
+
+  resetForm(): void {
+    this.editingId = null;
+    this.name = '';
+    this.description = '';
+    this.color = '#3B82F6';
+    this.showForm = false;
+    this.saving = false;
+  }
+
+  save(): void {
     if (!this.name.trim()) return;
     this.saving = true;
-    this.api.createSubject({ name: this.name, description: this.description, color: this.color }, this.auth.user()!.id)
-      .subscribe({
-        next: () => {
-          this.toast.success('Subject created');
-          this.name = '';
-          this.description = '';
-          this.color = '#3B82F6';
-          this.showForm = false;
-          this.saving = false;
-          this.load();
-        },
-        error: () => {
-          this.toast.error('Failed to create subject');
-          this.saving = false;
-        },
-      });
+
+    const req = { name: this.name, description: this.description, color: this.color };
+    const obs = this.editingId
+      ? this.api.updateSubject(this.editingId, req)
+      : this.api.createSubject(req, this.auth.user()!.id);
+
+    obs.subscribe({
+      next: () => {
+        this.toast.success(this.editingId ? 'Subject updated' : 'Subject created');
+        this.resetForm();
+        this.load();
+      },
+      error: () => {
+        this.toast.error(this.editingId ? 'Failed to update subject' : 'Failed to create subject');
+        this.saving = false;
+      },
+    });
   }
 
   remove(id: string): void {

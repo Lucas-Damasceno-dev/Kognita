@@ -26,6 +26,7 @@ export class Goals implements OnInit {
   targetHours: number = 100;
   deadline = '';
   showForm = false;
+  editingId: string | null = null;
   loading = signal(false);
   saving = false;
 
@@ -67,27 +68,51 @@ export class Goals implements OnInit {
     });
   }
 
-  create(): void {
+  edit(item: StudyGoal): void {
+    this.editingId = item.id;
+    this.title = item.title;
+    this.description = item.description || '';
+    this.targetHours = item.targetHours;
+    this.deadline = item.deadline || '';
+    this.showForm = true;
+  }
+
+  cancel(): void {
+    this.resetForm();
+  }
+
+  resetForm(): void {
+    this.editingId = null;
+    this.title = '';
+    this.description = '';
+    this.targetHours = 100;
+    this.deadline = '';
+    this.showForm = false;
+    this.saving = false;
+  }
+
+  save(): void {
     if (!this.title.trim() || !this.targetHours) return;
     this.saving = true;
-    this.api.createGoal({
+
+    const req = {
       title: this.title,
       description: this.description || undefined,
       targetHours: this.targetHours,
       deadline: this.deadline || undefined,
-    }, this.auth.user()!.id).subscribe({
+    };
+    const obs = this.editingId
+      ? this.api.updateGoal(this.editingId, req)
+      : this.api.createGoal(req, this.auth.user()!.id);
+
+    obs.subscribe({
       next: () => {
-        this.toast.success('Goal created');
-        this.title = '';
-        this.description = '';
-        this.targetHours = 100;
-        this.deadline = '';
-        this.showForm = false;
-        this.saving = false;
+        this.toast.success(this.editingId ? 'Goal updated' : 'Goal created');
+        this.resetForm();
         this.load();
       },
       error: () => {
-        this.toast.error('Failed to create goal');
+        this.toast.error(this.editingId ? 'Failed to update goal' : 'Failed to create goal');
         this.saving = false;
       },
     });

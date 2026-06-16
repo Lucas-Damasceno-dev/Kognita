@@ -37,6 +37,14 @@ public class SubjectService {
         return SubjectResponse.from(repository.save(subject));
     }
 
+    public SubjectResponse update(UUID id, CreateSubjectRequest request) {
+        var subject = repository.findById(id).orElseThrow();
+        subject.setName(request.name());
+        subject.setDescription(request.description());
+        subject.setColor(request.color() != null ? request.color() : "#3B82F6");
+        return SubjectResponse.from(repository.save(subject));
+    }
+
     public void delete(UUID id) {
         repository.deleteById(id);
     }

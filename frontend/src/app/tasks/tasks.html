@@ -1,12 +1,12 @@
 <div class="page-header">
   <h1>Tasks</h1>
-  <button class="btn" (click)="showForm = !showForm">
+  <button class="btn" (click)="editingId = null; showForm = !showForm; showForm ? null : resetForm()">
     {{ showForm ? 'Cancel' : '+ Task' }}
   </button>
 </div>
 
 @if (showForm) {
-  <form (ngSubmit)="create()" class="form-card">
+  <form (ngSubmit)="save()" class="form-card">
     <label>
       Title
       <input type="text" [(ngModel)]="title" name="title" required />
@@ -28,7 +28,12 @@
         }
       </select>
     </label>
-    <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : editingId ? 'Update' : 'Save' }}</button>
+      @if (editingId) {
+        <button type="button" class="btn" (click)="cancel()">Cancel</button>
+      }
+    </div>
   </form>
 }
 
@@ -46,7 +51,10 @@
           }
         </div>
         <span class="priority-badge {{ item.priority }}">{{ item.priority }}</span>
-        <button class="btn-icon" (click)="remove(item.id)">✕</button>
+        <div class="list-actions">
+          <button class="btn btn-sm" (click)="edit(item)">Edit</button>
+          <button class="btn-icon" (click)="remove(item.id)">✕</button>
+        </div>
       </div>
     } @empty {
       <p class="empty">No tasks yet.</p>

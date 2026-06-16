@@ -34,6 +34,15 @@ public class StudyGoalService {
         return GoalResponse.from(repository.save(goal));
     }
 
+    public GoalResponse update(UUID id, CreateGoalRequest request) {
+        var goal = repository.findById(id).orElseThrow();
+        goal.setTitle(request.title());
+        goal.setDescription(request.description());
+        goal.setTargetHours(request.targetHours());
+        goal.setDeadline(request.deadline());
+        return GoalResponse.from(repository.save(goal));
+    }
+
     public GoalResponse updateProgress(UUID id, Integer hours) {
         var goal = repository.findById(id).orElseThrow();
         goal.setCurrentHours(goal.getCurrentHours() + hours);

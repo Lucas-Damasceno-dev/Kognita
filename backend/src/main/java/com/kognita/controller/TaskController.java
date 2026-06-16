@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -42,6 +43,11 @@ public class TaskController {
     public ResponseEntity<TaskResponse> create(@Valid @RequestBody CreateTaskRequest request, @RequestParam UUID userId) {
         var response = service.create(request, userId);
         return ResponseEntity.created(URI.create("/api/tasks/" + response.id())).body(response);
+    }
+
+    @PutMapping("/{id}")
+    public TaskResponse update(@PathVariable UUID id, @Valid @RequestBody CreateTaskRequest request) {
+        return service.update(id, request);
     }
 
     @PatchMapping("/{id}/status")

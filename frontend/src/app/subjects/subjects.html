@@ -1,12 +1,12 @@
 <div class="page-header">
   <h1>Subjects</h1>
-  <button class="btn" (click)="showForm = !showForm">
+  <button class="btn" (click)="editingId = null; showForm = !showForm; showForm ? null : resetForm()">
     {{ showForm ? 'Cancel' : '+ Subject' }}
   </button>
 </div>
 
 @if (showForm) {
-  <form (ngSubmit)="create()" class="form-card">
+  <form (ngSubmit)="save()" class="form-card">
     <label>
       Name
       <input type="text" [(ngModel)]="name" name="name" required />
@@ -19,7 +19,12 @@
       Color
       <input type="color" [(ngModel)]="color" name="color" />
     </label>
-    <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : editingId ? 'Update' : 'Save' }}</button>
+      @if (editingId) {
+        <button type="button" class="btn" (click)="cancel()">Cancel</button>
+      }
+    </div>
   </form>
 }
 
@@ -36,7 +41,10 @@
             <p>{{ item.description }}</p>
           }
         </div>
-        <button class="btn-icon" (click)="remove(item.id)">✕</button>
+        <div class="list-actions">
+          <button class="btn btn-sm" (click)="edit(item)">Edit</button>
+          <button class="btn-icon" (click)="remove(item.id)">✕</button>
+        </div>
       </div>
     } @empty {
       <p class="empty">No subjects yet.</p>

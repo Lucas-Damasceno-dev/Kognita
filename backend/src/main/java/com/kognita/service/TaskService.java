@@ -44,6 +44,21 @@ public class TaskService {
         return TaskResponse.from(repository.save(task));
     }
 
+    public TaskResponse update(UUID id, CreateTaskRequest request) {
+        var task = repository.findById(id).orElseThrow();
+        task.setTitle(request.title());
+        task.setDescription(request.description());
+        task.setStatus(request.status() != null ? request.status() : task.getStatus());
+        task.setPriority(request.priority() != null ? request.priority() : task.getPriority());
+        task.setDueDate(request.dueDate());
+        if (request.subjectId() != null) {
+            task.setSubject(subjectService.findEntityById(request.subjectId()));
+        } else {
+            task.setSubject(null);
+        }
+        return TaskResponse.from(repository.save(task));
+    }
+
     public TaskResponse updateStatus(UUID id, String status) {
         var task = repository.findById(id).orElseThrow();
         task.setStatus(status);

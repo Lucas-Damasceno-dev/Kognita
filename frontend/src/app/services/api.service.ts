@@ -43,6 +43,10 @@ export class ApiService {
     return this.http.post<Subject>(`${this.api}/subjects`, req, { params: { userId } });
   }
 
+  updateSubject(id: string, req: CreateSubjectRequest): Observable<Subject> {
+    return this.http.put<Subject>(`${this.api}/subjects/${id}`, req);
+  }
+
   deleteSubject(id: string): Observable<void> {
     return this.http.delete<void>(`${this.api}/subjects/${id}`);
   }
@@ -54,6 +58,10 @@ export class ApiService {
 
   createSession(req: CreateStudySessionRequest, userId: string): Observable<StudySession> {
     return this.http.post<StudySession>(`${this.api}/study-sessions`, req, { params: { userId } });
+  }
+
+  updateSession(id: string, req: CreateStudySessionRequest): Observable<StudySession> {
+    return this.http.put<StudySession>(`${this.api}/study-sessions/${id}`, req);
   }
 
   deleteSession(id: string): Observable<void> {
@@ -73,6 +81,10 @@ export class ApiService {
     return this.http.post<Task>(`${this.api}/tasks`, req, { params: { userId } });
   }
 
+  updateTask(id: string, req: CreateTaskRequest): Observable<Task> {
+    return this.http.put<Task>(`${this.api}/tasks/${id}`, req);
+  }
+
   updateTaskStatus(id: string, status: string): Observable<Task> {
     return this.http.patch<Task>(`${this.api}/tasks/${id}/status`, status);
   }
@@ -88,6 +100,10 @@ export class ApiService {
 
   createGoal(req: CreateGoalRequest, userId: string): Observable<StudyGoal> {
     return this.http.post<StudyGoal>(`${this.api}/goals`, req, { params: { userId } });
+  }
+
+  updateGoal(id: string, req: CreateGoalRequest): Observable<StudyGoal> {
+    return this.http.put<StudyGoal>(`${this.api}/goals/${id}`, req);
   }
 
   updateGoalProgress(id: string, hours: number): Observable<StudyGoal> {

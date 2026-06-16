@@ -28,6 +28,7 @@ export class Sessions implements OnInit {
   notes = '';
   date = new Date().toISOString().split('T')[0];
   showForm = false;
+  editingId: string | null = null;
   loading = signal(false);
   saving = false;
 
@@ -80,25 +81,50 @@ export class Sessions implements OnInit {
     });
   }
 
-  create(): void {
+  edit(item: StudySession): void {
+    this.editingId = item.id;
+    this.subjectId = item.subjectId;
+    this.durationMinutes = item.durationMinutes;
+    this.notes = item.notes || '';
+    this.date = item.date;
+    this.showForm = true;
+  }
+
+  cancel(): void {
+    this.resetForm();
+  }
+
+  resetForm(): void {
+    this.editingId = null;
+    this.subjectId = '';
+    this.durationMinutes = 0;
+    this.notes = '';
+    this.date = new Date().toISOString().split('T')[0];
+    this.showForm = false;
+    this.saving = false;
+  }
+
+  save(): void {
     if (!this.subjectId || !this.durationMinutes) return;
     this.saving = true;
-    this.api.createSession({
+
+    const req = {
       subjectId: this.subjectId,
       durationMinutes: this.durationMinutes,
       notes: this.notes || undefined,
-    }, this.auth.user()!.id).subscribe({
+    };
+    const obs = this.editingId
+      ? this.api.updateSession(this.editingId, req)
+      : this.api.createSession(req, this.auth.user()!.id);
+
+    obs.subscribe({
       next: () => {
-        this.toast.success('Session created');
-        this.subjectId = '';
-        this.durationMinutes = 60;
-        this.notes = '';
-        this.showForm = false;
-        this.saving = false;
+        this.toast.success(this.editingId ? 'Session updated' : 'Session created');
+        this.resetForm();
         this.load();
       },
       error: () => {
-        this.toast.error('Failed to create session');
+        this.toast.error(this.editingId ? 'Failed to update session' : 'Failed to create session');
         this.saving = false;
       },
     });

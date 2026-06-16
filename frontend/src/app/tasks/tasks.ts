@@ -29,6 +29,7 @@ export class Tasks implements OnInit {
   subjectId = '';
   dueDate = '';
   showForm = false;
+  editingId: string | null = null;
   loading = signal(false);
   saving = false;
 
@@ -81,29 +82,54 @@ export class Tasks implements OnInit {
     });
   }
 
-  create(): void {
+  edit(item: Task): void {
+    this.editingId = item.id;
+    this.title = item.title;
+    this.description = item.description || '';
+    this.priority = item.priority;
+    this.subjectId = item.subjectId || '';
+    this.dueDate = item.dueDate || '';
+    this.showForm = true;
+  }
+
+  cancel(): void {
+    this.resetForm();
+  }
+
+  resetForm(): void {
+    this.editingId = null;
+    this.title = '';
+    this.description = '';
+    this.priority = 'medium';
+    this.subjectId = '';
+    this.dueDate = '';
+    this.showForm = false;
+    this.saving = false;
+  }
+
+  save(): void {
     if (!this.title.trim()) return;
     this.saving = true;
-    this.api.createTask({
+
+    const req = {
       title: this.title,
       description: this.description || undefined,
       priority: this.priority,
       subjectId: this.subjectId || undefined,
       dueDate: this.dueDate || undefined,
-    }, this.auth.user()!.id).subscribe({
+    };
+    const obs = this.editingId
+      ? this.api.updateTask(this.editingId, req)
+      : this.api.createTask(req, this.auth.user()!.id);
+
+    obs.subscribe({
       next: () => {
-        this.toast.success('Task created');
-        this.title = '';
-        this.description = '';
-        this.priority = 'medium';
-        this.subjectId = '';
-        this.dueDate = '';
-        this.showForm = false;
-        this.saving = false;
+        this.toast.success(this.editingId ? 'Task updated' : 'Task created');
+        this.resetForm();
         this.load();
       },
       error: () => {
-        this.toast.error('Failed to create task');
+        this.toast.error(this.editingId ? 'Failed to update task' : 'Failed to create task');
         this.saving = false;
       },
     });

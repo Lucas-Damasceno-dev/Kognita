@@ -38,6 +38,15 @@ public class StudySessionService {
         return StudySessionResponse.from(repository.save(session));
     }
 
+    public StudySessionResponse update(UUID id, CreateStudySessionRequest request) {
+        var session = repository.findById(id).orElseThrow();
+        session.setSubject(subjectService.findEntityById(request.subjectId()));
+        session.setDurationMinutes(request.durationMinutes());
+        session.setNotes(request.notes());
+        session.setDate(request.date() != null ? request.date() : LocalDate.now());
+        return StudySessionResponse.from(repository.save(session));
+    }
+
     public void delete(UUID id) {
         repository.deleteById(id);
     }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,6 +37,11 @@ public class StudySessionController {
     public ResponseEntity<StudySessionResponse> create(@Valid @RequestBody CreateStudySessionRequest request, @RequestParam UUID userId) {
         var response = service.create(request, userId);
         return ResponseEntity.created(URI.create("/api/study-sessions/" + response.id())).body(response);
+    }
+
+    @PutMapping("/{id}")
+    public StudySessionResponse update(@PathVariable UUID id, @Valid @RequestBody CreateStudySessionRequest request) {
+        return service.update(id, request);
     }
 
     @DeleteMapping("/{id}")
