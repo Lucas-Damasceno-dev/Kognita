@@ -3,10 +3,6 @@
     <h1>Create account</h1>
     <p class="subtitle">Start organizing your studies</p>
 
-    @if (error) {
-      <div class="error-msg">{{ error }}</div>
-    }
-
     <label>
       Name
       <input type="text" [(ngModel)]="name" name="name" required autocomplete="name" />

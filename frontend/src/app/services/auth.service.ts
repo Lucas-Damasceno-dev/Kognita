@@ -1,7 +1,8 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, of, filter, take, timeout, catchError } from 'rxjs';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { User } from '../models/user';
 
 interface AuthResponse {
@@ -16,7 +17,7 @@ export class AuthService {
   private readonly userKey = 'kognita_user';
 
   readonly user = signal<User | null>(null);
-  readonly isAuthenticated = signal(false);
+  readonly isAuthenticated = computed(() => !!this.user());
 
   constructor(
     private http: HttpClient,
@@ -39,7 +40,6 @@ export class AuthService {
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.userKey);
     this.user.set(null);
-    this.isAuthenticated.set(false);
     this.router.navigate(['/login']);
   }
 
@@ -47,19 +47,35 @@ export class AuthService {
     return localStorage.getItem(this.tokenKey);
   }
 
+  waitForUser(): Observable<User> {
+    const current = this.user();
+    if (current) {
+      return of(current);
+    }
+    return toObservable(this.user).pipe(
+      filter((u): u is User => u !== null),
+      take(1),
+      timeout(10_000),
+      catchError(() => of(null as unknown as User)),
+    );
+  }
+
   private saveSession(res: AuthResponse): void {
     localStorage.setItem(this.tokenKey, res.token);
     localStorage.setItem(this.userKey, JSON.stringify(res.user));
     this.user.set(res.user);
-    this.isAuthenticated.set(true);
   }
 
   private loadSession(): void {
     const token = localStorage.getItem(this.tokenKey);
     const userJson = localStorage.getItem(this.userKey);
     if (token && userJson) {
-      this.user.set(JSON.parse(userJson));
-      this.isAuthenticated.set(true);
+      try {
+        this.user.set(JSON.parse(userJson));
+      } catch (e) {
+        localStorage.removeItem(this.tokenKey);
+        localStorage.removeItem(this.userKey);
+      }
     }
   }
 }

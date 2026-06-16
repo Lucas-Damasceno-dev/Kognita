@@ -23,29 +23,33 @@
       Deadline
       <input type="date" [(ngModel)]="deadline" name="deadline" />
     </label>
-    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
   </form>
 }
 
-<div class="list">
-  @for (item of goals; track item.id) {
-    <div class="list-item">
-      <div class="goal-info">
-        <strong>{{ item.title }}</strong>
-        @if (item.description) {
-          <p>{{ item.description }}</p>
-        }
-        <div class="progress-bar">
-          <div class="progress-fill" [style.width.%]="progressPercent(item)"></div>
+@if (loading()) {
+  <app-loading />
+} @else {
+  <div class="list">
+    @for (item of goals; track item.id) {
+      <div class="list-item">
+        <div class="goal-info">
+          <strong>{{ item.title }}</strong>
+          @if (item.description) {
+            <p>{{ item.description }}</p>
+          }
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="progressPercent(item)"></div>
+          </div>
+          <span class="progress-text">{{ item.currentHours }} / {{ item.targetHours }}h ({{ progressPercent(item) }}%)</span>
         </div>
-        <span class="progress-text">{{ item.currentHours }} / {{ item.targetHours }}h ({{ progressPercent(item) }}%)</span>
+        <div class="goal-actions">
+          <button class="btn btn-sm" (click)="addHour(item.id)">+1h</button>
+          <button class="btn-icon" (click)="remove(item.id)">✕</button>
+        </div>
       </div>
-      <div class="goal-actions">
-        <button class="btn btn-sm" (click)="addHour(item.id)">+1h</button>
-        <button class="btn-icon" (click)="remove(item.id)">✕</button>
-      </div>
-    </div>
-  } @empty {
-    <p class="empty">No goals yet.</p>
-  }
-</div>
+    } @empty {
+      <p class="empty">No goals yet.</p>
+    }
+  </div>
+}

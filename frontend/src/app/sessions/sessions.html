@@ -24,24 +24,28 @@
       Notes
       <input type="text" [(ngModel)]="notes" name="notes" />
     </label>
-    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : 'Save' }}</button>
   </form>
 }
 
-<div class="list">
-  @for (item of sessions; track item.id) {
-    <div class="list-item">
-      <div>
-        <strong>{{ item.subjectName }}</strong>
-        <span class="duration">{{ item.durationMinutes }} min</span>
-        @if (item.notes) {
-          <p>{{ item.notes }}</p>
-        }
+@if (loading()) {
+  <app-loading />
+} @else {
+  <div class="list">
+    @for (item of sessions; track item.id) {
+      <div class="list-item">
+        <div>
+          <strong>{{ item.subjectName }}</strong>
+          <span class="duration">{{ item.durationMinutes }} min</span>
+          @if (item.notes) {
+            <p>{{ item.notes }}</p>
+          }
+        </div>
+        <span class="date">{{ item.date }}</span>
+        <button class="btn-icon" (click)="remove(item.id)">✕</button>
       </div>
-      <span class="date">{{ item.date }}</span>
-      <button class="btn-icon" (click)="remove(item.id)">✕</button>
-    </div>
-  } @empty {
-    <p class="empty">No sessions yet.</p>
-  }
-</div>
+    } @empty {
+      <p class="empty">No sessions yet.</p>
+    }
+  </div>
+}
