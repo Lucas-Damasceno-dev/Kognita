@@ -33,21 +33,21 @@ public class SubjectController {
     }
 
     @GetMapping
-    public List<SubjectResponse> findAllByUser(@AuthenticationPrincipal User user) {
-        return service.findAllByUser(user.getId());
+    public ResponseEntity<List<SubjectResponse>> findAllByUser(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.findAllByUser(user.getId()));
     }
 
     @GetMapping("/page")
-    public Page<SubjectResponse> findAllByUserPage(
+    public ResponseEntity<Page<SubjectResponse>> findAllByUserPage(
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return service.findAllByUser(user.getId(), PageRequest.of(page, size));
+        return ResponseEntity.ok(service.findAllByUser(user.getId(), PageRequest.of(page, size)));
     }
 
     @GetMapping("/{id}")
-    public SubjectResponse findById(@PathVariable UUID id) {
-        return service.findById(id);
+    public ResponseEntity<SubjectResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
@@ -57,8 +57,8 @@ public class SubjectController {
     }
 
     @PutMapping("/{id}")
-    public SubjectResponse update(@PathVariable UUID id, @Valid @RequestBody CreateSubjectRequest request) {
-        return service.update(id, request);
+    public ResponseEntity<SubjectResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateSubjectRequest request) {
+        return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")

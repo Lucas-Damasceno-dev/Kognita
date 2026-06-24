@@ -1,30 +1,33 @@
 <div class="page-header">
-  <h1>Metas de Estudo</h1>
-  <button class="btn" (click)="editingId = null; showForm.update(v => !v); showForm() ? null : resetForm()">
+  <h2>Metas de Estudo</h2>
+  <button
+    class="btn"
+    (click)="editingId = null; showForm.update((v) => !v); showForm() ? null : resetForm()"
+  >
     {{ showForm() ? 'Cancelar' : '+ Meta' }}
   </button>
 </div>
 
 @if (showForm()) {
-  <form (ngSubmit)="save()" class="form-card">
-    <label>
-      Título
-      <input type="text" [(ngModel)]="title" name="title" required />
-    </label>
-    <label>
-      Descrição
-      <input type="text" [(ngModel)]="description" name="description" />
-    </label>
-    <label>
-      Horas alvo
-      <input type="number" [(ngModel)]="targetHours" name="targetHours" min="1" required />
-    </label>
-    <label>
-      Prazo
-      <input type="date" [(ngModel)]="deadline" name="deadline" />
-    </label>
+  <form #goalForm="ngForm" (ngSubmit)="save()" class="card card-elevated">
+    <label for="goal-title">Título</label>
+    <input id="goal-title" type="text" #titleInput="ngModel" [(ngModel)]="title" name="title" required />
+    @if (titleInput.invalid && (titleInput.dirty || titleInput.touched || goalForm.submitted)) {
+      <small class="error">Título é obrigatório</small>
+    }
+    <label for="goal-description">Descrição</label>
+    <input id="goal-description" type="text" [(ngModel)]="description" name="description" />
+    <label for="goal-target-hours">Horas alvo</label>
+    <input id="goal-target-hours" type="number" #targetHoursInput="ngModel" [(ngModel)]="targetHours" name="targetHours" min="1" required />
+    @if (targetHoursInput.invalid && (targetHoursInput.dirty || targetHoursInput.touched || goalForm.submitted)) {
+      <small class="error">Horas alvo é obrigatório</small>
+    }
+    <label for="goal-deadline">Prazo</label>
+    <input id="goal-deadline" type="date" [(ngModel)]="deadline" name="deadline" />
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}
+      </button>
       @if (editingId) {
         <button type="button" class="btn" (click)="cancel()">Cancelar</button>
       }
@@ -37,21 +40,29 @@
 } @else {
   <div class="sort-bar">
     <button class="sort-btn" [class.active]="sortBy === 'title'" (click)="setSort('title')">
-      Título {{ sortBy === 'title' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+      Título <span aria-hidden="true">{{ sortBy === 'title' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
     </button>
-    <button class="sort-btn" [class.active]="sortBy === 'targetHours'" (click)="setSort('targetHours')">
-      Alvo {{ sortBy === 'targetHours' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+    <button
+      class="sort-btn"
+      [class.active]="sortBy === 'targetHours'"
+      (click)="setSort('targetHours')"
+    >
+      Alvo <span aria-hidden="true">{{ sortBy === 'targetHours' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
     </button>
-    <button class="sort-btn" [class.active]="sortBy === 'currentHours'" (click)="setSort('currentHours')">
-      Progresso {{ sortBy === 'currentHours' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+    <button
+      class="sort-btn"
+      [class.active]="sortBy === 'currentHours'"
+      (click)="setSort('currentHours')"
+    >
+      Progresso <span aria-hidden="true">{{ sortBy === 'currentHours' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
     </button>
     <button class="sort-btn" [class.active]="sortBy === 'deadline'" (click)="setSort('deadline')">
-      Prazo {{ sortBy === 'deadline' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+      Prazo <span aria-hidden="true">{{ sortBy === 'deadline' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
     </button>
   </div>
-  <div class="list">
+  <div class="list" role="list">
     @for (item of sortedGoals; track item.id) {
-      <div class="list-item">
+      <div class="list-item" role="listitem">
         <div class="goal-info">
           <strong>{{ item.title }}</strong>
           @if (item.description) {
@@ -60,21 +71,25 @@
           <div class="progress-bar">
             <div class="progress-fill" [style.width.%]="progressPercent(item)"></div>
           </div>
-          <span class="progress-text">{{ item.currentHours }} / {{ item.targetHours }}h ({{ progressPercent(item) }}%)</span>
+          <span class="progress-text"
+            >{{ item.currentHours }} / {{ item.targetHours }}h ({{ progressPercent(item) }}%)</span
+          >
         </div>
-        <div class="goal-actions">
+        <div class="list-actions">
           <button class="btn btn-sm" (click)="addHour(item.id)">+1h</button>
           <button class="btn btn-sm" (click)="edit(item)">Editar</button>
-          <button class="btn-icon" (click)="confirmDelete(item.id, item.title)">✕</button>
+          <button class="btn-ghost" type="button" (click)="confirmDelete(item.id, item.title)" aria-label="Excluir {{ item.title }}">✕</button>
         </div>
       </div>
     } @empty {
-      <p class="empty">Nenhuma meta ainda.</p>
+      <app-empty-state>
+        <p>Nenhuma meta ainda.</p>
+      </app-empty-state>
     }
   </div>
   <div class="pagination">
     <button [disabled]="currentPage === 0" (click)="prevPage()">Anterior</button>
-    <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+    <span aria-live="polite">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
     <button [disabled]="currentPage >= totalPages - 1" (click)="nextPage()">Próximo</button>
   </div>
 }
@@ -84,5 +99,6 @@
     [message]="confirmMessage"
     [saving]="savingDelete()"
     (confirmed)="handleConfirm()"
-    (cancelled)="handleCancel()" />
+    (cancelled)="handleCancel()"
+  />
 }

@@ -1,17 +1,17 @@
-.job-analyzer {
-  padding: 20px;
-}
+.analyzer-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; max-width: 600px; }
+.analyzer-form textarea { width: 100%; min-height: 150px; }
+.analyzer-form .form-group { margin-bottom: 1rem; }
+.analyzer-result { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; }
+.analyzer-result h3 { margin-bottom: 1rem; }
+.analyzer-result .skill-match { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+.analyzer-result .skill-match:last-child { border-bottom: none; }
+.analyzer-result .skill-match .skill-name { font-size: 0.875rem; }
+.analyzer-result .skill-match .skill-status { font-size: 0.75rem; font-weight: 600; padding: 0.125rem 0.5rem; border-radius: 999px; }
+.analyzer-result .skill-match .skill-status.found { background: var(--success-subtle); color: var(--success); }
+.analyzer-result .skill-match .skill-status.missing { background: var(--error-subtle); color: var(--error); }
 
-textarea {
-  width: 100%;
-  margin-bottom: 10px;
-  padding: 10px;
-}
-
-button {
-  padding: 10px 20px;
-}
-
-.report {
-  margin-top: 20px;
+@media (max-width: 480px) {
+  .analyzer-form { max-width: 100%; padding: 1rem; }
+  .analyzer-result { padding: 1rem; }
+  .analyzer-result .skill-match { flex-direction: column; align-items: flex-start; gap: 0.25rem; }
 }

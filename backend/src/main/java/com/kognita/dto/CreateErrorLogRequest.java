@@ -1,10 +1,12 @@
 package com.kognita.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.UUID;
 
 public record CreateErrorLogRequest(
-    String title,
-    String description,
+    @NotBlank String title,
+    @NotBlank String description,
     String solution,
-    UUID taskId
+    @NotNull UUID taskId
 ) {}

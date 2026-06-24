@@ -30,7 +30,7 @@
 
 /* Sidebar */
 .sidebar {
-  width: 240px;
+  width: 260px;
   background: var(--sidebar-bg);
   color: white;
   display: flex;
@@ -57,7 +57,8 @@
   border-bottom: 1px solid var(--sidebar-border);
 }
 
-.avatar, .avatar-img {
+.avatar,
+.avatar-img {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -146,23 +147,24 @@
   cursor: pointer;
   font-size: 0.78rem;
   font-weight: 600;
-  background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: var(--success-subtle);
+  color: var(--success);
+  border: 1px solid var(--success);
   transition: 0.15s;
 }
 
 .challenge-badge.active {
-  background: rgba(239, 68, 68, 0.15);
-  color: #f87171;
-  border-color: rgba(239, 68, 68, 0.4);
+  background: var(--error-subtle);
+  color: var(--error);
+  border-color: var(--error);
 }
 
 .challenge-badge:hover {
   filter: brightness(1.2);
 }
 
-.theme-btn, .logout-btn {
+.theme-btn,
+.logout-btn {
   background: none;
   border: 1px solid var(--sidebar-logout-border);
   color: var(--sidebar-text);
@@ -177,7 +179,8 @@
   transition: 0.15s;
 }
 
-.theme-btn:hover, .logout-btn:hover {
+.theme-btn:hover,
+.logout-btn:hover {
   background: var(--sidebar-hover);
   color: white;
 }
@@ -191,7 +194,7 @@
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   z-index: 999;
 }
 

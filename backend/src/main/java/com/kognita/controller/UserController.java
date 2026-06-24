@@ -6,9 +6,7 @@ import com.kognita.dto.UserResponse;
 import com.kognita.service.UserService;
 import jakarta.validation.Valid;
 import java.net.URI;
-import java.util.List;
 import java.util.UUID;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,14 +27,9 @@ public class UserController {
         this.service = service;
     }
 
-    @GetMapping
-    public List<UserResponse> findAll() {
-        return service.findAll();
-    }
-
     @GetMapping("/{id}")
-    public UserResponse findById(@PathVariable UUID id) {
-        return service.findById(id);
+    public ResponseEntity<UserResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
@@ -52,12 +45,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request) {
-        try {
-            var response = service.update(id, request);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+    public ResponseEntity<UserResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request) {
+        return ResponseEntity.ok(service.update(id, request));
     }
 }

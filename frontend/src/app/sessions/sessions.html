@@ -1,31 +1,33 @@
 <div class="page-header">
-  <h1>Sessões de Estudo</h1>
-  <button class="btn" (click)="editingId = null; showForm.update(v => !v); showForm() ? null : resetForm()">
+  <h2>Sessões de Estudo</h2>
+  <button
+    class="btn"
+    (click)="editingId = null; showForm.update((v) => !v); showForm() ? null : resetForm()"
+  >
     {{ showForm() ? 'Cancelar' : '+ Sessão' }}
   </button>
 </div>
 
 @if (showForm()) {
-  <form (ngSubmit)="save()" class="form-card">
-    <label>
-      Matéria
-      <select [(ngModel)]="subjectId" name="subjectId" required>
-        <option value="">Selecione uma matéria</option>
-        @for (s of subjects; track s.id) {
-          <option [value]="s.id">{{ s.name }}</option>
-        }
-      </select>
-    </label>
-    <label>
-      Duração (minutos)
-      <input type="number" [(ngModel)]="durationMinutes" name="duration" min="1" required />
-    </label>
-    <label>
-      Anotações
-      <input type="text" [(ngModel)]="notes" name="notes" />
-    </label>
+  <form #sessionForm="ngForm" (ngSubmit)="save()" class="card card-elevated">
+    <label for="session-subject">Matéria</label>
+    <select id="session-subject" [(ngModel)]="subjectId" name="subjectId" required>
+      <option value="">Selecione uma matéria</option>
+      @for (s of subjects; track s.id) {
+        <option [value]="s.id">{{ s.name }}</option>
+      }
+    </select>
+    <label for="session-duration">Duração (minutos)</label>
+    <input id="session-duration" type="number" #durationInput="ngModel" [(ngModel)]="durationMinutes" name="duration" min="1" required />
+    @if (durationInput.invalid && (durationInput.dirty || durationInput.touched || sessionForm.submitted)) {
+      <small class="error">Duração é obrigatória</small>
+    }
+    <label for="session-notes">Anotações</label>
+    <input id="session-notes" type="text" [(ngModel)]="notes" name="notes" />
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}
+      </button>
       @if (editingId) {
         <button type="button" class="btn" (click)="cancel()">Cancelar</button>
       }
@@ -36,30 +38,50 @@
 @if (loading()) {
   <app-skeleton mode="list" />
 } @else {
-  <div class="filter-bar">
+  <div class="quick-add">
     <select [(ngModel)]="filterSubjectId" name="filterSubjectId" (change)="applyFilter()">
       <option value="">Todas as matérias</option>
       @for (s of subjects; track s.id) {
         <option [value]="s.id">{{ s.name }}</option>
       }
     </select>
-    <input type="date" [(ngModel)]="startDate" name="startDate" (change)="applyFilter()" placeholder="Data início" />
-    <input type="date" [(ngModel)]="endDate" name="endDate" (change)="applyFilter()" placeholder="Data fim" />
+    <input
+      type="date"
+      [(ngModel)]="startDate"
+      name="startDate"
+      (change)="applyFilter()"
+      placeholder="Data início"
+    />
+    <input
+      type="date"
+      [(ngModel)]="endDate"
+      name="endDate"
+      (change)="applyFilter()"
+      placeholder="Data fim"
+    />
   </div>
   <div class="sort-bar">
-    <button class="sort-btn" [class.active]="sortBy === 'subjectName'" (click)="setSort('subjectName')">
-      Matéria {{ sortBy === 'subjectName' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+    <button
+      class="sort-btn"
+      [class.active]="sortBy === 'subjectName'"
+      (click)="setSort('subjectName')"
+    >
+      Matéria <span aria-hidden="true">{{ sortBy === 'subjectName' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
     </button>
     <button class="sort-btn" [class.active]="sortBy === 'date'" (click)="setSort('date')">
-      Data {{ sortBy === 'date' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+      Data <span aria-hidden="true">{{ sortBy === 'date' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
     </button>
-    <button class="sort-btn" [class.active]="sortBy === 'durationMinutes'" (click)="setSort('durationMinutes')">
-      Duração {{ sortBy === 'durationMinutes' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+    <button
+      class="sort-btn"
+      [class.active]="sortBy === 'durationMinutes'"
+      (click)="setSort('durationMinutes')"
+    >
+      Duração <span aria-hidden="true">{{ sortBy === 'durationMinutes' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
     </button>
   </div>
-  <div class="list">
+  <div class="list" role="list">
     @for (item of sortedSessions; track item.id) {
-      <div class="list-item">
+      <div class="list-item" role="listitem">
         <div>
           <strong>{{ item.subjectName }}</strong>
           <span class="duration">{{ item.durationMinutes }} min</span>
@@ -67,19 +89,23 @@
             <p>{{ item.notes }}</p>
           }
         </div>
-        <span class="date">{{ item.date }}</span>
+        <span class="session-date">{{ item.date }}</span>
         <div class="list-actions">
           <button class="btn btn-sm" (click)="edit(item)">Editar</button>
-          <button class="btn-icon" (click)="confirmDelete(item.id, item.subjectName + ' session')">✕</button>
+          <button class="btn-ghost" type="button" (click)="confirmDelete(item.id, item.subjectName + ' session')" aria-label="Excluir sessão">
+            ✕
+          </button>
         </div>
       </div>
     } @empty {
-      <p class="empty">Nenhuma sessão ainda.</p>
+      <app-empty-state>
+        <p>Nenhuma sessão ainda.</p>
+      </app-empty-state>
     }
   </div>
   <div class="pagination">
     <button [disabled]="page === 0" (click)="prevPage()">Anterior</button>
-    <span>Página {{ page + 1 }} de {{ totalPages }}</span>
+    <span aria-live="polite">Página {{ page + 1 }} de {{ totalPages }}</span>
     <button [disabled]="page >= totalPages - 1" (click)="nextPage()">Próximo</button>
   </div>
 }
@@ -89,5 +115,6 @@
     [message]="confirmMessage"
     [saving]="savingDelete()"
     (confirmed)="handleConfirm()"
-    (cancelled)="handleCancel()" />
+    (cancelled)="handleCancel()"
+  />
 }

@@ -36,13 +36,16 @@ export class ErrorDiary implements OnInit {
   savingDelete = signal(false);
 
   ngOnInit(): void {
-    this.auth.waitForUser().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      tap(user => {
-        if (!user) return;
-        this.load();
-      }),
-    ).subscribe();
+    this.auth
+      .waitForUser()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap((user) => {
+          if (!user) return;
+          this.load();
+        }),
+      )
+      .subscribe();
   }
 
   private load(): void {
@@ -50,19 +53,22 @@ export class ErrorDiary implements OnInit {
     if (!user) return;
 
     this.loading.set(true);
-    this.api.getErrorLogs().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      finalize(() => this.loading.set(false)),
-    ).subscribe({
-      next: (logs) => {
-        this.errorLogs = logs;
-      },
-      error: () => {},
-    });
+    this.api
+      .getErrorLogs()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe({
+        next: (logs) => {
+          this.errorLogs = logs;
+        },
+        error: () => {},
+      });
   }
 
   toggleForm(): void {
-    this.showForm.update(v => !v);
+    this.showForm.update((v) => !v);
     if (!this.showForm()) {
       this.resetForm();
     }
@@ -104,7 +110,9 @@ export class ErrorDiary implements OnInit {
         this.toggleForm();
         this.load();
       },
-      error: () => { this.saving.set(false); },
+      error: () => {
+        this.saving.set(false);
+      },
     });
   }
 
@@ -139,7 +147,10 @@ export class ErrorDiary implements OnInit {
   }
 
   hasUnsavedChanges(): boolean {
-    return this.showForm() && (this.title.trim() !== '' || this.description.trim() !== '' || this.solution.trim() !== '');
+    return (
+      this.showForm() &&
+      (this.title.trim() !== '' || this.description.trim() !== '' || this.solution.trim() !== '')
+    );
   }
 
   @HostListener('window:beforeunload', ['$event'])

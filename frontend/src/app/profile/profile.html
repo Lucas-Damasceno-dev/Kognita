@@ -1,45 +1,72 @@
 <h1>Perfil</h1>
 
-<form (ngSubmit)="save()" class="form-card">
+<form #profileForm="ngForm" (ngSubmit)="save()" class="card form-card">
   <div class="avatar-section">
     <div class="avatar-preview">
       @if (avatarUrl && !avatarError()) {
-        <img [src]="avatarUrl" alt="Avatar" class="avatar-img" (error)="avatarError.set(true)" />
+        <img [src]="avatarUrl" alt="Avatar" class="profile-avatar" (error)="avatarError.set(true)" />
       } @else {
-        <div class="avatar-placeholder">{{ name.charAt(0) }}</div>
+        <div class="profile-avatar-placeholder">{{ name.charAt(0) }}</div>
       }
     </div>
-    <label class="avatar-label">
-      URL do Avatar
-      <input type="url" [(ngModel)]="avatarUrl" name="avatarUrl" placeholder="https://exemplo.com/avatar.jpg" (ngModelChange)="avatarError.set(false)" />
-    </label>
+    <label for="avatarUrlInput" class="avatar-label">URL do Avatar</label>
+      <input
+        id="avatarUrlInput"
+        type="url"
+        [(ngModel)]="avatarUrl"
+        name="avatarUrl"
+        placeholder="https://exemplo.com/avatar.jpg"
+        (ngModelChange)="avatarError.set(false)"
+        aria-describedby="avatarHint"
+      />
+      <small id="avatarHint" class="text-muted">URL pública da sua foto de perfil</small>
   </div>
 
-  <label>
+  <label for="nameInput">
     Nome
-    <input type="text" [(ngModel)]="name" name="name" required />
   </label>
-  <label>
+    <input type="text" id="nameInput" #nameInput="ngModel" [(ngModel)]="name" name="name" required aria-describedby="nameHint" />
+  @if (nameInput.invalid && (nameInput.dirty || nameInput.touched || profileForm.submitted)) {
+    <small id="nameHint" class="error-text">Nome é obrigatório</small>
+  }
+  <label for="emailInput">
     Email
-    <input type="email" [(ngModel)]="email" name="email" required />
   </label>
+    <input type="email" id="emailInput" [(ngModel)]="email" name="email" required aria-describedby="emailHint" />
+  <small id="emailHint" class="text-muted">Seu email principal de contato</small>
 
   <hr />
 
-  <h3>Alterar senha (opcional)</h3>
+  <h3 id="password-heading">Alterar senha (opcional)</h3>
 
-  <label>
-    Senha atual
-    <input type="password" [(ngModel)]="currentPassword" name="currentPassword" autocomplete="current-password" />
-  </label>
-  <label>
-    Nova senha
-    <input type="password" [(ngModel)]="newPassword" name="newPassword" autocomplete="new-password" />
-  </label>
-  <label>
-    Confirmar nova senha
-    <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" autocomplete="new-password" />
-  </label>
+  <label for="currentPassword">Senha atual</label>
+  <input
+    id="currentPassword"
+    type="password"
+    [(ngModel)]="currentPassword"
+    name="currentPassword"
+    autocomplete="current-password"
+    aria-describedby="passwordHint"
+  />
+  <label for="newPassword">Nova senha</label>
+  <input
+    id="newPassword"
+    type="password"
+    [(ngModel)]="newPassword"
+    name="newPassword"
+    autocomplete="new-password"
+    aria-describedby="passwordHint"
+  />
+  <label for="confirmPassword">Confirmar nova senha</label>
+  <input
+    id="confirmPassword"
+    type="password"
+    [(ngModel)]="confirmPassword"
+    name="confirmPassword"
+    autocomplete="new-password"
+    aria-describedby="passwordHint"
+  />
+  <small id="passwordHint" class="text-muted">Deixe em branco para manter a senha atual</small>
 
   <div class="form-actions">
     <button type="submit" class="btn btn-primary" [disabled]="saving()">
@@ -47,3 +74,14 @@
     </button>
   </div>
 </form>
+
+<hr />
+
+  <div class="card data-export" role="region" aria-labelledby="export-heading">
+  <h3 id="export-heading">Exportar Dados</h3>
+  <p>
+    Baixe todos os seus dados (Perfil, Matérias, Tarefas, Sessões de Estudo, Metas, Histórico) em um
+    arquivo JSON.
+  </p>
+  <button type="button" class="btn btn-ghost" (click)="exportData()">Exportar Dados</button>
+</div>

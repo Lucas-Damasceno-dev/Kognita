@@ -29,8 +29,8 @@ public class ChallengeGoalController {
     }
 
     @GetMapping
-    public List<ChallengeGoalResponse> findAllByUser(@AuthenticationPrincipal User user) {
-        return service.findAllByUser(user.getId());
+    public ResponseEntity<List<ChallengeGoalResponse>> findAllByUser(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.findAllByUser(user.getId()));
     }
 
     @PostMapping

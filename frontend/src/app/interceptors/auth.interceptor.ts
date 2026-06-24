@@ -22,7 +22,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   }
   return next(req).pipe(
     timeout(30_000),
-    catchError(err => {
+    catchError((err) => {
       if (err instanceof TimeoutError) {
         toast.error('O servidor não respondeu. Tente novamente.');
       } else if (!req.url.includes('/api/auth/')) {

@@ -10,8 +10,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class TaskService {
 
     private final TaskRepository repository;
@@ -38,6 +40,7 @@ public class TaskService {
         return repository.findById(id).map(TaskResponse::from).orElseThrow();
     }
 
+    @Transactional
     public TaskResponse create(CreateTaskRequest request, UUID userId) {
         var user = userService.findEntityById(userId);
         var task = new Task();
@@ -57,6 +60,7 @@ public class TaskService {
         return TaskResponse.from(repository.save(task));
     }
 
+    @Transactional
     public TaskResponse update(UUID id, CreateTaskRequest request) {
         var task = repository.findById(id).orElseThrow();
         task.setTitle(request.title());
@@ -76,8 +80,14 @@ public class TaskService {
         return TaskResponse.from(repository.save(task));
     }
 
+    @Transactional
     public TaskResponse updateStatus(UUID id, String status) {
         var task = repository.findById(id).orElseThrow();
+        if ("completed".equals(status) && !"completed".equals(task.getStatus())) {
+            var user = task.getUser();
+            user.setTotalExperience(user.getTotalExperience() + task.getExperiencePoints());
+            userService.save(user);
+        }
         task.setStatus(status);
         return TaskResponse.from(repository.save(task));
     }
@@ -90,6 +100,7 @@ public class TaskService {
         return repository.findById(id).orElseThrow();
     }
 
+    @Transactional
     public void delete(UUID id) {
         repository.deleteById(id);
     }

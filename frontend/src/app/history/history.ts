@@ -4,10 +4,11 @@ import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 import { ChallengeAttempt } from '../models/challenge-attempt';
 import { Skeleton } from '../skeleton/skeleton';
+import { EmptyState } from '../empty-state/empty-state';
 
 @Component({
   selector: 'app-history',
-  imports: [Skeleton, FormsModule],
+  imports: [Skeleton, FormsModule, EmptyState],
   templateUrl: './history.html',
   styleUrl: './history.css',
 })
@@ -28,8 +29,13 @@ export class History implements OnInit {
     const user = this.auth.user();
     if (user) {
       this.api.getHistory(user.id).subscribe({
-        next: res => { this.attempts.set(res); this.loading.set(false); },
-        error: () => { this.loading.set(false); },
+        next: (res) => {
+          this.attempts.set(res);
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+        },
       });
     }
   }
@@ -52,11 +58,18 @@ export class History implements OnInit {
       usedAi: attempt.usedAi,
       notes: this.editingNotes(),
       howISolved: attempt.howISolved,
-      date: attempt.date
+      date: attempt.date,
     };
     this.api.updateChallengeAttempt(attempt.id, req).subscribe({
-      next: updated => { this.attempts.update(list => list.map(a => a.id === updated.id ? updated : a)); this.editingId.set(null); this.saving.set(false); },
-      error: () => { this.editingId.set(null); this.saving.set(false); },
+      next: (updated) => {
+        this.attempts.update((list) => list.map((a) => (a.id === updated.id ? updated : a)));
+        this.editingId.set(null);
+        this.saving.set(false);
+      },
+      error: () => {
+        this.editingId.set(null);
+        this.saving.set(false);
+      },
     });
   }
 
@@ -73,22 +86,28 @@ export class History implements OnInit {
     const combinedNotes = existingNotes
       ? `${existingNotes}\n\n[Reflexão de Mentoria]\n${reflection}`
       : `[Reflexão de Mentoria]\n${reflection}`;
-    this.api.updateChallengeAttempt(attempt.id, {
-      taskId: attempt.taskId,
-      usedAi: attempt.usedAi,
-      notes: combinedNotes,
-      howISolved: attempt.howISolved,
-      date: attempt.date,
-    }).subscribe({
-      next: updated => {
-        this.attempts.update(list => list.map(a => a.id === updated.id ? updated : a));
-        this.showMentorship.set(false);
-        this.pendingMentorshipAttempt = null;
-        this.mentorshipReflection.set('');
-        this.savingMentorship.set(false);
-      },
-      error: () => { this.showMentorship.set(false); this.pendingMentorshipAttempt = null; this.savingMentorship.set(false); },
-    });
+    this.api
+      .updateChallengeAttempt(attempt.id, {
+        taskId: attempt.taskId,
+        usedAi: attempt.usedAi,
+        notes: combinedNotes,
+        howISolved: attempt.howISolved,
+        date: attempt.date,
+      })
+      .subscribe({
+        next: (updated) => {
+          this.attempts.update((list) => list.map((a) => (a.id === updated.id ? updated : a)));
+          this.showMentorship.set(false);
+          this.pendingMentorshipAttempt = null;
+          this.mentorshipReflection.set('');
+          this.savingMentorship.set(false);
+        },
+        error: () => {
+          this.showMentorship.set(false);
+          this.pendingMentorshipAttempt = null;
+          this.savingMentorship.set(false);
+        },
+      });
   }
 
   closeMentorship(): void {

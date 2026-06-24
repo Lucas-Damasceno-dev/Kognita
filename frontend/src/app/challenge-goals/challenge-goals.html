@@ -1,20 +1,22 @@
 <div class="page-header">
-  <h1>Metas de Desafio</h1>
+  <h2>Metas de Desafio</h2>
   <button class="btn" (click)="toggleForm()">
     {{ showForm() ? 'Cancelar' : '+ Meta' }}
   </button>
 </div>
 
 @if (showForm()) {
-  <form (ngSubmit)="save()" class="form-card">
-    <label>
-      Quantidade de desafios (alvo semanal)
-      <input type="number" [(ngModel)]="targetCount" name="targetCount" min="1" required />
-    </label>
-    <label>
-      Data limite
-      <input type="date" [(ngModel)]="deadlineDate" name="deadlineDate" required />
-    </label>
+  <form #challengeForm="ngForm" (ngSubmit)="save()" class="card card-elevated">
+    <label for="challenge-target-count">Quantidade de desafios (alvo semanal)</label>
+    <input id="challenge-target-count" type="number" #targetCountInput="ngModel" [(ngModel)]="targetCount" name="targetCount" min="1" required />
+    @if (targetCountInput.invalid && (targetCountInput.dirty || targetCountInput.touched || challengeForm.submitted)) {
+      <small class="error">Quantidade de desafios é obrigatória</small>
+    }
+    <label for="challenge-deadline">Data limite</label>
+    <input id="challenge-deadline" type="date" #deadlineDateInput="ngModel" [(ngModel)]="deadlineDate" name="deadlineDate" required />
+    @if (deadlineDateInput.invalid && (deadlineDateInput.dirty || deadlineDateInput.touched || challengeForm.submitted)) {
+      <small class="error">Data limite é obrigatória</small>
+    }
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" [disabled]="saving()">
         {{ saving() ? 'Salvando...' : 'Salvar' }}
@@ -26,27 +28,33 @@
 @if (loading()) {
   <app-loading />
 } @else {
-  <div class="list">
+  <div class="list" role="list">
     @for (goal of goals; track goal.id) {
-      <div class="list-item" [class.expired]="daysRemaining(goal.deadlineDate) < 0">
+      <div class="list-item" role="listitem" [style.opacity]="daysRemaining(goal.deadlineDate) < 0 ? '0.6' : '1'">
         <div class="goal-info">
-          <strong>{{ goal.targetCount }} desafios</strong>
+          <strong><span class="goal-count">{{ goal.targetCount }} desafios</span></strong>
           <p>
             @if (daysRemaining(goal.deadlineDate) >= 0) {
-              Faltam {{ daysRemaining(goal.deadlineDate) }} dias
+              <span class="deadline">Faltam {{ daysRemaining(goal.deadlineDate) }} dias</span>
             } @else {
-              Expirada
+              <span class="deadline">Expirada</span>
             }
           </p>
-          <div class="progress-bar">
-            <div class="progress-fill" [style.width.%]="progressPercent(goal)"></div>
+          <div class="goal-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width.%]="progressPercent(goal)"></div>
+            </div>
+            <span class="caption">{{ goal.currentCount }} / {{ goal.targetCount }} ({{ progressPercent(goal) }}%)</span>
           </div>
-          <span class="progress-text">{{ goal.currentCount }} / {{ goal.targetCount }} ({{ progressPercent(goal) }}%)</span>
         </div>
-        <button class="btn-icon" (click)="confirmDelete(goal.id, goal.targetCount)" title="Excluir">🗑️</button>
+        <button class="btn-ghost" type="button" (click)="confirmDelete(goal.id, goal.targetCount)" aria-label="Excluir desafio">
+          🗑️
+        </button>
       </div>
     } @empty {
-      <p class="empty">Nenhuma meta de desafio ainda.</p>
+      <app-empty-state>
+        <p>Nenhuma meta de desafio ainda.</p>
+      </app-empty-state>
     }
   </div>
 }
@@ -56,5 +64,6 @@
     [message]="confirmMessage"
     [saving]="savingDelete()"
     (confirmed)="handleConfirm()"
-    (cancelled)="handleCancel()" />
+    (cancelled)="handleCancel()"
+  />
 }

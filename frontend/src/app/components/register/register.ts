@@ -22,7 +22,9 @@ export class Register {
   loading = signal(false);
 
   hasUnsavedChanges(): boolean {
-    return this.name !== '' || this.email !== '' || this.password !== '' || this.confirmPassword !== '';
+    return (
+      this.name !== '' || this.email !== '' || this.password !== '' || this.confirmPassword !== ''
+    );
   }
 
   @HostListener('window:beforeunload', ['$event'])

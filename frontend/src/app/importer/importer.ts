@@ -13,8 +13,9 @@ interface CategoryEntry {
 
 @Component({
   selector: 'app-importer',
-  imports: [FormsModule, Loading],
+  imports: [FormsModule],
   templateUrl: './importer.html',
+
   styleUrl: './importer.css',
 })
 export class Importer {
@@ -27,15 +28,15 @@ export class Importer {
   categories = signal<CategoryEntry[]>([]);
 
   addCategory(): void {
-    this.categories.update(list => [...list, { name: '', tasks: [''] }]);
+    this.categories.update((list) => [...list, { name: '', tasks: [''] }]);
   }
 
   removeCategory(index: number): void {
-    this.categories.update(list => list.filter((_, i) => i !== index));
+    this.categories.update((list) => list.filter((_, i) => i !== index));
   }
 
   addTask(catIndex: number): void {
-    this.categories.update(list => {
+    this.categories.update((list) => {
       const updated = [...list];
       updated[catIndex] = { ...updated[catIndex], tasks: [...updated[catIndex].tasks, ''] };
       return updated;
@@ -43,7 +44,7 @@ export class Importer {
   }
 
   removeTask(catIndex: number, taskIndex: number): void {
-    this.categories.update(list => {
+    this.categories.update((list) => {
       const updated = [...list];
       updated[catIndex] = {
         ...updated[catIndex],
@@ -58,17 +59,17 @@ export class Importer {
   }
 
   get hasEmptyFields(): boolean {
-    return this.categories().some(c => !c.name.trim() || c.tasks.some(t => !t.trim()));
+    return this.categories().some((c) => !c.name.trim() || c.tasks.some((t) => !t.trim()));
   }
 
   get validPayload(): { category: string; tasks: string[] }[] {
     return this.categories()
-      .filter(c => c.name.trim())
-      .map(c => ({
+      .filter((c) => c.name.trim())
+      .map((c) => ({
         category: c.name.trim(),
-        tasks: c.tasks.filter(t => t.trim()),
+        tasks: c.tasks.filter((t) => t.trim()),
       }))
-      .filter(c => c.tasks.length > 0);
+      .filter((c) => c.tasks.length > 0);
   }
 
   saving = signal(false);
@@ -86,7 +87,9 @@ export class Importer {
         this.categories.set([]);
         this.saving.set(false);
       },
-      error: () => { this.saving.set(false); },
+      error: () => {
+        this.saving.set(false);
+      },
     });
   }
 
@@ -108,13 +111,18 @@ export class Importer {
       this.toast.error('Nenhum roadmap para importar');
       return;
     }
-    this.api.importRoadmap({ title: this.selectedRoadmap, content: this.roadmapJson() }, this.auth.user()!.id).subscribe({
-      next: () => {
-        this.toast.success('Roadmap importado com sucesso!');
-        this.selectedRoadmap = '';
-        this.roadmapJson.set('');
-      },
-      error: () => {},
-    });
+    this.api
+      .importRoadmap(
+        { title: this.selectedRoadmap, content: this.roadmapJson() },
+        this.auth.user()!.id,
+      )
+      .subscribe({
+        next: () => {
+          this.toast.success('Roadmap importado com sucesso!');
+          this.selectedRoadmap = '';
+          this.roadmapJson.set('');
+        },
+        error: () => {},
+      });
   }
 }

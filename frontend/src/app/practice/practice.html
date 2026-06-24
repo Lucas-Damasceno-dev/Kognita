@@ -1,12 +1,15 @@
 <h1>Simulador de Prática</h1>
 
 @if (loading()) {
-  <app-loading />
+  <app-skeleton mode="list" />
 } @else if (!started() && !finished()) {
   <div class="practice-start">
-    <p class="practice-desc">Teste seus conhecimentos resolvendo tarefas sem ajuda de IA. O tempo limite é de <strong>30 minutos</strong>.</p>
+    <p>
+      Teste seus conhecimentos resolvendo tarefas sem ajuda de IA. O tempo limite é de
+      <strong>30 minutos</strong>.
+    </p>
 
-    <div class="practice-config">
+    <div class="practice-config" style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
       <label>
         Filtrar por matéria
         <select [(ngModel)]="selectedSubjectId" name="subjectFilter" (change)="onSubjectChange()">
@@ -16,15 +19,17 @@
           }
         </select>
       </label>
-      <span class="task-count">Tarefas disponíveis: <strong>{{ tasks.length }}</strong></span>
+      <span class="task-count"
+        >Tarefas disponíveis: <strong>{{ tasks.length }}</strong></span
+      >
     </div>
 
     @if (tasks.length > 0) {
-      <button class="btn btn-primary btn-start" (click)="start()">
+      <button class="btn btn-primary btn-lg" (click)="start()">
         ▶ Iniciar Simulação (30 min)
       </button>
     } @else {
-      <div class="empty">
+      <div class="empty-state">
         <p>Nenhuma tarefa encontrada. <a routerLink="/tasks">Crie tarefas primeiro</a>.</p>
       </div>
     }
@@ -32,62 +37,49 @@
 }
 
 @if (started() && totalTasks > 0) {
-  <div class="practice-active">
+  <div class="practice-active" style="max-width: 600px;">
     <div class="practice-header">
-      <div class="practice-timer" [class.warning]="timeLeft < 300" [class.paused]="paused()">
-        <svg viewBox="0 0 120 120" class="timer-ring-svg">
-          <circle cx="60" cy="60" r="54" class="ring-bg" />
-          <circle cx="60" cy="60" r="54" class="ring-fill"
-            [style.stroke-dashoffset]="(1 - progress / 100) * 339.292" />
-        </svg>
-        <div class="timer-text">
-          <span class="timer-label">{{ paused() ? '⏸ Pausado' : 'Tempo Restante' }}</span>
-          <span class="timer-value">{{ formattedTime }}</span>
-        </div>
-      </div>
-      <div class="practice-progress-info">
-        <span>Tarefa {{ currentIndex + 1 }} de {{ totalTasks }}</span>
-        <div class="progress-dots">
-          @for (t of tasks; track t.id; let i = $index) {
-            <span class="dot" [class.active]="i === currentIndex" [class.done]="i < currentIndex"></span>
-          }
-        </div>
-      </div>
+      <h2>Tarefa {{ currentIndex + 1 }} de {{ totalTasks }}</h2>
+      <div class="timer">{{ formattedTime }}</div>
+      <p class="hint">{{ paused() ? '⏸ Pausado' : 'Tempo restante' }}</p>
     </div>
 
-    <div class="task-card">
-      <div class="task-card-header">
-        <span class="priority-badge {{ currentTask?.priority }}">{{ currentTask?.priority === 'high' ? 'Alta' : currentTask?.priority === 'medium' ? 'Média' : 'Baixa' }}</span>
-        <h2>{{ currentTask?.title }}</h2>
-      </div>
+    <div class="practice-question" role="region" aria-label="Questão {{ currentIndex + 1 }} de {{ totalTasks }}">
+      <div class="question-title">{{ currentTask?.title }}</div>
       @if (currentTask?.description) {
-        <p class="task-desc">{{ currentTask?.description }}</p>
+        <p class="question-desc">{{ currentTask?.description }}</p>
       }
+      <div class="question-meta">
+        <span class="tag">{{ currentTask?.priority === 'high' ? 'Alta' : currentTask?.priority === 'medium' ? 'Média' : 'Baixa' }}</span>
+      </div>
     </div>
 
-    <div class="practice-actions">
-      <button class="btn" (click)="previous()" [disabled]="currentIndex === 0">
-        ◀ Anterior
-      </button>
-      <button class="btn btn-primary" (click)="next()">
-        {{ currentIndex === totalTasks - 1 ? '✅ Finalizar' : '➡️ Próxima' }}
-      </button>
-      @if (!paused()) {
-        <button class="btn btn-warning" (click)="pause()">⏸ Pausar</button>
-      } @else {
-        <button class="btn btn-primary" (click)="resume()">▶ Continuar</button>
-      }
+    <div class="practice-checkin">
+      <div style="display: flex; gap: 0.75rem;">
+        <button class="btn" (click)="previous()" [disabled]="currentIndex === 0">◀ Anterior</button>
+        <button class="btn btn-primary" (click)="next()">
+          {{ currentIndex === totalTasks - 1 ? '✅ Finalizar' : '➡️ Próxima' }}
+        </button>
+        @if (!paused()) {
+          <button class="btn btn-ghost" (click)="pause()">⏸ Pausar</button>
+        } @else {
+          <button class="btn btn-primary" (click)="resume()">▶ Continuar</button>
+        }
+      </div>
     </div>
   </div>
 }
 
 @if (finished()) {
-  <div class="practice-finished">
-    <div class="finish-icon">🎉</div>
+  <div class="practice-finished" style="text-align: center; padding: 3rem 1rem; max-width: 450px; margin: 0 auto;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">🎉</div>
     <h2>Simulação Concluída!</h2>
-    <p>Você completou <strong>{{ totalTasks }} tarefa{{ totalTasks !== 1 ? 's' : '' }}</strong> sem ajuda de IA.</p>
-    <p class="finish-note">Todas as tarefas foram registradas no seu histórico de desafios.</p>
-    <div class="finish-actions">
+    <p>
+      Você completou <strong>{{ totalTasks }} tarefa{{ totalTasks !== 1 ? 's' : '' }}</strong> sem
+      ajuda de IA.
+    </p>
+    <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 1.5rem;">Todas as tarefas foram registradas no seu histórico de desafios.</p>
+    <div style="display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap;">
       <button class="btn" (click)="reset()">🔄 Nova Simulação</button>
       <a routerLink="/dashboard" class="btn btn-primary">📊 Dashboard</a>
       <a routerLink="/history" class="btn">📜 Histórico</a>

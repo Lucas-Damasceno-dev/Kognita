@@ -26,14 +26,14 @@ export class Layout implements OnInit {
   }
 
   toggleTheme(): void {
-    this.isDark.update(v => !v);
+    this.isDark.update((v) => !v);
     const theme = this.isDark() ? 'dark' : 'light';
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('kognita_theme', theme);
   }
 
   toggleSidebar(): void {
-    this.sidebarOpen.update(v => !v);
+    this.sidebarOpen.update((v) => !v);
   }
 
   closeSidebar(): void {

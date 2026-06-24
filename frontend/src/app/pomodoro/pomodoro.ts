@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { catchError, of, timeout } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
@@ -38,35 +39,41 @@ export class Pomodoro implements OnInit {
   saving = signal(false);
 
   ngOnInit(): void {
-    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
+    this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       if (params['subjectId']) {
         this.selectedSubjectId = params['subjectId'];
       }
     });
 
-    this.auth.waitForUser().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      catchError(() => of(null)),
-    ).subscribe(user => {
-      if (user) {
-        this.loadSubjects();
-      }
-    });
+    this.auth
+      .waitForUser()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => of(null)),
+      )
+      .subscribe((user) => {
+        if (user) {
+          this.loadSubjects();
+        }
+      });
   }
 
   private loadSubjects(): void {
     const user = this.auth.user();
     if (!user) return;
-    this.api.getSubjects(user.id).pipe(
-      takeUntilDestroyed(this.destroyRef),
-      timeout(15_000),
-      catchError(() => of([])),
-    ).subscribe(s => {
-      this.subjects = Array.isArray(s) ? s : [];
-      if (this.selectedSubjectId) {
-        this.onSubjectChange();
-      }
-    });
+    this.api
+      .getSubjects(user.id)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        timeout(15_000),
+        catchError(() => of([])),
+      )
+      .subscribe((s) => {
+        this.subjects = Array.isArray(s) ? s : [];
+        if (this.selectedSubjectId) {
+          this.onSubjectChange();
+        }
+      });
   }
 
   onSubjectChange(): void {
@@ -77,13 +84,18 @@ export class Pomodoro implements OnInit {
     }
     const user = this.auth.user();
     if (!user) return;
-    this.api.getTasks(user.id, 'pending', undefined, undefined).pipe(
-      takeUntilDestroyed(this.destroyRef),
-      timeout(15_000),
-      catchError(() => of([])),
-    ).subscribe(tasks => {
-      this.tasks = (Array.isArray(tasks) ? tasks : []).filter(t => t.subjectId === this.selectedSubjectId && t.status !== 'completed');
-    });
+    this.api
+      .getTasks(user.id, 'pending', undefined, undefined)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        timeout(15_000),
+        catchError(() => of([])),
+      )
+      .subscribe((tasks) => {
+        this.tasks = (Array.isArray(tasks) ? tasks : []).filter(
+          (t) => t.subjectId === this.selectedSubjectId && t.status !== 'completed',
+        );
+      });
   }
 
   get displayTime(): string {
@@ -106,7 +118,7 @@ export class Pomodoro implements OnInit {
       new Notification(title, { body, icon: '/favicon.ico' });
     } else if (Notification.permission !== 'denied' && !this.permissionRequested) {
       this.permissionRequested = true;
-      Notification.requestPermission().then(permission => {
+      Notification.requestPermission().then((permission) => {
         if (permission === 'granted') {
           new Notification(title, { body, icon: '/favicon.ico' });
         }
@@ -225,26 +237,37 @@ export class Pomodoro implements OnInit {
     const duration = this.workDuration;
     const now = new Date().toISOString().split('T')[0];
 
-    this.api.createSession({
-      subjectId: this.selectedSubjectId,
-      durationMinutes: duration,
-      notes: this.selectedTaskId ? `Pomodoro: foco em tarefa` : `Sessão Pomodoro #${this.sessionCount + 1}`,
-      date: now,
-    }, user.id).pipe(
-      takeUntilDestroyed(this.destroyRef),
-      timeout(15_000),
+    this.api
+      .createSession(
+        {
+          subjectId: this.selectedSubjectId,
+          durationMinutes: duration,
+          notes: this.selectedTaskId
+            ? `Pomodoro: foco em tarefa`
+            : `Sessão Pomodoro #${this.sessionCount + 1}`,
+          date: now,
+        },
+        user.id,
+      )
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        timeout(15_000),
         catchError(() => of(null)),
-    ).subscribe({
-      next: (res) => {
-        if (res) {
-          this.sessionCount++;
-          this.toast.success(`Sessão salva! (${duration} min)`);
-          this.sendNotification('Kognita — Foco concluído! 🎯', `${duration} min de estudo registrados. Hora da pausa!`);
-          this.saving.set(false);
-          this.timeLeft = this.breakDuration * 60;
-          this.isBreak.set(true);
-        }
-      },
-    });
+        finalize(() => this.saving.set(false)),
+      )
+      .subscribe({
+        next: (res) => {
+          if (res) {
+            this.sessionCount++;
+            this.toast.success(`Sessão salva! (${duration} min)`);
+            this.sendNotification(
+              'Kognita — Foco concluído! 🎯',
+              `${duration} min de estudo registrados. Hora da pausa!`,
+            );
+            this.timeLeft = this.breakDuration * 60;
+            this.isBreak.set(true);
+          }
+        },
+      });
   }
 }

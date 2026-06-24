@@ -8,11 +8,12 @@ import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 import { Loading } from '../loading/loading';
 import { Confirm } from '../confirm/confirm';
+import { EmptyState } from '../empty-state/empty-state';
 import { ChallengeGoal } from '../models/challenge-goal';
 
 @Component({
   selector: 'app-challenge-goals',
-  imports: [FormsModule, Loading, CommonModule, Confirm],
+  imports: [FormsModule, Loading, CommonModule, Confirm, EmptyState],
   templateUrl: './challenge-goals.html',
   styleUrl: './challenge-goals.css',
 })
@@ -34,30 +35,36 @@ export class ChallengeGoals implements OnInit {
   savingDelete = signal(false);
 
   ngOnInit(): void {
-    this.auth.waitForUser().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      tap(user => {
-        if (!user) return;
-        this.load();
-      }),
-    ).subscribe();
+    this.auth
+      .waitForUser()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap((user) => {
+          if (!user) return;
+          this.load();
+        }),
+      )
+      .subscribe();
   }
 
   private load(): void {
     this.loading.set(true);
-    this.api.getChallengeGoals().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      finalize(() => this.loading.set(false)),
-    ).subscribe({
-      next: (goals) => {
-        this.goals = Array.isArray(goals) ? goals : [];
-      },
-      error: () => {},
-    });
+    this.api
+      .getChallengeGoals()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe({
+        next: (goals) => {
+          this.goals = Array.isArray(goals) ? goals : [];
+        },
+        error: () => {},
+      });
   }
 
   toggleForm(): void {
-    this.showForm.update(v => !v);
+    this.showForm.update((v) => !v);
     if (!this.showForm()) this.resetForm();
   }
 
@@ -71,17 +78,22 @@ export class ChallengeGoals implements OnInit {
     if (!this.targetCount || !this.deadlineDate) return;
     this.saving.set(true);
 
-    this.api.createChallengeGoal({
-      targetCount: this.targetCount,
-      deadlineDate: this.deadlineDate,
-    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => {
-        this.toast.success('Meta de desafio criada');
-        this.toggleForm();
-        this.load();
-      },
-      error: () => { this.saving.set(false); },
-    });
+    this.api
+      .createChallengeGoal({
+        targetCount: this.targetCount,
+        deadlineDate: this.deadlineDate,
+      })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toast.success('Meta de desafio criada');
+          this.toggleForm();
+          this.load();
+        },
+        error: () => {
+          this.saving.set(false);
+        },
+      });
   }
 
   confirmDelete(id: string, target: number): void {
@@ -93,18 +105,22 @@ export class ChallengeGoals implements OnInit {
   handleConfirm(): void {
     if (!this.pendingDeleteId) return;
     this.savingDelete.set(true);
-    this.api.deleteChallengeGoal(this.pendingDeleteId).pipe(
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe({
-      next: () => {
-        this.toast.success('Meta excluída');
-        this.showConfirm.set(false);
-        this.pendingDeleteId = null;
-        this.savingDelete.set(false);
-        this.load();
-      },
-      error: () => { this.showConfirm.set(false); this.savingDelete.set(false); },
-    });
+    this.api
+      .deleteChallengeGoal(this.pendingDeleteId)
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => {
+          this.toast.success('Meta excluída');
+          this.showConfirm.set(false);
+          this.pendingDeleteId = null;
+          this.savingDelete.set(false);
+          this.load();
+        },
+        error: () => {
+          this.showConfirm.set(false);
+          this.savingDelete.set(false);
+        },
+      });
   }
 
   handleCancel(): void {

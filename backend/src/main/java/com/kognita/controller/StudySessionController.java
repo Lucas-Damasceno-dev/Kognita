@@ -34,19 +34,19 @@ public class StudySessionController {
     }
 
     @GetMapping
-    public List<StudySessionResponse> findAllByUser(@AuthenticationPrincipal User user) {
-        return service.findAllByUser(user.getId());
+    public ResponseEntity<List<StudySessionResponse>> findAllByUser(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.findAllByUser(user.getId()));
     }
 
     @GetMapping("/page")
-    public Page<StudySessionResponse> findAllByUserPaginated(
+    public ResponseEntity<Page<StudySessionResponse>> findAllByUserPaginated(
             @AuthenticationPrincipal User user,
             @RequestParam(required = false) UUID subjectId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return service.findAllByUserFiltered(user.getId(), subjectId, startDate, endDate, page, size);
+        return ResponseEntity.ok(service.findAllByUserFiltered(user.getId(), subjectId, startDate, endDate, page, size));
     }
 
     @PostMapping
@@ -56,8 +56,8 @@ public class StudySessionController {
     }
 
     @PutMapping("/{id}")
-    public StudySessionResponse update(@PathVariable UUID id, @Valid @RequestBody CreateStudySessionRequest request) {
-        return service.update(id, request);
+    public ResponseEntity<StudySessionResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateStudySessionRequest request) {
+        return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")

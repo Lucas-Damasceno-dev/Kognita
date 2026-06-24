@@ -3,7 +3,7 @@
 @if (loading()) {
   <app-skeleton mode="dashboard" />
 } @else {
-  <div class="summary-cards">
+  <div class="summary-grid">
     <div class="summary-card">
       <span class="summary-value">{{ totalHours }}h</span>
       <span class="summary-label">Horas totais</span>
@@ -18,54 +18,64 @@
     </div>
   </div>
 
-  <div class="chart-section">
+  <div class="chart-card" role="region" aria-label="Horas de Estudo">
     <div class="chart-header">
-      <h2>Horas de Estudo</h2>
-      <div class="view-toggle">
-        <button class="toggle-btn" [class.active]="view === 'weekly'" (click)="switchView('weekly')">Semanal</button>
-        <button class="toggle-btn" [class.active]="view === 'monthly'" (click)="switchView('monthly')">Mensal</button>
+      <h3>Horas de Estudo</h3>
+      <div class="view-toggle" role="group" aria-label="Alternar visualização">
+        <button
+          class="toggle-btn"
+          [class.active]="view === 'weekly'"
+          (click)="switchView('weekly')"
+          [attr.aria-pressed]="view === 'weekly'"
+        >
+          Semanal
+        </button>
+        <button
+          class="toggle-btn"
+          [class.active]="view === 'monthly'"
+          (click)="switchView('monthly')"
+          [attr.aria-pressed]="view === 'monthly'"
+        >
+          Mensal
+        </button>
       </div>
     </div>
 
     @if (view === 'weekly') {
-      <div class="v-bar-chart">
+      <div class="v-bar" role="img" aria-label="Gráfico de horas de estudo semanais">
         @for (item of weeklyHours; track item.label) {
-          <div class="v-bar-col">
-            <div class="v-bar-track">
-              <div class="v-bar-fill" [style.height.%]="(item.hours / maxWeeklyHours) * 100"></div>
-            </div>
-            <span class="v-bar-label">{{ item.label }}</span>
-            <span class="v-bar-value">{{ item.hours }}h</span>
+          <div [style.height.%]="(item.hours / maxWeeklyHours) * 100">
+            <span class="bar-label">{{ item.label }}</span>
+            <span class="bar-value">{{ item.hours }}h</span>
           </div>
         }
       </div>
     } @else {
-      <div class="v-bar-chart">
+      <div class="v-bar" role="img" aria-label="Gráfico de horas de estudo mensais">
         @for (item of monthlyHours; track item.label) {
-          <div class="v-bar-col">
-            <div class="v-bar-track">
-              <div class="v-bar-fill" [style.height.%]="(item.hours / maxMonthlyHours) * 100"></div>
-            </div>
-            <span class="v-bar-label">{{ item.label }}</span>
-            <span class="v-bar-value">{{ item.hours }}h</span>
+          <div [style.height.%]="(item.hours / maxMonthlyHours) * 100">
+            <span class="bar-label">{{ item.label }}</span>
+            <span class="bar-value">{{ item.hours }}h</span>
           </div>
         }
       </div>
     }
   </div>
 
-  <div class="chart-section">
+  <div class="chart-card" role="region" aria-label="Desafios dos últimos 7 dias">
     <div class="chart-header">
-      <h2>Desafios (7 dias)</h2>
+      <h3>Desafios (7 dias)</h3>
     </div>
-    <div class="v-bar-chart">
+    <div class="v-bar" role="img" aria-label="Gráfico de desafios semanais">
       @for (item of weeklyChallenges; track item.label) {
-        <div class="v-bar-col">
-          <div class="v-bar-track">
-            <div class="v-bar-fill challenge-fill" [style.height.%]="maxWeeklyChallenges > 0 ? (item.count / maxWeeklyChallenges) * 100 : 0"></div>
-          </div>
-          <span class="v-bar-label">{{ item.label }}</span>
-          <span class="v-bar-value">{{ item.count }}</span>
+        <div
+          class="challenge-fill"
+          [style.height.%]="
+            maxWeeklyChallenges > 0 ? (item.count / maxWeeklyChallenges) * 100 : 0
+          "
+        >
+          <span class="bar-label">{{ item.label }}</span>
+          <span class="bar-value">{{ item.count }}</span>
         </div>
       }
     </div>

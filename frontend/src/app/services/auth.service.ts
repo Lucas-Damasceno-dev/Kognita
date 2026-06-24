@@ -27,13 +27,15 @@ export class AuthService {
   }
 
   register(name: string, email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.api}/register`, { name, email, password })
-      .pipe(tap(res => this.saveSession(res)));
+    return this.http
+      .post<AuthResponse>(`${this.api}/register`, { name, email, password })
+      .pipe(tap((res) => this.saveSession(res)));
   }
 
   login(email: string, password: string): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.api}/login`, { email, password })
-      .pipe(tap(res => this.saveSession(res)));
+    return this.http
+      .post<AuthResponse>(`${this.api}/login`, { email, password })
+      .pipe(tap((res) => this.saveSession(res)));
   }
 
   logout(): void {

@@ -12,8 +12,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class StudySessionService {
 
     private final StudySessionRepository repository;
@@ -40,6 +42,7 @@ public class StudySessionService {
         return repository.findFiltered(userId, subjectId, startDate, endDate, pageable).map(StudySessionResponse::from);
     }
 
+    @Transactional
     public StudySessionResponse create(CreateStudySessionRequest request, UUID userId) {
         var user = userService.findEntityById(userId);
         var subject = subjectService.findById(request.subjectId());
@@ -52,6 +55,7 @@ public class StudySessionService {
         return StudySessionResponse.from(repository.save(session));
     }
 
+    @Transactional
     public StudySessionResponse update(UUID id, CreateStudySessionRequest request) {
         var session = repository.findById(id).orElseThrow();
         session.setSubject(subjectService.findEntityById(request.subjectId()));
@@ -61,6 +65,7 @@ public class StudySessionService {
         return StudySessionResponse.from(repository.save(session));
     }
 
+    @Transactional
     public void delete(UUID id) {
         repository.deleteById(id);
     }

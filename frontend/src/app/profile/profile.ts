@@ -69,7 +69,12 @@ export class Profile {
         this.toast.success('Perfil atualizado');
         const current = this.auth.user();
         if (current) {
-          this.auth.user.set({ ...current, name: user.name, email: user.email, avatarUrl: user.avatarUrl });
+          this.auth.user.set({
+            ...current,
+            name: user.name,
+            email: user.email,
+            avatarUrl: user.avatarUrl,
+          });
           localStorage.setItem('kognita_user', JSON.stringify(this.auth.user()));
         }
         this.savedName = user.name;
@@ -80,7 +85,28 @@ export class Profile {
         this.confirmPassword = '';
         this.saving.set(false);
       },
-      error: () => { this.saving.set(false); },
+      error: () => {
+        this.saving.set(false);
+      },
+    });
+  }
+
+  exportData(): void {
+    this.api.exportData().subscribe({
+      next: (data: any) => {
+        const jsonStr = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `kognita-export-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        this.toast.success('Data exported successfully');
+      },
+      error: () => this.toast.error('Failed to export data'),
     });
   }
 }

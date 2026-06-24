@@ -23,13 +23,13 @@ public class ErrorLogController {
     }
 
     @GetMapping
-    public List<ErrorLogResponse> findAllByUser(@AuthenticationPrincipal User user) {
-        return service.findAllByUser(user.getId());
+    public ResponseEntity<List<ErrorLogResponse>> findAllByUser(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.findAllByUser(user.getId()));
     }
 
     @GetMapping("/count")
-    public long countByUser(@AuthenticationPrincipal User user) {
-        return service.countByUser(user.getId());
+    public ResponseEntity<Long> countByUser(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.countByUser(user.getId()));
     }
 
     @PostMapping
@@ -39,8 +39,8 @@ public class ErrorLogController {
     }
 
     @PutMapping("/{id}")
-    public ErrorLogResponse update(@PathVariable UUID id, @Valid @RequestBody CreateErrorLogRequest request, @AuthenticationPrincipal User user) {
-        return service.update(id, request, user.getId());
+    public ResponseEntity<ErrorLogResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateErrorLogRequest request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.update(id, request, user.getId()));
     }
 
     @DeleteMapping("/{id}")

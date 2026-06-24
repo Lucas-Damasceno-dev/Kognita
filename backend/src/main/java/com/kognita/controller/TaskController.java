@@ -35,24 +35,24 @@ public class TaskController {
     }
 
     @GetMapping
-    public Page<TaskResponse> findAllByUser(
+    public ResponseEntity<Page<TaskResponse>> findAllByUser(
             @AuthenticationPrincipal User user,
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String priority,
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return service.findAllByUserFiltered(user.getId(), status, priority, search, PageRequest.of(page, size));
+        return ResponseEntity.ok(service.findAllByUserFiltered(user.getId(), status, priority, search, PageRequest.of(page, size)));
     }
 
     @GetMapping("/practice")
-    public List<TaskResponse> getPracticeTasks(@AuthenticationPrincipal User user) {
-        return service.getPracticeTasks(user.getId());
+    public ResponseEntity<List<TaskResponse>> getPracticeTasks(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.getPracticeTasks(user.getId()));
     }
 
     @GetMapping("/{id}")
-    public TaskResponse findById(@PathVariable UUID id) {
-        return service.findById(id);
+    public ResponseEntity<TaskResponse> findById(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.findById(id));
     }
 
     @PostMapping
@@ -62,13 +62,13 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public TaskResponse update(@PathVariable UUID id, @Valid @RequestBody CreateTaskRequest request) {
-        return service.update(id, request);
+    public ResponseEntity<TaskResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateTaskRequest request) {
+        return ResponseEntity.ok(service.update(id, request));
     }
 
     @PatchMapping("/{id}/status")
-    public TaskResponse updateStatus(@PathVariable UUID id, @RequestBody StatusUpdateRequest request) {
-        return service.updateStatus(id, request.status());
+    public ResponseEntity<TaskResponse> updateStatus(@PathVariable UUID id, @RequestBody StatusUpdateRequest request) {
+        return ResponseEntity.ok(service.updateStatus(id, request.status()));
     }
 
     @DeleteMapping("/{id}")

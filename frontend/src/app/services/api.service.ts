@@ -1,12 +1,16 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { User, CreateUserRequest } from '../models/user';
 import { Subject, CreateSubjectRequest } from '../models/subject';
 import { StudySession, CreateStudySessionRequest } from '../models/study-session';
 import { Task, CreateTaskRequest } from '../models/task';
 import { StudyGoal, CreateGoalRequest } from '../models/study-goal';
 import { PageResponse } from '../models/page-response';
-import { ChallengeAttempt, CreateChallengeAttemptRequest, ChallengeStats } from '../models/challenge-attempt';
+import {
+  ChallengeAttempt,
+  CreateChallengeAttemptRequest,
+  ChallengeStats,
+} from '../models/challenge-attempt';
 import { ChallengeGoal, CreateChallengeGoalRequest } from '../models/challenge-goal';
 import { ErrorLog, CreateErrorLogRequest } from '../models/error-log';
 import { ImportRequest, RoadmapRequest, CategoryTasks } from '../models/import-models';
@@ -36,7 +40,16 @@ export class ApiService {
     return this.http.delete<void>(`${this.api}/users/${id}`);
   }
 
-  updateUser(id: string, req: { name?: string; email?: string; currentPassword?: string; newPassword?: string; avatarUrl?: string }): Observable<User> {
+  updateUser(
+    id: string,
+    req: {
+      name?: string;
+      email?: string;
+      currentPassword?: string;
+      newPassword?: string;
+      avatarUrl?: string;
+    },
+  ): Observable<User> {
     return this.http.put<User>(`${this.api}/users/${id}`, req);
   }
 
@@ -46,7 +59,9 @@ export class ApiService {
   }
 
   getSubjectsPage(userId: string, page: number, size: number): Observable<PageResponse<Subject>> {
-    return this.http.get<PageResponse<Subject>>(`${this.api}/subjects/page`, { params: { userId, page: page.toString(), size: size.toString() } });
+    return this.http.get<PageResponse<Subject>>(`${this.api}/subjects/page`, {
+      params: { userId, page: page.toString(), size: size.toString() },
+    });
   }
 
   getSubject(id: string): Observable<Subject> {
@@ -70,11 +85,21 @@ export class ApiService {
     return this.http.get<StudySession[]>(`${this.api}/study-sessions`);
   }
 
-  getSessionsPage(userId: string, page: number, size: number, subjectId?: string, startDate?: string, endDate?: string): Observable<PageResponse<StudySession>> {
-    let params: any = { userId, page: page.toString(), size: size.toString() };
-    if (subjectId) params['subjectId'] = subjectId;
-    if (startDate) params['startDate'] = startDate;
-    if (endDate) params['endDate'] = endDate;
+  getSessionsPage(
+    userId: string,
+    page: number,
+    size: number,
+    subjectId?: string,
+    startDate?: string,
+    endDate?: string,
+  ): Observable<PageResponse<StudySession>> {
+    let params = new HttpParams()
+      .set('userId', userId)
+      .set('page', page.toString())
+      .set('size', size.toString());
+    if (subjectId) params = params.set('subjectId', subjectId);
+    if (startDate) params = params.set('startDate', startDate);
+    if (endDate) params = params.set('endDate', endDate);
     return this.http.get<PageResponse<StudySession>>(`${this.api}/study-sessions/page`, { params });
   }
 
@@ -91,21 +116,36 @@ export class ApiService {
   }
 
   // Tasks
-  getTasks(userId: string, status?: string, priority?: string, search?: string): Observable<Task[]> {
-    let params: any = { userId };
-    if (status) params['status'] = status;
-    if (priority) params['priority'] = priority;
-    if (search) params['search'] = search;
-    return this.http.get<PageResponse<Task>>(`${this.api}/tasks`, { params }).pipe(
-      map(res => res.content)
-    );
+  getTasks(
+    userId: string,
+    status?: string,
+    priority?: string,
+    search?: string,
+  ): Observable<Task[]> {
+    let params = new HttpParams().set('userId', userId);
+    if (status) params = params.set('status', status);
+    if (priority) params = params.set('priority', priority);
+    if (search) params = params.set('search', search);
+    return this.http
+      .get<PageResponse<Task>>(`${this.api}/tasks`, { params })
+      .pipe(map((res) => res.content));
   }
 
-  getTasksPage(userId: string, page: number, size: number, status?: string, priority?: string, search?: string): Observable<PageResponse<Task>> {
-    let params: any = { userId, page: page.toString(), size: size.toString() };
-    if (status) params['status'] = status;
-    if (priority) params['priority'] = priority;
-    if (search) params['search'] = search;
+  getTasksPage(
+    userId: string,
+    page: number,
+    size: number,
+    status?: string,
+    priority?: string,
+    search?: string,
+  ): Observable<PageResponse<Task>> {
+    let params = new HttpParams()
+      .set('userId', userId)
+      .set('page', page.toString())
+      .set('size', size.toString());
+    if (status) params = params.set('status', status);
+    if (priority) params = params.set('priority', priority);
+    if (search) params = params.set('search', search);
     return this.http.get<PageResponse<Task>>(`${this.api}/tasks`, { params });
   }
 
@@ -139,7 +179,9 @@ export class ApiService {
   }
 
   getGoalsPage(userId: string, page: number, size: number): Observable<PageResponse<StudyGoal>> {
-    return this.http.get<PageResponse<StudyGoal>>(`${this.api}/goals/page`, { params: { userId, page: page.toString(), size: size.toString() } });
+    return this.http.get<PageResponse<StudyGoal>>(`${this.api}/goals/page`, {
+      params: { userId, page: page.toString(), size: size.toString() },
+    });
   }
 
   createGoal(req: CreateGoalRequest, userId: string): Observable<StudyGoal> {
@@ -172,11 +214,17 @@ export class ApiService {
   }
 
   // Challenge Attempts
-  updateChallengeAttempt(id: string, req: CreateChallengeAttemptRequest): Observable<ChallengeAttempt> {
+  updateChallengeAttempt(
+    id: string,
+    req: CreateChallengeAttemptRequest,
+  ): Observable<ChallengeAttempt> {
     return this.http.put<ChallengeAttempt>(`${this.api}/challenge-attempts/${id}`, req);
   }
 
-  createChallengeAttempt(req: CreateChallengeAttemptRequest, userId: string): Observable<ChallengeAttempt> {
+  createChallengeAttempt(
+    req: CreateChallengeAttemptRequest,
+    userId: string,
+  ): Observable<ChallengeAttempt> {
     return this.http.post<ChallengeAttempt>(`${this.api}/challenge-attempts`, { ...req, userId });
   }
 
@@ -185,8 +233,8 @@ export class ApiService {
   }
 
   getHistory(skillCategory?: string): Observable<ChallengeAttempt[]> {
-    let params: any = {};
-    if (skillCategory) params['skillCategory'] = skillCategory;
+    let params = new HttpParams();
+    if (skillCategory) params = params.set('skillCategory', skillCategory);
     return this.http.get<ChallengeAttempt[]>(`${this.api}/challenge-attempts/history`, { params });
   }
 
@@ -223,5 +271,10 @@ export class ApiService {
 
   importRoadmap(req: RoadmapRequest, userId: string): Observable<void> {
     return this.http.post<void>(`${this.api}/import/roadmap`, req, { params: { userId } });
+  }
+
+  // Export Data
+  exportData(): Observable<unknown> {
+    return this.http.get<unknown>(`${this.api}/export`);
   }
 }

@@ -30,13 +30,16 @@ export class Analytics implements OnInit {
   avgSessionMin = 0;
 
   ngOnInit(): void {
-    this.auth.waitForUser().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      tap(user => {
-        if (!user) return;
-        this.loadData(user.id);
-      }),
-    ).subscribe();
+    this.auth
+      .waitForUser()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        tap((user) => {
+          if (!user) return;
+          this.loadData(user.id);
+        }),
+      )
+      .subscribe();
   }
 
   private loadData(userId: string): void {
@@ -44,16 +47,22 @@ export class Analytics implements OnInit {
     forkJoin({
       sessions: this.api.getSessions().pipe(catchError(() => of([] as StudySession[]))),
       history: this.api.getHistory().pipe(catchError(() => of([] as ChallengeAttempt[]))),
-    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(r => {
-      const sessions = Array.isArray(r.sessions) ? r.sessions : [];
-      const history = Array.isArray(r.history) ? r.history : [];
-      this.computeWeekly(sessions, history);
-      this.computeMonthly(sessions, history);
-      this.totalSessions = sessions.length;
-      this.totalHours = Math.round(sessions.reduce((a, s) => a + s.durationMinutes, 0) / 60 * 10) / 10;
-      this.avgSessionMin = sessions.length > 0 ? Math.round(sessions.reduce((a, s) => a + s.durationMinutes, 0) / sessions.length) : 0;
-      this.loading.set(false);
-    });
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe((r) => {
+        const sessions = Array.isArray(r.sessions) ? r.sessions : [];
+        const history = Array.isArray(r.history) ? r.history : [];
+        this.computeWeekly(sessions, history);
+        this.computeMonthly(sessions, history);
+        this.totalSessions = sessions.length;
+        this.totalHours =
+          Math.round((sessions.reduce((a, s) => a + s.durationMinutes, 0) / 60) * 10) / 10;
+        this.avgSessionMin =
+          sessions.length > 0
+            ? Math.round(sessions.reduce((a, s) => a + s.durationMinutes, 0) / sessions.length)
+            : 0;
+        this.loading.set(false);
+      });
   }
 
   private computeWeekly(sessions: StudySession[], history: ChallengeAttempt[]): void {
@@ -88,7 +97,20 @@ export class Analytics implements OnInit {
   }
 
   private computeMonthly(sessions: StudySession[], history: ChallengeAttempt[]): void {
-    const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const monthNames = [
+      'Jan',
+      'Fev',
+      'Mar',
+      'Abr',
+      'Mai',
+      'Jun',
+      'Jul',
+      'Ago',
+      'Set',
+      'Out',
+      'Nov',
+      'Dez',
+    ];
     const now = new Date();
     const monthMap = new Map<string, { hours: number; challenges: number }>();
     for (let i = 5; i >= 0; i--) {
@@ -117,15 +139,15 @@ export class Analytics implements OnInit {
   }
 
   get maxWeeklyHours(): number {
-    return Math.max(...this.weeklyHours.map(w => w.hours), 1);
+    return Math.max(...this.weeklyHours.map((w) => w.hours), 1);
   }
 
   get maxMonthlyHours(): number {
-    return Math.max(...this.monthlyHours.map(m => m.hours), 1);
+    return Math.max(...this.monthlyHours.map((m) => m.hours), 1);
   }
 
   get maxWeeklyChallenges(): number {
-    return Math.max(...this.weeklyChallenges.map(w => w.count), 1);
+    return Math.max(...this.weeklyChallenges.map((w) => w.count), 1);
   }
 
   switchView(v: 'weekly' | 'monthly'): void {

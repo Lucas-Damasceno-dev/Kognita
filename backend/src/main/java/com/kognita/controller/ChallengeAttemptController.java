@@ -32,8 +32,8 @@ public class ChallengeAttemptController {
     }
 
     @GetMapping
-    public List<ChallengeAttemptResponse> findAllByUser(@AuthenticationPrincipal User user) {
-        return service.findAllByUser(user.getId());
+    public ResponseEntity<List<ChallengeAttemptResponse>> findAllByUser(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.findAllByUser(user.getId()));
     }
 
     @PostMapping
@@ -43,8 +43,8 @@ public class ChallengeAttemptController {
     }
 
     @PutMapping("/{id}")
-    public ChallengeAttemptResponse update(@PathVariable UUID id, @RequestBody CreateChallengeAttemptRequest request) {
-        return service.update(id, request);
+    public ResponseEntity<ChallengeAttemptResponse> update(@PathVariable UUID id, @RequestBody CreateChallengeAttemptRequest request) {
+        return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")
@@ -54,12 +54,12 @@ public class ChallengeAttemptController {
     }
 
     @GetMapping("/stats")
-    public SkillConfidenceResponse getStats(@AuthenticationPrincipal User user) {
-        return service.getStats(user.getId());
+    public ResponseEntity<SkillConfidenceResponse> getStats(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.getStats(user.getId()));
     }
 
     @GetMapping("/history")
-    public List<ChallengeAttemptResponse> getHistory(@AuthenticationPrincipal User user, @RequestParam(required = false) String skillCategory) {
-        return service.getHistory(user.getId(), skillCategory);
+    public ResponseEntity<List<ChallengeAttemptResponse>> getHistory(@AuthenticationPrincipal User user, @RequestParam(required = false) String skillCategory) {
+        return ResponseEntity.ok(service.getHistory(user.getId(), skillCategory));
     }
 }

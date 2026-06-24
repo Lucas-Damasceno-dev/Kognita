@@ -1,29 +1,41 @@
-<div class="job-analyzer">
+<div class="analyzer-form">
   <h2>Analisador de Vagas</h2>
-  <textarea [(ngModel)]="jobDescription" placeholder="Cole a descrição da vaga aqui..." rows="10"></textarea>
-  <button (click)="analyze()" [disabled]="loading()">Analisar</button>
-
-  @if (loading()) {
-    <app-loading />
-  }
-
-  @if (analysis) {
-    <div class="report">
-      <h3>Relatório de Prontidão: {{ analysis.readinessLevel }}</h3>
-      
-      <h4>Skills Encontradas:</h4>
-      <ul>
-        @for (skill of analysis.skillsFound; track skill) {
-          <li>✅ {{ skill }}</li>
-        }
-      </ul>
-
-      <h4>Skills Faltando:</h4>
-      <ul>
-        @for (skill of analysis.skillsMissing; track skill) {
-          <li>❌ {{ skill }}</li>
-        }
-      </ul>
-    </div>
-  }
+  <div class="form-group">
+    <label for="jobDescription">Descrição da Vaga</label>
+    <textarea
+      id="jobDescription"
+      [(ngModel)]="jobDescription"
+      placeholder="Cole a descrição da vaga aqui..."
+      rows="10"
+    ></textarea>
+  </div>
+  <button (click)="analyze()" [disabled]="loading()" class="btn btn-primary">
+    {{ loading() ? 'Analisando...' : 'Analisar' }}
+  </button>
 </div>
+
+@if (loading()) {
+  <app-loading />
+}
+
+@if (analysis) {
+  <div class="analyzer-result" aria-live="polite">
+    <h3>Relatório de Prontidão: {{ analysis.readinessLevel }}</h3>
+
+    <h4>Skills Encontradas:</h4>
+    @for (skill of analysis.skillsFound; track skill) {
+      <div class="skill-match">
+        <span class="skill-name">{{ skill }}</span>
+        <span class="skill-status found">Encontrada</span>
+      </div>
+    }
+
+    <h4>Skills Faltando:</h4>
+    @for (skill of analysis.skillsMissing; track skill) {
+      <div class="skill-match">
+        <span class="skill-name">{{ skill }}</span>
+        <span class="skill-status missing">Faltando</span>
+      </div>
+    }
+  </div>
+}

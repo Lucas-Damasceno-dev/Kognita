@@ -1,22 +1,33 @@
 <div class="page-header">
   <h1>Tarefas</h1>
-  <div class="header-actions">
-    <button class="btn btn-select" (click)="selectMode() ? exitSelectMode() : selectMode.set(true)">
+  <div>
+    <button class="btn" (click)="selectMode() ? exitSelectMode() : selectMode.set(true)">
       {{ selectMode() ? 'Cancelar seleção' : 'Selecionar' }}
     </button>
-  <button class="btn" (click)="editingId = null; showForm.update(v => !v); showForm() ? null : resetForm()">
-    {{ showForm() ? 'Cancelar' : '+ Tarefa' }}
+    <button
+      class="btn"
+      (click)="editingId = null; showForm.update((v) => !v); showForm() ? null : resetForm()"
+    >
+      {{ showForm() ? 'Cancelar' : '+ Tarefa' }}
     </button>
   </div>
-</div><div class="filter-bar">
-  <input type="text" [(ngModel)]="filterSearch" name="filterSearch" placeholder="Pesquisar tarefas..." (input)="applyFilter()" />
-  <select [(ngModel)]="filterStatus" name="filterStatus" (change)="applyFilter()">
+</div>
+<div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center;">
+  <input
+    type="text"
+    [(ngModel)]="filterSearch"
+    name="filterSearch"
+    placeholder="Pesquisar tarefas..."
+    (input)="applyFilter()"
+    aria-label="Pesquisar tarefas"
+  />
+  <select [(ngModel)]="filterStatus" name="filterStatus" (change)="applyFilter()" aria-label="Filtrar por status">
     <option value="">Todos os status</option>
     <option value="pending">Pendente</option>
     <option value="in_progress">Em andamento</option>
     <option value="completed">Concluído</option>
   </select>
-  <select [(ngModel)]="filterPriority" name="filterPriority" (change)="applyFilter()">
+  <select [(ngModel)]="filterPriority" name="filterPriority" (change)="applyFilter()" aria-label="Filtrar por prioridade">
     <option value="">Todas as prioridades</option>
     <option value="low">Baixa</option>
     <option value="medium">Média</option>
@@ -25,11 +36,14 @@
 </div>
 
 @if (showForm()) {
-  <form (ngSubmit)="save()" class="form-card">
+  <form #taskForm="ngForm" (ngSubmit)="save()" class="card" style="display: flex; flex-direction: column; gap: 0.75rem;">
     <label>
       Título
-      <input type="text" [(ngModel)]="title" name="title" required />
+      <input type="text" #titleInput="ngModel" [(ngModel)]="title" name="title" required />
     </label>
+    @if (titleInput.invalid && (titleInput.dirty || titleInput.touched || taskForm.submitted)) {
+      <small class="error">Título é obrigatório</small>
+    }
     <label>
       Prioridade
       <select [(ngModel)]="priority" name="priority">
@@ -68,7 +82,9 @@
       <input type="date" [(ngModel)]="dueDate" name="dueDate" />
     </label>
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}
+      </button>
       @if (editingId) {
         <button type="button" class="btn" (click)="cancel()">Cancelar</button>
       }
@@ -82,183 +98,286 @@
   <div class="kanban-board">
     <div class="kanban-column">
       <div class="column-header">
-        <h3>📋 Pendente</h3>
-        <div class="column-header-right">
+        <h3><span aria-hidden="true">📋</span> Pendente</h3>
+        <div style="display:flex;align-items:center;gap:0.5rem">
           @if (selectMode()) {
-            <input type="checkbox" class="select-all-checkbox"
+            <input
+              type="checkbox"
               [checked]="allSelectedIn('pending')"
-              (change)="toggleSelectAll('pending')" />
+              (change)="toggleSelectAll('pending')"
+              aria-label="Selecionar todas pendentes"
+            />
           }
-          <span class="count">{{ pendingTasks.length }}</span>
+          <span class="column-count">{{ pendingTasks.length }}</span>
         </div>
       </div>
-      <div id="pending" class="kanban-list"
+      <div
+        id="pending"
+        class="kanban-list"
+        role="list"
         [class.drag-over]="dropTargetId() === 'pending'"
         (dragover)="onDragOver($event, 'pending')"
         (dragleave)="onDragLeave('pending')"
-        (drop)="onDrop($event, 'pending')">
+        (drop)="onDrop($event, 'pending')"
+      >
         @for (item of pendingTasks; track item.id) {
-          <div class="kanban-item" [class.overdue]="isOverdue(item)"
+          <div
+            class="kanban-item"
+            role="listitem"
+            [attr.aria-grabbed]="dragTaskId() === item.id ? 'true' : 'false'"
             [class.selected]="selectMode() && selectedIds().has(item.id)"
             [class.dragging]="dragTaskId() === item.id"
             draggable="!selectMode()"
             (dragstart)="onDragStart(item)"
-            (dragend)="onDragEnd()">
+            (dragend)="onDragEnd()"
+          >
             <div class="kanban-item-header">
               @if (selectMode()) {
-                <input type="checkbox" class="item-checkbox"
+                <input
+                  type="checkbox"
                   [checked]="selectedIds().has(item.id)"
-                  (change)="toggleSelect(item.id)" />
+                  (change)="toggleSelect(item.id)"
+                  [attr.aria-label]="'Selecionar ' + item.title"
+                />
               }
-              <strong>{{ item.title }}</strong>
+              <strong class="task-title">{{ item.title }}</strong>
               <span class="priority-badge {{ item.priority }}">{{ item.priority }}</span>
             </div>
-            <div class="kanban-meta">
+            <div class="kanban-item-meta">
               @if (item.dueDate) {
-                <span class="due-date" [class.overdue]="isOverdue(item)">📅 {{ item.dueDate }}</span>
+                <span class="due-date" [class.overdue]="isOverdue(item)"
+                  ><span aria-hidden="true">📅</span> {{ item.dueDate }}</span
+                >
               }
               @if (item.subjectName) {
                 <span class="subject-tag">{{ item.subjectName }}</span>
               }
               @if (item.skillCategory) {
-                <span class="skill-tag">{{ item.skillCategory }}</span>
+                <span class="tag">{{ item.skillCategory }}</span>
               }
             </div>
             @if (!selectMode()) {
-              <div class="kanban-actions">
-                <button class="btn-action play-btn" (click)="startPomodoro(item)" title="Iniciar Pomodoro">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <div class="kanban-item-actions">
+                <button
+                  class="btn btn-ghost btn-sm" style="color:var(--primary)"
+                  (click)="startPomodoro(item)"
+                  title="Iniciar Pomodoro"
+                  aria-label="Iniciar Pomodoro"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
                 </button>
-                <button class="btn-action" (click)="moveTask(item, 'in_progress')" title="Iniciar" [disabled]="loadingTaskId() === item.id">
-                  ▶ Iniciar
+                <button
+                  class="btn btn-ghost btn-sm"
+                  (click)="moveTask(item, 'in_progress')"
+                  title="Iniciar"
+                  [disabled]="loadingTaskId() === item.id"
+                >
+                  <span aria-hidden="true">▶</span> Iniciar
                 </button>
-                <button class="btn-action complete-btn" (click)="completeTask(item)" title="Concluir" [disabled]="loadingTaskId() === item.id">
-                  ✅ Concluir
+                <button
+                  class="btn btn-ghost btn-sm" style="color:var(--success)"
+                  (click)="completeTask(item)"
+                  title="Concluir"
+                  [disabled]="loadingTaskId() === item.id"
+                >
+                  <span aria-hidden="true">✅</span> Concluir
                 </button>
-                <button class="btn-action" (click)="edit(item)" title="Editar">✏️</button>
-                <button class="btn-action delete-btn" (click)="confirmDelete(item.id, item.title)" title="Excluir">🗑️</button>
+                <button class="btn btn-ghost btn-sm" (click)="edit(item)" title="Editar" aria-label="Editar">✏️</button>
+                <button
+                  class="btn btn-ghost btn-sm" style="color:var(--error)"
+                  (click)="confirmDelete(item.id, item.title)"
+                  title="Excluir"
+                  aria-label="Excluir"
+                >
+                  🗑️
+                </button>
               </div>
             }
           </div>
         } @empty {
-          <div class="kanban-empty">Nenhuma tarefa pendente</div>
+          <app-empty-state>Nenhuma tarefa pendente</app-empty-state>
         }
       </div>
     </div>
     <div class="kanban-column">
       <div class="column-header">
-        <h3>⚡ Em andamento</h3>
-        <div class="column-header-right">
+        <h3><span aria-hidden="true">⚡</span> Em andamento</h3>
+        <div style="display:flex;align-items:center;gap:0.5rem">
           @if (selectMode()) {
-            <input type="checkbox" class="select-all-checkbox"
+            <input
+              type="checkbox"
               [checked]="allSelectedIn('in_progress')"
-              (change)="toggleSelectAll('in_progress')" />
+              (change)="toggleSelectAll('in_progress')"
+              aria-label="Selecionar todas em andamento"
+            />
           }
-          <span class="count">{{ inProgressTasks.length }}</span>
+          <span class="column-count">{{ inProgressTasks.length }}</span>
         </div>
       </div>
-      <div id="in_progress" class="kanban-list"
+      <div
+        id="in_progress"
+        class="kanban-list"
+        role="list"
         [class.drag-over]="dropTargetId() === 'in_progress'"
         (dragover)="onDragOver($event, 'in_progress')"
         (dragleave)="onDragLeave('in_progress')"
-        (drop)="onDrop($event, 'in_progress')">
+        (drop)="onDrop($event, 'in_progress')"
+      >
         @for (item of inProgressTasks; track item.id) {
-          <div class="kanban-item" [class.overdue]="isOverdue(item)"
+          <div
+            class="kanban-item"
+            role="listitem"
+            [attr.aria-grabbed]="dragTaskId() === item.id ? 'true' : 'false'"
             [class.selected]="selectMode() && selectedIds().has(item.id)"
             [class.dragging]="dragTaskId() === item.id"
             draggable="!selectMode()"
             (dragstart)="onDragStart(item)"
-            (dragend)="onDragEnd()">
+            (dragend)="onDragEnd()"
+          >
             <div class="kanban-item-header">
               @if (selectMode()) {
-                <input type="checkbox" class="item-checkbox"
+                <input
+                  type="checkbox"
                   [checked]="selectedIds().has(item.id)"
-                  (change)="toggleSelect(item.id)" />
+                  (change)="toggleSelect(item.id)"
+                  [attr.aria-label]="'Selecionar ' + item.title"
+                />
               }
-              <strong>{{ item.title }}</strong>
+              <strong class="task-title">{{ item.title }}</strong>
               <span class="priority-badge {{ item.priority }}">{{ item.priority }}</span>
             </div>
-            <div class="kanban-meta">
+            <div class="kanban-item-meta">
               @if (item.dueDate) {
-                <span class="due-date" [class.overdue]="isOverdue(item)">📅 {{ item.dueDate }}</span>
+                <span class="due-date" [class.overdue]="isOverdue(item)"
+                  ><span aria-hidden="true">📅</span> {{ item.dueDate }}</span
+                >
               }
               @if (item.subjectName) {
                 <span class="subject-tag">{{ item.subjectName }}</span>
               }
               @if (item.skillCategory) {
-                <span class="skill-tag">{{ item.skillCategory }}</span>
+                <span class="tag">{{ item.skillCategory }}</span>
               }
             </div>
             @if (!selectMode()) {
-              <div class="kanban-actions">
-                <button class="btn-action" (click)="moveTask(item, 'pending')" title="Voltar" [disabled]="loadingTaskId() === item.id">◀ Voltar</button>
-                <button class="btn-action complete-btn" (click)="completeTask(item)" title="Concluir" [disabled]="loadingTaskId() === item.id">
-                  ✅ Concluir
+              <div class="kanban-item-actions">
+                <button
+                  class="btn btn-ghost btn-sm"
+                  (click)="moveTask(item, 'pending')"
+                  title="Voltar"
+                  [disabled]="loadingTaskId() === item.id"
+                >
+                  <span aria-hidden="true">◀</span> Voltar
                 </button>
-                <button class="btn-action" (click)="edit(item)" title="Editar">✏️</button>
-                <button class="btn-action delete-btn" (click)="confirmDelete(item.id, item.title)" title="Excluir">🗑️</button>
+                <button
+                  class="btn btn-ghost btn-sm" style="color:var(--success)"
+                  (click)="completeTask(item)"
+                  title="Concluir"
+                  [disabled]="loadingTaskId() === item.id"
+                >
+                  <span aria-hidden="true">✅</span> Concluir
+                </button>
+                <button class="btn btn-ghost btn-sm" (click)="edit(item)" title="Editar" aria-label="Editar">✏️</button>
+                <button
+                  class="btn btn-ghost btn-sm" style="color:var(--error)"
+                  (click)="confirmDelete(item.id, item.title)"
+                  title="Excluir"
+                  aria-label="Excluir"
+                >
+                  🗑️
+                </button>
               </div>
             }
           </div>
         } @empty {
-          <div class="kanban-empty">Nenhuma tarefa em andamento</div>
+          <app-empty-state>Nenhuma tarefa em andamento</app-empty-state>
         }
       </div>
     </div>
     <div class="kanban-column">
       <div class="column-header">
-        <h3>✅ Concluído</h3>
-        <div class="column-header-right">
+        <h3><span aria-hidden="true">✅</span> Concluído</h3>
+        <div style="display:flex;align-items:center;gap:0.5rem">
           @if (selectMode()) {
-            <input type="checkbox" class="select-all-checkbox"
+            <input
+              type="checkbox"
               [checked]="allSelectedIn('completed')"
-              (change)="toggleSelectAll('completed')" />
+              (change)="toggleSelectAll('completed')"
+              aria-label="Selecionar todas concluídas"
+            />
           }
-          <span class="count">{{ completedTasks.length }}</span>
+          <span class="column-count">{{ completedTasks.length }}</span>
         </div>
       </div>
-      <div id="completed" class="kanban-list"
+      <div
+        id="completed"
+        class="kanban-list"
+        role="list"
         [class.drag-over]="dropTargetId() === 'completed'"
         (dragover)="onDragOver($event, 'completed')"
         (dragleave)="onDragLeave('completed')"
-        (drop)="onDrop($event, 'completed')">
+        (drop)="onDrop($event, 'completed')"
+      >
         @for (item of completedTasks; track item.id) {
-          <div class="kanban-item completed"
+          <div
+            class="kanban-item completed"
+            role="listitem"
+            [attr.aria-grabbed]="dragTaskId() === item.id ? 'true' : 'false'"
             [class.selected]="selectMode() && selectedIds().has(item.id)"
             [class.dragging]="dragTaskId() === item.id"
             draggable="!selectMode()"
             (dragstart)="onDragStart(item)"
-            (dragend)="onDragEnd()">
+            (dragend)="onDragEnd()"
+          >
             <div class="kanban-item-header">
               @if (selectMode()) {
-                <input type="checkbox" class="item-checkbox"
+                <input
+                  type="checkbox"
                   [checked]="selectedIds().has(item.id)"
-                  (change)="toggleSelect(item.id)" />
+                  (change)="toggleSelect(item.id)"
+                  [attr.aria-label]="'Selecionar ' + item.title"
+                />
               }
-              <strong>{{ item.title }}</strong>
+              <strong class="task-title">{{ item.title }}</strong>
               <span class="priority-badge {{ item.priority }}">{{ item.priority }}</span>
             </div>
-            <div class="kanban-meta">
+            <div class="kanban-item-meta">
               @if (item.dueDate) {
-                <span class="due-date">📅 {{ item.dueDate }}</span>
+                <span class="due-date"><span aria-hidden="true">📅</span> {{ item.dueDate }}</span>
               }
               @if (item.subjectName) {
                 <span class="subject-tag">{{ item.subjectName }}</span>
               }
               @if (item.skillCategory) {
-                <span class="skill-tag">{{ item.skillCategory }}</span>
+                <span class="tag">{{ item.skillCategory }}</span>
               }
             </div>
             @if (!selectMode()) {
-              <div class="kanban-actions">
-                <button class="btn-action" (click)="moveTask(item, 'in_progress')" title="Reabrir" [disabled]="loadingTaskId() === item.id">🔄 Reabrir</button>
-                <button class="btn-action" (click)="edit(item)" title="Editar">✏️</button>
-                <button class="btn-action delete-btn" (click)="confirmDelete(item.id, item.title)" title="Excluir">🗑️</button>
+              <div class="kanban-item-actions">
+                <button
+                  class="btn btn-ghost btn-sm"
+                  (click)="moveTask(item, 'in_progress')"
+                  title="Reabrir"
+                  [disabled]="loadingTaskId() === item.id"
+                >
+                  <span aria-hidden="true">🔄</span> Reabrir
+                </button>
+                <button class="btn btn-ghost btn-sm" (click)="edit(item)" title="Editar" aria-label="Editar">✏️</button>
+                <button
+                  class="btn btn-ghost btn-sm" style="color:var(--error)"
+                  (click)="confirmDelete(item.id, item.title)"
+                  title="Excluir"
+                  aria-label="Excluir"
+                >
+                  🗑️
+                </button>
               </div>
             }
           </div>
         } @empty {
-          <div class="kanban-empty">Nenhuma tarefa concluída</div>
+          <app-empty-state>Nenhuma tarefa concluída</app-empty-state>
         }
       </div>
     </div>
@@ -266,22 +385,38 @@
   @if (selectMode()) {
     <div class="batch-bar">
       <span class="batch-count">{{ selectedIds().size }} selecionada(s)</span>
-      <div class="batch-actions">
-        <button class="btn btn-primary btn-sm" (click)="batchComplete()"
-          [disabled]="selectedIds().size === 0 || batchProcessing()">
-          {{ batchProcessing() ? 'Concluindo...' : '✅ Concluir selecionadas' }}
+      <div style="display:flex;gap:0.5rem">
+        <button
+          class="btn btn-primary btn-sm"
+          (click)="confirmBatchComplete()"
+          [disabled]="selectedIds().size === 0 || batchProcessing()"
+          aria-label="Concluir tarefas selecionadas"
+        >
+          @if (batchProcessing()) {
+            Concluindo...
+          } @else {
+            <span aria-hidden="true">✅</span> Concluir selecionadas
+          }
         </button>
-        <button class="btn btn-danger btn-sm" (click)="batchDeleteConfirm()"
-          [disabled]="selectedIds().size === 0 || batchProcessing()">
-          🗑️ Excluir selecionadas
+        <button
+          class="btn btn-danger btn-sm"
+          (click)="batchDeleteConfirm()"
+          [disabled]="selectedIds().size === 0 || batchProcessing()"
+          aria-label="Excluir tarefas selecionadas"
+        >
+          <span aria-hidden="true">🗑️</span> Excluir selecionadas
         </button>
       </div>
     </div>
   }
-  <div class="pagination">
-    <button [disabled]="currentPage === 0 || batchProcessing()" (click)="prevPage()">Anterior</button>
+  <div style="display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1rem;font-size:0.875rem;color:var(--text-secondary)">
+    <button class="btn btn-sm" [disabled]="currentPage === 0 || batchProcessing()" (click)="prevPage()">
+      Anterior
+    </button>
     <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
-    <button [disabled]="currentPage >= totalPages - 1 || batchProcessing()" (click)="nextPage()">Próximo</button>
+    <button class="btn btn-sm" [disabled]="currentPage >= totalPages - 1 || batchProcessing()" (click)="nextPage()">
+      Próximo
+    </button>
   </div>
 }
 
@@ -290,9 +425,26 @@
     [message]="confirmMessage"
     [saving]="savingDelete()"
     (confirmed)="handleConfirm()"
-    (cancelled)="handleCancel()" />
+    (cancelled)="handleCancel()"
+  />
+}
+
+@if (showBatchCompleteConfirm()) {
+  <app-confirm
+    title="Confirmar conclusão"
+    message="Deseja marcar {{ selectedIds().size }} tarefa(s) como concluída(s)?"
+    confirmText="Concluir"
+    cancelText="Cancelar"
+    [saving]="batchProcessing()"
+    (confirmed)="batchComplete()"
+    (cancelled)="showBatchCompleteConfirm.set(false)"
+  />
 }
 
 @if (showCheckin() && pendingCheckinTask) {
-  <app-checkin [taskName]="pendingCheckinTask.title" (confirm)="handleCheckin($event)" (cancel)="handleCheckinCancel()" />
+  <app-checkin
+    [taskName]="pendingCheckinTask.title"
+    (confirm)="handleCheckin($event)"
+    (cancel)="handleCheckinCancel()"
+  />
 }

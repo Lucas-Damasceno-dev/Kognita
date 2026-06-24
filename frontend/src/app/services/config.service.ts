@@ -7,7 +7,7 @@ export class ConfigService {
   readonly challengeMode = signal(localStorage.getItem(this.challengeModeKey) === 'true');
 
   toggleChallengeMode(): void {
-    this.challengeMode.update(v => !v);
+    this.challengeMode.update((v) => !v);
     localStorage.setItem(this.challengeModeKey, String(this.challengeMode()));
   }
 }

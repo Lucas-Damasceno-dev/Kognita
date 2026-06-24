@@ -7,13 +7,14 @@ import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 import { Skeleton } from '../skeleton/skeleton';
 import { Confirm } from '../confirm/confirm';
+import { EmptyState } from '../empty-state/empty-state';
 import { StudySession } from '../models/study-session';
 import { Subject } from '../models/subject';
 import { PageResponse } from '../models/page-response';
 
 @Component({
   selector: 'app-sessions',
-  imports: [FormsModule, Skeleton, Confirm],
+  imports: [FormsModule, Skeleton, Confirm, EmptyState],
   templateUrl: './sessions.html',
   styleUrl: './sessions.css',
 })
@@ -66,31 +67,36 @@ export class Sessions implements OnInit {
       if (aVal == null) return 1;
       if (bVal == null) return -1;
       if (typeof aVal === 'string') {
-        return this.sortDir === 'asc' ? aVal.localeCompare(bVal as string) : (bVal as string).localeCompare(aVal);
+        return this.sortDir === 'asc'
+          ? aVal.localeCompare(bVal as string)
+          : (bVal as string).localeCompare(aVal);
       }
       const aNum = aVal as number;
       const bNum = bVal as number;
-      return this.sortDir === 'asc' ? (aNum < bNum ? -1 : 1) : (bNum < aNum ? -1 : 1);
+      return this.sortDir === 'asc' ? (aNum < bNum ? -1 : 1) : bNum < aNum ? -1 : 1;
     });
     return arr;
   }
 
   ngOnInit(): void {
-    this.auth.waitForUser().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      timeout(20_000),
-      catchError(() => {
-        this.loading.set(false);
-        return EMPTY;
-      }),
-      tap(user => {
-        if (!user) {
+    this.auth
+      .waitForUser()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        timeout(20_000),
+        catchError(() => {
           this.loading.set(false);
-          return;
-        }
-        this.load();
-      }),
-    ).subscribe();
+          return EMPTY;
+        }),
+        tap((user) => {
+          if (!user) {
+            this.loading.set(false);
+            return;
+          }
+          this.load();
+        }),
+      )
+      .subscribe();
   }
 
   private load(): void {
@@ -106,21 +112,42 @@ export class Sessions implements OnInit {
         timeout(15_000),
         catchError(() => of([] as Subject[])),
       ),
-      sessions: this.api.getSessionsPage(user.id, this.page, this.pageSize, this.filterSubjectId || undefined, this.startDate || undefined, this.endDate || undefined).pipe(
-        timeout(15_000),
-        catchError(() => of({ content: [], page: 0, size: 20, totalElements: 0, totalPages: 0, last: true, first: true } as PageResponse<StudySession>)),
-      ),
-    }).pipe(
-      takeUntilDestroyed(this.destroyRef),
-      finalize(() => this.loading.set(false)),
-    ).subscribe({
-      next: (r) => {
-        this.subjects = Array.isArray(r.subjects) ? r.subjects : [];
-        this.sessions = r.sessions.content || [];
-        this.totalPages = r.sessions.totalPages;
-      },
-      error: () => {},
-    });
+      sessions: this.api
+        .getSessionsPage(
+          user.id,
+          this.page,
+          this.pageSize,
+          this.filterSubjectId || undefined,
+          this.startDate || undefined,
+          this.endDate || undefined,
+        )
+        .pipe(
+          timeout(15_000),
+          catchError(() =>
+            of({
+              content: [],
+              page: 0,
+              size: 20,
+              totalElements: 0,
+              totalPages: 0,
+              last: true,
+              first: true,
+            } as PageResponse<StudySession>),
+          ),
+        ),
+    })
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe({
+        next: (r) => {
+          this.subjects = Array.isArray(r.subjects) ? r.subjects : [];
+          this.sessions = r.sessions.content || [];
+          this.totalPages = r.sessions.totalPages;
+        },
+        error: () => {},
+      });
   }
 
   nextPage() {
@@ -184,7 +211,9 @@ export class Sessions implements OnInit {
         this.resetForm();
         this.load();
       },
-      error: () => { this.saving.set(false); },
+      error: () => {
+        this.saving.set(false);
+      },
     });
   }
 
@@ -202,7 +231,7 @@ export class Sessions implements OnInit {
       this.api.deleteSession(this.pendingDeleteId).subscribe({
         next: () => {
           this.toast.success('Sessão excluída');
-          this.sessions = this.sessions.filter(s => s.id !== this.pendingDeleteId);
+          this.sessions = this.sessions.filter((s) => s.id !== this.pendingDeleteId);
           this.showConfirm.set(false);
           this.pendingDeleteId = null;
           this.savingDelete.set(false);
@@ -222,7 +251,10 @@ export class Sessions implements OnInit {
   }
 
   hasUnsavedChanges(): boolean {
-    return this.showForm() && (this.subjectId !== '' || this.durationMinutes > 0 || this.notes.trim() !== '');
+    return (
+      this.showForm() &&
+      (this.subjectId !== '' || this.durationMinutes > 0 || this.notes.trim() !== '')
+    );
   }
 
   @HostListener('window:beforeunload', ['$event'])

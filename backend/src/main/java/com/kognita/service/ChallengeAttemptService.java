@@ -11,8 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class ChallengeAttemptService {
 
     private final ChallengeAttemptRepository repository;
@@ -31,6 +33,7 @@ public class ChallengeAttemptService {
         return repository.findByUserId(userId).stream().map(ChallengeAttemptResponse::from).toList();
     }
 
+    @Transactional
     public ChallengeAttemptResponse create(CreateChallengeAttemptRequest request, UUID userId) {
         var user = userService.findEntityById(userId);
         var task = taskService.findEntityById(request.taskId());
@@ -50,6 +53,7 @@ public class ChallengeAttemptService {
         return ChallengeAttemptResponse.from(repository.save(attempt));
     }
 
+    @Transactional
     public ChallengeAttemptResponse update(UUID id, CreateChallengeAttemptRequest request) {
         var attempt = repository.findById(id).orElseThrow();
         attempt.setHowISolved(request.howISolved());
@@ -57,6 +61,7 @@ public class ChallengeAttemptService {
         return ChallengeAttemptResponse.from(repository.save(attempt));
     }
 
+    @Transactional
     public void delete(UUID id) {
         repository.deleteById(id);
     }

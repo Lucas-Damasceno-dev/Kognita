@@ -7,8 +7,10 @@ import com.kognita.repository.ChallengeGoalRepository;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class ChallengeGoalService {
 
     private final ChallengeGoalRepository repository;
@@ -23,6 +25,7 @@ public class ChallengeGoalService {
         return repository.findByUserId(userId).stream().map(ChallengeGoalResponse::from).toList();
     }
 
+    @Transactional
     public ChallengeGoalResponse create(CreateChallengeGoalRequest request, UUID userId) {
         var user = userService.findEntityById(userId);
         var goal = new ChallengeGoal();
@@ -32,6 +35,7 @@ public class ChallengeGoalService {
         return ChallengeGoalResponse.from(repository.save(goal));
     }
 
+    @Transactional
     public void delete(UUID id, UUID userId) {
         var goal = repository.findById(id).orElseThrow();
         if (!goal.getUser().getId().equals(userId)) {
@@ -40,6 +44,7 @@ public class ChallengeGoalService {
         repository.delete(goal);
     }
 
+    @Transactional
     public void incrementProgress(UUID userId) {
         var goals = repository.findByUserId(userId);
         for (var goal : goals) {

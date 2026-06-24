@@ -7,12 +7,13 @@ import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 import { Skeleton } from '../skeleton/skeleton';
 import { Confirm } from '../confirm/confirm';
+import { EmptyState } from '../empty-state/empty-state';
 import { Subject } from '../models/subject';
 import { PageResponse } from '../models/page-response';
 
 @Component({
   selector: 'app-subjects',
-  imports: [FormsModule, Skeleton, Confirm],
+  imports: [FormsModule, Skeleton, Confirm, EmptyState],
   templateUrl: './subjects.html',
   styleUrl: './subjects.css',
 })
@@ -44,11 +45,13 @@ export class Subjects implements OnInit {
       if (aVal == null) return 1;
       if (bVal == null) return -1;
       if (typeof aVal === 'string') {
-        return this.sortDir === 'asc' ? aVal.localeCompare(bVal as string) : (bVal as string).localeCompare(aVal);
+        return this.sortDir === 'asc'
+          ? aVal.localeCompare(bVal as string)
+          : (bVal as string).localeCompare(aVal);
       }
       const aNum = aVal as any as number;
       const bNum = bVal as any as number;
-      return this.sortDir === 'asc' ? (aNum < bNum ? -1 : 1) : (bNum < aNum ? -1 : 1);
+      return this.sortDir === 'asc' ? (aNum < bNum ? -1 : 1) : bNum < aNum ? -1 : 1;
     });
     return arr;
   }
@@ -68,21 +71,24 @@ export class Subjects implements OnInit {
   totalPages = 0;
 
   ngOnInit(): void {
-    this.auth.waitForUser().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      timeout(20_000),
-      catchError(() => {
-        this.loading.set(false);
-        return EMPTY;
-      }),
-      tap(user => {
-        if (!user) {
+    this.auth
+      .waitForUser()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        timeout(20_000),
+        catchError(() => {
           this.loading.set(false);
-          return;
-        }
-        this.load();
-      }),
-    ).subscribe();
+          return EMPTY;
+        }),
+        tap((user) => {
+          if (!user) {
+            this.loading.set(false);
+            return;
+          }
+          this.load();
+        }),
+      )
+      .subscribe();
   }
 
   private load(): void {
@@ -93,17 +99,20 @@ export class Subjects implements OnInit {
     }
 
     this.loading.set(true);
-    this.api.getSubjectsPage(user.id, this.currentPage, this.pageSize).pipe(
-      takeUntilDestroyed(this.destroyRef),
-      timeout(15_000),
-      catchError(() => of({ content: [], totalPages: 0 } as any)),
-      finalize(() => this.loading.set(false)),
-    ).subscribe({
-      next: r => { 
-        this.subjects = Array.isArray(r.content) ? r.content : [];
-        this.totalPages = r.totalPages;
-      },
-    });
+    this.api
+      .getSubjectsPage(user.id, this.currentPage, this.pageSize)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        timeout(15_000),
+        catchError(() => of({ content: [], totalPages: 0 } as any)),
+        finalize(() => this.loading.set(false)),
+      )
+      .subscribe({
+        next: (r) => {
+          this.subjects = Array.isArray(r.content) ? r.content : [];
+          this.totalPages = r.totalPages;
+        },
+      });
   }
 
   nextPage(): void {
@@ -157,7 +166,9 @@ export class Subjects implements OnInit {
         this.currentPage = 0;
         this.load();
       },
-      error: () => { this.saving.set(false); },
+      error: () => {
+        this.saving.set(false);
+      },
     });
   }
 

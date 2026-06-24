@@ -1,47 +1,89 @@
 <h1>Histórico de Desafios (Sem IA)</h1>
+
 @if (loading()) {
   <app-skeleton mode="list" />
 } @else {
-  <div class="history-grid">
+  <div class="history-grid" role="list">
     @for (a of attempts(); track a.id) {
-      <div class="history-card">
-        <h3>{{ a.taskTitle }}</h3>
-        <p class="meta">{{ a.date }} @if (a.skillCategory) { | {{ a.skillCategory }} }</p>
-        
+      <div class="history-card" role="listitem">
+        <div class="history-card-header">
+          <h3>{{ a.taskTitle }}</h3>
+          <span class="ai-badge" [class.used-ai]="a.usedAi" [class.no-ai]="!a.usedAi" aria-live="polite">
+            {{ a.usedAi ? 'Usou IA' : 'Sem IA' }}
+          </span>
+        </div>
+        <div class="meta">
+          <span>{{ a.date }}</span>
+          @if (a.skillCategory) {
+            <span>{{ a.skillCategory }}</span>
+          }
+        </div>
+
         @if (editingId() === a.id) {
-          <textarea [ngModel]="editingNotes()" (ngModelChange)="editingNotes.set($event)" rows="3"></textarea>
-          <div class="card-actions">
-            <button class="btn btn-primary" (click)="save(a)" [disabled]="saving()">{{ saving() ? 'Salvando...' : 'Salvar' }}</button>
-            <button class="btn" (click)="editingId.set(null)">Cancelar</button>
+          <textarea
+            [ngModel]="editingNotes()"
+            (ngModelChange)="editingNotes.set($event)"
+            rows="3"
+            aria-label="Editar anotações"
+          ></textarea>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+            <button class="btn btn-primary btn-sm" (click)="save(a)" [disabled]="saving()" aria-label="Salvar anotações">
+              {{ saving() ? 'Salvando...' : 'Salvar' }}
+            </button>
+            <button class="btn btn-sm" (click)="editingId.set(null)" aria-label="Cancelar edição">Cancelar</button>
           </div>
         } @else {
           @if (a.notes) {
             <p class="notes">{{ a.notes }}</p>
           }
           @if (a.howISolved) {
-            <p class="how-i-solved"><strong>Como resolvi:</strong> {{ a.howISolved }}</p>
+            <p class="notes"><strong>Como resolvi:</strong> {{ a.howISolved }}</p>
           }
-          <div class="card-actions">
-            <button class="btn" (click)="edit(a)">✏️ Editar</button>
-            <button class="btn" (click)="openMentorship(a)">👨‍🏫 Refatorar</button>
+          <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+            <button class="btn btn-sm" (click)="edit(a)" aria-label="Editar anotações"><span aria-hidden="true">✏️</span> Editar</button>
+            <button class="btn btn-sm" (click)="openMentorship(a)" aria-label="Abrir mentoria"><span aria-hidden="true">👨‍🏫</span> Refatorar</button>
           </div>
         }
       </div>
     } @empty {
-      <p class="empty">Nenhum desafio concluído sem IA ainda. Complete tarefas sem ajuda para aparecerem aqui!</p>
+      <app-empty-state>
+        <p>
+          Nenhum desafio concluído sem IA ainda. Complete tarefas sem ajuda para aparecerem aqui!
+        </p>
+      </app-empty-state>
     }
   </div>
-  
+
   @if (showMentorship()) {
-    <div class="modal" (click)="closeMentorship()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
-        <h3>👨‍🏫 Mentoria de Código</h3>
-        <p><strong>Passo a passo:</strong> {{ pendingMentorshipAttempt?.howISolved }}</p>
-        <p><strong>O que você melhoraria neste código?</strong></p>
-        <textarea [(ngModel)]="mentorshipReflection" placeholder="Sua reflexão..." rows="4"></textarea>
-        <div class="card-actions">
-          <button class="btn btn-primary" (click)="saveMentorship()" [disabled]="savingMentorship()">{{ savingMentorship() ? 'Salvando...' : '💾 Salvar Reflexão' }}</button>
-          <button class="btn" (click)="closeMentorship()">Cancelar</button>
+    <div class="overlay" (click)="closeMentorship()" role="dialog" aria-modal="true" aria-label="Mentoria de Código">
+      <div class="modal" (click)="$event.stopPropagation()">
+        <h3><span aria-hidden="true">👨‍🏫</span> Mentoria de Código</h3>
+        <div class="history-detail">
+          <div class="detail-row">
+            <span class="label">Passo a passo</span>
+            <span class="value">{{ pendingMentorshipAttempt?.howISolved }}</span>
+          </div>
+        </div>
+        <textarea
+          [(ngModel)]="mentorshipReflection"
+          placeholder="Sua reflexão..."
+          rows="4"
+          aria-label="Sua reflexão sobre a mentoria"
+        ></textarea>
+        <div style="display: flex; gap: 0.5rem; margin-top: 0.75rem;">
+          <button
+            class="btn btn-primary"
+            (click)="saveMentorship()"
+            [disabled]="savingMentorship()"
+            aria-label="Salvar reflexão da mentoria"
+          >
+            @if (savingMentorship()) {
+              Salvando...
+            } @else {
+              <span aria-hidden="true">💾</span> Salvar Reflexão
+            }
+          </button>
+          <button class="btn" (click)="closeMentorship()" aria-label="Fechar mentoria">Cancelar</button>
         </div>
       </div>
     </div>

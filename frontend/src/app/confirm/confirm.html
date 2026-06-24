@@ -1,8 +1,13 @@
-<div class="confirm-overlay" (click)="onCancel()">
+<div class="overlay" role="dialog" aria-modal="true" (click)="onCancel()">
   <div class="confirm-dialog" (click)="$event.stopPropagation()">
+    @if (title()) {
+      <h3>{{ title() }}</h3>
+    }
     <p>{{ message() }}</p>
     <div class="confirm-actions">
-      <button class="btn btn-danger" (click)="onConfirm()" [disabled]="saving()">{{ saving() ? 'Excluindo...' : confirmText() }}</button>
+      <button class="btn btn-danger" (click)="onConfirm()" [disabled]="saving()">
+        {{ saving() ? 'Excluindo...' : confirmText() }}
+      </button>
       <button class="btn" (click)="onCancel()">{{ cancelText() }}</button>
     </div>
   </div>

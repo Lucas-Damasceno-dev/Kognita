@@ -2,12 +2,11 @@ package com.kognita.controller;
 
 import com.kognita.dto.CreateSubjectRequest;
 import com.kognita.dto.CreateTaskRequest;
-import com.kognita.dto.CreateSubjectRequest;
-import com.kognita.dto.CreateTaskRequest;
 import com.kognita.model.User;
 import com.kognita.service.ImportService;
 import com.kognita.service.SubjectService;
 import com.kognita.service.TaskService;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -30,7 +29,7 @@ public class ImportController {
     public record CategoryTasks(String category, List<String> tasks) {}
 
     @PostMapping("/file-structure")
-    public void importFileStructure(
+    public ResponseEntity<Void> importFileStructure(
             @RequestBody List<CategoryTasks> data,
             @RequestParam(required = false) UUID userId,
             @AuthenticationPrincipal User user) {
@@ -50,12 +49,13 @@ public class ImportController {
                 taskService.create(new CreateTaskRequest(taskTitle, null, "pending", "medium", subject.id(), null, item.category(), false), finalUserId);
             }
         }
+        return ResponseEntity.ok().build();
     }
 
     public record RoadmapRequest(String title, String content) {}
 
     @PostMapping("/roadmap")
-    public void importRoadmap(
+    public ResponseEntity<Void> importRoadmap(
             @RequestBody RoadmapRequest request,
             @RequestParam(required = false) UUID userId,
             @AuthenticationPrincipal User user) {
@@ -64,5 +64,6 @@ public class ImportController {
             throw new IllegalArgumentException("User ID is required");
         }
         importService.importRoadmap(request.title(), request.content(), finalUserId);
+        return ResponseEntity.ok().build();
     }
 }

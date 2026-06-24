@@ -1,44 +1,32 @@
-.confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--confirm-overlay);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
 .confirm-dialog {
   background: var(--bg-card);
   border-radius: 12px;
   padding: 1.5rem;
-  min-width: 320px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  box-shadow: var(--shadow-lg);
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+}
+
+.confirm-dialog h3 {
+  margin: 0 0 0.5rem;
 }
 
 .confirm-dialog p {
-  margin: 0 0 1.25rem;
-  font-size: 0.95rem;
-  color: var(--text);
-  line-height: 1.4;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
 }
 
 .confirm-actions {
   display: flex;
-  gap: 0.5rem;
-  justify-content: flex-end;
+  gap: 0.75rem;
+  justify-content: center;
 }
 
-.btn-danger {
-  background: var(--danger);
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-
-.btn-danger:hover {
-  background: var(--danger-hover);
+@media (max-width: 600px) {
+  .confirm-dialog {
+    width: 95%;
+    padding: 1rem;
+  }
 }

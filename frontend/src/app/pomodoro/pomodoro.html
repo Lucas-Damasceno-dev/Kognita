@@ -1,58 +1,68 @@
 <h1>Pomodoro</h1>
 
-<div class="pomodoro-card">
-  <div class="timer-section">
-    <div class="selectors">
-      <div class="selector-group">
-        <label>Matéria</label>
-        <select [(ngModel)]="selectedSubjectId" name="subjectId" (change)="onSubjectChange()">
-          <option value="">Selecione uma matéria</option>
-          @for (s of subjects; track s.id) {
-            <option [value]="s.id">{{ s.name }}</option>
+<div class="timer-container card card-elevated">
+  <div style="margin-bottom: 1.5rem;">
+    <label>
+      Matéria
+      <select [(ngModel)]="selectedSubjectId" name="subjectId" (change)="onSubjectChange()" style="width: 100%; margin-top: 0.25rem;">
+        <option value="">Selecione uma matéria</option>
+        @for (s of subjects; track s.id) {
+          <option [value]="s.id">{{ s.name }}</option>
+        }
+      </select>
+    </label>
+    @if (tasks.length > 0) {
+      <label style="margin-top: 0.75rem;">
+        Tarefa (opcional)
+        <select [(ngModel)]="selectedTaskId" name="taskId" style="width: 100%; margin-top: 0.25rem;">
+          <option value="">Foco geral</option>
+          @for (t of tasks; track t.id) {
+            <option [value]="t.id">{{ t.title }}</option>
           }
         </select>
-      </div>
-      @if (tasks.length > 0) {
-        <div class="selector-group">
-          <label>Tarefa (opcional)</label>
-          <select [(ngModel)]="selectedTaskId" name="taskId">
-            <option value="">Foco geral</option>
-            @for (t of tasks; track t.id) {
-              <option [value]="t.id">{{ t.title }}</option>
-            }
-          </select>
-        </div>
+      </label>
+    }
+  </div>
+
+  <div class="timer-ring">
+    <svg viewBox="0 0 120 120">
+      <circle cx="60" cy="60" r="54" class="bg" />
+      <circle
+        cx="60"
+        cy="60"
+        r="54"
+        class="progress"
+        [class.break]="isBreak()"
+        [style.stroke-dashoffset]="(1 - progress / 100) * 339.292"
+      />
+    </svg>
+    <div class="timer-display">
+      <span class="time" role="timer" aria-live="polite" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">{{ displayTime }}</span>
+      <span class="phase" aria-live="polite">{{ isBreak() ? 'Pausa' : 'Foco' }}</span>
+    </div>
+  </div>
+
+  <div class="timer-controls">
+    @if (!isRunning()) {
+      <button class="btn btn-primary" (click)="start()" [disabled]="saving()" [attr.aria-label]="timeLeft === 0 || isBreak() ? 'Iniciar' : 'Continuar'">
+        {{ timeLeft === 0 || isBreak() ? '▶ Iniciar' : '▶ Continuar' }}
+      </button>
+      @if (timeLeft > 0 && !isBreak()) {
+        <button class="btn btn-ghost" (click)="reset()" aria-label="Reiniciar">↺ Reiniciar</button>
       }
-    </div>
+    } @else {
+      <button class="btn btn-ghost" (click)="pause()" aria-label="Pausar">⏸ Pausar</button>
+    }
+  </div>
 
-    <div class="timer-ring">
-      <svg viewBox="0 0 120 120" class="progress-ring">
-        <circle cx="60" cy="60" r="54" class="ring-bg" />
-        <circle cx="60" cy="60" r="54" class="ring-fill"
-          [style.stroke-dashoffset]="(1 - progress / 100) * 339.292"
-          [class.break-mode]="isBreak()" />
-      </svg>
-      <div class="timer-display">
-        <span class="timer-label">{{ isBreak() ? 'Pausa' : 'Foco' }}</span>
-        <span class="timer-time">{{ displayTime }}</span>
-      </div>
+  <div class="timer-info">
+    <div class="info-item">
+      <div class="info-value">{{ sessionCount }}</div>
+      <div class="info-label">Sessões concluídas</div>
     </div>
-
-    <div class="timer-controls">
-      @if (!isRunning()) {
-        <button class="btn btn-primary" (click)="start()" [disabled]="saving()">
-          {{ timeLeft === 0 || isBreak() ? '▶ Iniciar' : '▶ Continuar' }}
-        </button>
-        @if (timeLeft > 0 && !isBreak()) {
-          <button class="btn" (click)="reset()">↺ Reiniciar</button>
-        }
-      } @else {
-        <button class="btn btn-warning" (click)="pause()">⏸ Pausar</button>
-      }
-    </div>
-
-    <div class="session-stats">
-      <span>Sessões concluídas: {{ sessionCount }}</span>
+    <div class="info-item">
+      <div class="info-value">{{ workDuration }}min</div>
+      <div class="info-label">Duração</div>
     </div>
   </div>
 </div>

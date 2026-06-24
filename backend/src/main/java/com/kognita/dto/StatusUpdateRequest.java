@@ -1,3 +1,5 @@
 package com.kognita.dto;
 
-public record StatusUpdateRequest(String status) {}
+import jakarta.validation.constraints.NotBlank;
+
+public record StatusUpdateRequest(@NotBlank String status) {}

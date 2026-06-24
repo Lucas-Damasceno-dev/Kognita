@@ -1,62 +1,80 @@
-<h1>Importar</h1>
+<div class="page-header">
+  <h1>Importar</h1>
+</div>
 
-<section class="import-card">
-  <div class="card-header">
-    <h2>📂 Importar Estrutura de Estudos</h2>
-    <p>Crie categorias (matérias) e adicione as tarefas que deseja importar.</p>
-  </div>
+<section class="card" style="margin-bottom: 1.5rem;">
+  <h2>📂 Importar Estrutura de Estudos</h2>
+  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">Crie categorias (matérias) e adicione as tarefas que deseja importar.</p>
 
-  <div class="categories-list">
+  <div class="list" style="gap: 1rem; margin-bottom: 1rem;">
     @for (cat of categories(); track trackByIndex($index); let ci = $index) {
-      <div class="category-block">
-        <div class="category-header">
-          <input type="text" [(ngModel)]="cat.name" name="catName{{ci}}" placeholder="Nome da matéria (ex: React, Docker, SQL)" class="input cat-input" />
-          <button class="btn-icon danger" (click)="removeCategory(ci)" title="Remover categoria">✕</button>
+      <div class="card" style="background: var(--bg); padding: 1rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+          <input
+            type="text"
+            [(ngModel)]="cat.name"
+            name="catName{{ ci }}"
+            placeholder="Nome da matéria (ex: React, Docker, SQL)"
+            style="flex: 1; font-weight: 600;"
+          />
+          <button class="btn btn-ghost btn-sm" (click)="removeCategory(ci)" title="Remover categoria">✕</button>
         </div>
-        <div class="tasks-list">
+        <div class="list" style="gap: 0.4rem; margin-bottom: 0.5rem;">
           @for (task of cat.tasks; track trackByIndex($index); let ti = $index) {
-            <div class="task-row">
-              <input type="text" [(ngModel)]="cat.tasks[ti]" name="taskName{{ci}}_{{ti}}" placeholder="Nome da tarefa" class="input task-input" />
-              <button class="btn-icon" (click)="removeTask(ci, ti)" title="Remover tarefa">✕</button>
+            <div class="list-item" style="padding: 0.25rem 0; gap: 0.4rem; border: none;">
+              <input
+                type="text"
+                [(ngModel)]="cat.tasks[ti]"
+                name="taskName{{ ci }}_{{ ti }}"
+                placeholder="Nome da tarefa"
+                style="flex: 1;"
+              />
+              <button class="btn btn-ghost btn-sm" (click)="removeTask(ci, ti)" title="Remover tarefa">✕</button>
             </div>
           }
         </div>
-        <button class="btn-link" (click)="addTask(ci)">+ Adicionar tarefa</button>
+        <button class="btn btn-ghost btn-sm" (click)="addTask(ci)">+ Adicionar tarefa</button>
       </div>
     }
   </div>
 
   @if (categories().length === 0) {
-    <div class="empty-state">
+    <div class="empty">
       <p>Nenhuma categoria adicionada ainda.</p>
     </div>
   }
 
-  <div class="card-actions">
+  <div class="form-actions">
     <button class="btn btn-primary" (click)="addCategory()">+ Adicionar Categoria</button>
     @if (validPayload.length > 0) {
-      <button class="btn btn-success" (click)="importStudies()" [disabled]="saving() || hasEmptyFields">
+      <button
+        class="btn btn-success"
+        (click)="importStudies()"
+        [disabled]="saving() || hasEmptyFields"
+      >
         {{ saving() ? 'Importando...' : '📥 Importar ' + validPayload.length + ' categorias' }}
       </button>
     }
   </div>
 </section>
 
-<section class="import-card">
-  <div class="card-header">
-    <h2>🗺️ Importar Roadmap do roadmap.sh</h2>
-    <p>Selecione um roadmap para importar como matérias e tarefas.</p>
-  </div>
+<section class="card" style="margin-bottom: 1.5rem;">
+  <h2>🗺️ Importar Roadmap do roadmap.sh</h2>
+  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Selecione um roadmap para importar como matérias e tarefas.</p>
 
-  <div class="roadmap-form">
-    <select [(ngModel)]="selectedRoadmap" (change)="loadRoadmap()" class="input">
+  <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+    <select [(ngModel)]="selectedRoadmap" (change)="loadRoadmap()">
       <option value="">Selecione um Roadmap</option>
       <option value="backend">Backend</option>
       <option value="frontend">Frontend</option>
       <option value="devops">DevOps</option>
     </select>
 
-    <textarea [(ngModel)]="roadmapJson" placeholder="Conteúdo do roadmap (JSON)" class="input roadmap-textarea" rows="8"></textarea>
+    <textarea
+      [(ngModel)]="roadmapJson"
+      placeholder="Conteúdo do roadmap (JSON)"
+      rows="8"
+    ></textarea>
 
     <button class="btn btn-primary" (click)="importRoadmap()" [disabled]="!roadmapJson().trim()">
       📥 Importar Roadmap

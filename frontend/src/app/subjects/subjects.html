@@ -1,26 +1,28 @@
 <div class="page-header">
-  <h1>Matérias</h1>
-  <button class="btn" (click)="editingId = null; showForm.update(v => !v); showForm() ? null : resetForm()">
+  <h2>Matérias</h2>
+  <button
+    class="btn"
+    (click)="editingId = null; showForm.update((v) => !v); showForm() ? null : resetForm()"
+  >
     {{ showForm() ? 'Cancelar' : '+ Matéria' }}
   </button>
 </div>
 
 @if (showForm()) {
-  <form (ngSubmit)="save()" class="form-card">
-    <label>
-      Nome
-      <input type="text" [(ngModel)]="name" name="name" required />
-    </label>
-    <label>
-      Descrição
-      <input type="text" [(ngModel)]="description" name="description" />
-    </label>
-    <label>
-      Cor
-      <input type="color" [(ngModel)]="color" name="color" />
-    </label>
+  <form #subjectForm="ngForm" (ngSubmit)="save()" class="card card-elevated">
+    <label for="subject-name">Nome</label>
+    <input id="subject-name" type="text" #nameInput="ngModel" [(ngModel)]="name" name="name" required />
+    @if (nameInput.invalid && (nameInput.dirty || nameInput.touched || subjectForm.submitted)) {
+      <small class="error">Nome é obrigatório</small>
+    }
+    <label for="subject-description">Descrição</label>
+    <input id="subject-description" type="text" [(ngModel)]="description" name="description" />
+    <label for="subject-color-input">Cor</label>
+    <input id="subject-color-input" type="color" [(ngModel)]="color" name="color" />
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}
+      </button>
       @if (editingId) {
         <button type="button" class="btn" (click)="cancel()">Cancelar</button>
       }
@@ -33,16 +35,16 @@
 } @else {
   <div class="sort-bar">
     <button class="sort-btn" [class.active]="sortBy === 'name'" (click)="setSort('name')">
-      Nome {{ sortBy === 'name' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+      Nome <span aria-hidden="true">{{ sortBy === 'name' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
     </button>
     <button class="sort-btn" [class.active]="sortBy === 'color'" (click)="setSort('color')">
-      Cor {{ sortBy === 'color' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+      Cor <span aria-hidden="true">{{ sortBy === 'color' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
     </button>
   </div>
-  <div class="list">
+  <div class="list" role="list">
     @for (item of sortedSubjects; track item.id) {
-      <div class="list-item">
-        <span class="color-dot" [style.background]="item.color"></span>
+      <div class="list-item" role="listitem">
+        <span class="subject-color" [style.background]="item.color"></span>
         <div>
           <strong>{{ item.name }}</strong>
           @if (item.description) {
@@ -51,16 +53,18 @@
         </div>
         <div class="list-actions">
           <button class="btn btn-sm" (click)="edit(item)">Editar</button>
-          <button class="btn-icon" (click)="confirmDelete(item.id, item.name)">✕</button>
+          <button class="btn-ghost" type="button" (click)="confirmDelete(item.id, item.name)" aria-label="Excluir {{ item.name }}">✕</button>
         </div>
       </div>
     } @empty {
-      <p class="empty">Nenhuma matéria ainda.</p>
+      <app-empty-state>
+        <p>Nenhuma matéria ainda.</p>
+      </app-empty-state>
     }
   </div>
   <div class="pagination">
     <button [disabled]="currentPage === 0" (click)="prevPage()">Anterior</button>
-    <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+    <span aria-live="polite">Página {{ currentPage + 1 }} de {{ totalPages }}</span>
     <button [disabled]="currentPage >= totalPages - 1" (click)="nextPage()">Próximo</button>
   </div>
 }
@@ -70,5 +74,6 @@
     [message]="confirmMessage"
     [saving]="savingDelete()"
     (confirmed)="handleConfirm()"
-    (cancelled)="handleCancel()" />
+    (cancelled)="handleCancel()"
+  />
 }

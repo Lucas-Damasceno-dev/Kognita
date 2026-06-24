@@ -7,8 +7,10 @@ import com.kognita.repository.ErrorLogRepository;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class ErrorLogService {
 
     private final ErrorLogRepository repository;
@@ -25,6 +27,7 @@ public class ErrorLogService {
         return repository.findByUserId(userId).stream().map(ErrorLogResponse::from).toList();
     }
 
+    @Transactional
     public ErrorLogResponse create(CreateErrorLogRequest request, UUID userId) {
         var user = userService.findEntityById(userId);
         var errorLog = new ErrorLog();
@@ -38,6 +41,7 @@ public class ErrorLogService {
         return ErrorLogResponse.from(repository.save(errorLog));
     }
 
+    @Transactional
     public ErrorLogResponse update(UUID id, CreateErrorLogRequest request, UUID userId) {
         var errorLog = repository.findById(id).orElseThrow();
         if (!errorLog.getUser().getId().equals(userId)) {
@@ -52,6 +56,7 @@ public class ErrorLogService {
         return ErrorLogResponse.from(repository.save(errorLog));
     }
 
+    @Transactional
     public void delete(UUID id, UUID userId) {
         var errorLog = repository.findById(id).orElseThrow();
         if (!errorLog.getUser().getId().equals(userId)) {

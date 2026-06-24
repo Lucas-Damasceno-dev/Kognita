@@ -1,44 +1,74 @@
-<div class="container">
+<div class="page-header">
   <h2>Diário de Erros</h2>
-  
-  <button (click)="toggleForm()" class="btn-primary">
+  <button (click)="toggleForm()" class="btn btn-primary btn-sm">
     {{ showForm() ? 'Cancelar' : 'Registrar Novo Erro' }}
   </button>
+</div>
 
-  @if (showForm()) {
-    <div class="form">
-      @if (editingId) {
-        <p class="edit-label">Editando: <strong>{{ title }}</strong></p>
-      }
-      <input [(ngModel)]="title" placeholder="Título do Erro" class="input-field" />
-      <textarea [(ngModel)]="description" placeholder="Descrição do Erro" class="textarea-field"></textarea>
-      <textarea [(ngModel)]="solution" placeholder="Solução" class="textarea-field"></textarea>
-      <button (click)="save()" [disabled]="saving()" class="btn-primary">
-        {{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}
-      </button>
-    </div>
-  }
-
-  @if (loading()) {
-    <app-loading />
-  }
-
-  <div class="list">
-    @for (log of errorLogs; track log.id) {
-      <div class="card">
-        <div class="card-header">
-          <h3>{{ log.title }}</h3>
-          <div class="card-actions">
-            <button class="btn-icon" (click)="edit(log)" title="Editar">✏️</button>
-            <button class="btn-icon btn-icon--delete" (click)="confirmDelete(log.id)" title="Excluir">🗑️</button>
-          </div>
-        </div>
-        <p><strong>Descrição:</strong> {{ log.description }}</p>
-        <p><strong>Solução:</strong> {{ log.solution }}</p>
-        <small>{{ log.createdAt | date:'short' }}</small>
-      </div>
+@if (showForm()) {
+  <form (ngSubmit)="save()" #diaryForm="ngForm" class="card" style="display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 1.5rem;">
+    @if (editingId) {
+      <p class="caption">
+        Editando: <strong>{{ title }}</strong>
+      </p>
     }
-  </div>
+    <div>
+      <label for="diaryTitle">Título do Erro</label>
+      <input id="diaryTitle" #titleInput="ngModel" [(ngModel)]="title" name="title" placeholder="Título do Erro" required />
+      @if (titleInput.invalid && (titleInput.dirty || titleInput.touched || diaryForm.submitted)) {
+        <small class="error-text" role="alert">Título é obrigatório</small>
+      }
+    </div>
+    <div>
+      <label for="diaryDescription">Descrição do Erro</label>
+      <textarea
+        id="diaryDescription"
+        #descriptionInput="ngModel"
+        [(ngModel)]="description"
+        name="description"
+        placeholder="Descrição do Erro"
+        required
+      ></textarea>
+      @if (descriptionInput.invalid && (descriptionInput.dirty || descriptionInput.touched || diaryForm.submitted)) {
+        <small class="error-text" role="alert">Descrição é obrigatória</small>
+      }
+    </div>
+    <div>
+      <label for="diarySolution">Solução</label>
+      <textarea id="diarySolution" [(ngModel)]="solution" name="solution" placeholder="Solução"></textarea>
+    </div>
+    <button type="submit" [disabled]="saving()" class="btn btn-primary btn-sm">
+      {{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}
+    </button>
+  </form>
+}
+
+@if (loading()) {
+  <app-loading />
+}
+
+<div class="list">
+  @for (log of errorLogs; track log.id) {
+    <div class="list-item error-item">
+      <div>
+        <div class="error-title">{{ log.title }}</div>
+        <div class="error-desc"><strong>Descrição:</strong> {{ log.description }}</div>
+        <div class="error-solution"><strong>Solução:</strong> {{ log.solution }}</div>
+        <small>{{ log.createdAt | date: 'short' }}</small>
+      </div>
+      <div class="list-actions">
+        <button class="btn btn-ghost btn-sm" (click)="edit(log)" title="Editar">✏️</button>
+        <button
+          class="btn btn-ghost btn-sm"
+          (click)="confirmDelete(log.id)"
+          title="Excluir"
+          aria-label="Excluir {{ log.title }}"
+        >🗑️</button>
+      </div>
+    </div>
+  } @empty {
+    <p class="empty">Nenhum erro registrado ainda. Comece documentando seus erros para aprender com eles!</p>
+  }
 </div>
 
 @if (showConfirm()) {
@@ -46,5 +76,6 @@
     [message]="confirmMessage"
     [saving]="savingDelete()"
     (confirmed)="handleConfirm()"
-    (cancelled)="handleCancel()" />
+    (cancelled)="handleCancel()"
+  />
 }

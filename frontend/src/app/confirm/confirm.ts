@@ -6,6 +6,7 @@ import { Component, input, output } from '@angular/core';
   styleUrl: './confirm.css',
 })
 export class Confirm {
+  title = input<string>('');
   message = input.required<string>();
   confirmText = input('Excluir');
   cancelText = input('Cancelar');

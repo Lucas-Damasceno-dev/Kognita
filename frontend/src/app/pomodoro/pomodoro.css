@@ -1,153 +1,21 @@
-h1 {
-  margin: 0 0 1.5rem;
-  color: var(--text);
-}
+.timer-container { text-align: center; padding: 2rem; max-width: 400px; margin: 0 auto; }
+.timer-ring { position: relative; width: 200px; height: 200px; margin: 0 auto 1.5rem; }
+.timer-ring svg { transform: rotate(-90deg); }
+.timer-ring .bg { fill: none; stroke: var(--border); stroke-width: 4; }
+.timer-ring .progress { fill: none; stroke: var(--primary); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.timer-ring .progress.break { stroke: var(--success); }
+.timer-display { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.timer-display .time { font-size: 2.5rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
+.timer-display .phase { font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem; }
+.timer-controls { display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 1.5rem; }
+.timer-info { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 400px; margin: 0 auto; }
+.timer-info .info-item { text-align: center; padding: 0.75rem; background: var(--bg); border-radius: 8px; }
+.timer-info .info-item .info-value { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+.timer-info .info-item .info-label { font-size: 0.75rem; color: var(--text-muted); }
 
-.pomodoro-card {
-  background: var(--bg-card);
-  border-radius: 16px;
-  box-shadow: var(--shadow-md);
-  padding: 2rem;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.timer-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-}
-
-.selectors {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  width: 100%;
-  max-width: 280px;
-}
-
-.selector-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.selector-group label {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.selector-group select {
-  padding: 0.5rem 0.7rem;
-  border: 1px solid var(--input-border);
-  border-radius: 8px;
-  font-size: 0.85rem;
-  background: var(--bg-card);
-  color: var(--text);
-  width: 100%;
-}
-
-.timer-ring {
-  position: relative;
-  width: 180px;
-  height: 180px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.progress-ring {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.ring-bg {
-  fill: none;
-  stroke: var(--chart-bar-bg);
-  stroke-width: 6;
-}
-
-.ring-fill {
-  fill: none;
-  stroke: var(--primary);
-  stroke-width: 6;
-  stroke-linecap: round;
-  stroke-dasharray: 339.292;
-  stroke-dashoffset: 0;
-  transition: stroke-dashoffset 0.5s ease;
-}
-
-.ring-fill.break-mode {
-  stroke: var(--success);
-}
-
-.timer-display {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-}
-
-.timer-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.timer-time {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--text);
-  font-variant-numeric: tabular-nums;
-}
-
-.timer-controls {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.btn {
-  padding: 0.6rem 1.5rem;
-  border: 1px solid var(--btn-border);
-  border-radius: 8px;
-  background: var(--bg-card);
-  color: var(--text);
-  cursor: pointer;
-  font-size: 0.9rem;
-  transition: 0.15s;
-}
-
-.btn:hover {
-  background: var(--btn-hover-bg);
-}
-
-.btn-primary {
-  background: var(--primary);
-  color: white;
-  border: none;
-}
-
-.btn-primary:hover {
-  background: var(--primary-hover);
-}
-
-.btn-primary:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.btn-warning {
-  background: var(--priority-medium-bg);
-  color: var(--priority-medium-text);
-  border: 1px solid var(--priority-medium-text);
-}
-
-.session-stats {
-  font-size: 0.8rem;
-  color: var(--text-muted);
+@media (max-width: 480px) {
+  .timer-ring { width: 160px; height: 160px; }
+  .timer-info { grid-template-columns: 1fr; }
+  .timer-controls { flex-wrap: wrap; }
+  .timer-container { padding: 1.25rem; }
 }

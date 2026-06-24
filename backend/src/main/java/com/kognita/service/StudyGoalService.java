@@ -9,8 +9,10 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional(readOnly = true)
 public class StudyGoalService {
 
     private final StudyGoalRepository repository;
@@ -29,6 +31,7 @@ public class StudyGoalService {
         return repository.findByUserId(userId, pageable).map(GoalResponse::from);
     }
 
+    @Transactional
     public GoalResponse create(CreateGoalRequest request, UUID userId) {
         var user = userService.findEntityById(userId);
         var goal = new StudyGoal();
@@ -40,6 +43,7 @@ public class StudyGoalService {
         return GoalResponse.from(repository.save(goal));
     }
 
+    @Transactional
     public GoalResponse update(UUID id, CreateGoalRequest request) {
         var goal = repository.findById(id).orElseThrow();
         goal.setTitle(request.title());
@@ -49,12 +53,14 @@ public class StudyGoalService {
         return GoalResponse.from(repository.save(goal));
     }
 
+    @Transactional
     public GoalResponse updateProgress(UUID id, Integer hours) {
         var goal = repository.findById(id).orElseThrow();
         goal.setCurrentHours(goal.getCurrentHours() + hours);
         return GoalResponse.from(repository.save(goal));
     }
 
+    @Transactional
     public void delete(UUID id) {
         repository.deleteById(id);
     }

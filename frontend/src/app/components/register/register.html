@@ -1,34 +1,91 @@
 <div class="auth-container">
-  <form (ngSubmit)="submit()" class="auth-card">
+  <form #registerForm="ngForm" (ngSubmit)="submit()" class="auth-card" novalidate>
     <h1>Criar Conta</h1>
     <p class="subtitle">Comece a organizar seus estudos</p>
 
-    <label>
-      Nome
-      <input type="text" [(ngModel)]="name" name="name" required autocomplete="name" />
-    </label>
+    <div class="form-group">
+      <label for="name">Nome</label>
+      <input
+        type="text"
+        id="name"
+        #nameInput="ngModel"
+        [(ngModel)]="name"
+        name="name"
+        required
+        autocomplete="name"
+      />
+      @if (nameInput.invalid && (nameInput.dirty || nameInput.touched || registerForm.submitted)) {
+        <small class="error-text">Nome é obrigatório</small>
+      }
+    </div>
 
-    <label>
-      Email
-      <input type="email" [(ngModel)]="email" name="email" required autocomplete="email" />
-    </label>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input
+        type="email"
+        id="email"
+        #emailInput="ngModel"
+        [(ngModel)]="email"
+        name="email"
+        required
+        email
+        autocomplete="email"
+      />
+      @if (emailInput.invalid && (emailInput.dirty || emailInput.touched || registerForm.submitted)) {
+        @if (emailInput.errors?.['required']) {
+          <small class="error-text">Email é obrigatório</small>
+        }
+        @if (emailInput.errors?.['email']) {
+          <small class="error-text">Email inválido</small>
+        }
+      }
+    </div>
 
-    <label>
-      Senha
-      <input type="password" [(ngModel)]="password" name="password" required minlength="6" />
-    </label>
+    <div class="form-group">
+      <label for="password">Senha</label>
+      <input
+        type="password"
+        id="password"
+        #passwordInput="ngModel"
+        [(ngModel)]="password"
+        name="password"
+        required
+        minlength="6"
+      />
+      @if (passwordInput.invalid && (passwordInput.dirty || passwordInput.touched || registerForm.submitted)) {
+        @if (passwordInput.errors?.['required']) {
+          <small class="error-text">Senha é obrigatória</small>
+        }
+        @if (passwordInput.errors?.['minlength']) {
+          <small class="error-text">Senha deve ter no mínimo 6 caracteres</small>
+        }
+      }
+    </div>
 
-    <label>
-      Confirmar senha
-      <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required />
-    </label>
-    <button type="submit" [disabled]="loading()">
+    <div class="form-group">
+      <label for="confirmPassword">Confirmar senha</label>
+      <input
+        type="password"
+        id="confirmPassword"
+        #confirmPasswordInput="ngModel"
+        [(ngModel)]="confirmPassword"
+        name="confirmPassword"
+        required
+      />
+      @if ((confirmPasswordInput.invalid || (confirmPasswordInput.value !== passwordInput.value && confirmPasswordInput.dirty)) && (confirmPasswordInput.dirty || confirmPasswordInput.touched || registerForm.submitted)) {
+        @if (confirmPasswordInput.errors?.['required']) {
+          <small class="error-text">Confirmação de senha é obrigatória</small>
+        }
+        @if (!confirmPasswordInput.errors?.['required'] && confirmPasswordInput.value !== passwordInput.value) {
+          <small class="error-text">Senhas não conferem</small>
+        }
+      }
+    </div>
 
+    <button type="submit" class="btn btn-primary" [disabled]="loading()">
       {{ loading() ? 'Criando conta...' : 'Criar Conta' }}
     </button>
 
-    <p class="footnote">
-      Já tem conta? <a routerLink="/login">Entrar</a>
-    </p>
+    <p class="auth-link">Já tem conta? <a routerLink="/login">Entrar</a></p>
   </form>
 </div>

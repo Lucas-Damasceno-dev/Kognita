@@ -33,14 +33,20 @@ export class Checkin implements OnInit {
   ngOnInit(): void {
     const user = this.auth.user();
     if (!user) return;
-    this.api.getChallengeStats().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      catchError(() => of(null)),
-    ).subscribe(s => this.stats.set(s));
-    this.api.getChallengeGoals().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      catchError(() => of([])),
-    ).subscribe(g => this.goals.set(Array.isArray(g) ? g : []));
+    this.api
+      .getChallengeStats()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => of(null)),
+      )
+      .subscribe((s) => this.stats.set(s));
+    this.api
+      .getChallengeGoals()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        catchError(() => of([])),
+      )
+      .subscribe((g) => this.goals.set(Array.isArray(g) ? g : []));
   }
 
   onYes(): void {

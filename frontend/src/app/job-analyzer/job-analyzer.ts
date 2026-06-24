@@ -30,7 +30,10 @@ export class JobAnalyzer {
         this.analysis = res;
         this.loading.set(false);
       },
-      error: () => { this.loading.set(false); },
+      error: () => {
+        this.loading.set(false);
+        this.toast.show('Erro ao analisar vaga', 'error');
+      },
     });
   }
 }

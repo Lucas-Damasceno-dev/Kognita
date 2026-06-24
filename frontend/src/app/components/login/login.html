@@ -1,24 +1,43 @@
 <div class="auth-container">
-  <form (ngSubmit)="submit()" class="auth-card">
+  <form #loginForm="ngForm" (ngSubmit)="submit()" class="auth-card" novalidate>
     <h1>Entrar</h1>
     <p class="subtitle">Bem-vindo de volta ao Kognita</p>
 
-    <label>
-      Email
-      <input type="email" [(ngModel)]="email" name="email" required autocomplete="email" />
-    </label>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input
+        type="email"
+        id="email"
+        #emailInput="ngModel"
+        [(ngModel)]="email"
+        name="email"
+        required
+        autocomplete="email"
+      />
+      @if (emailInput.invalid && (emailInput.dirty || emailInput.touched || loginForm.submitted)) {
+        <small class="error-text">Email é obrigatório</small>
+      }
+    </div>
 
-    <label>
-      Senha
-      <input type="password" [(ngModel)]="password" name="password" required />
-    </label>
-    <button type="submit" [disabled]="loading()">
+    <div class="form-group">
+      <label for="password">Senha</label>
+      <input
+        type="password"
+        id="password"
+        #passwordInput="ngModel"
+        [(ngModel)]="password"
+        name="password"
+        required
+      />
+      @if (passwordInput.invalid && (passwordInput.dirty || passwordInput.touched || loginForm.submitted)) {
+        <small class="error-text">Senha é obrigatória</small>
+      }
+    </div>
 
+    <button type="submit" class="btn btn-primary" [disabled]="loading()">
       {{ loading() ? 'Entrando...' : 'Entrar' }}
     </button>
 
-    <p class="footnote">
-      Não tem conta? <a routerLink="/register">Criar uma</a>
-    </p>
+    <p class="auth-link">Não tem conta? <a routerLink="/register">Criar uma</a></p>
   </form>
 </div>

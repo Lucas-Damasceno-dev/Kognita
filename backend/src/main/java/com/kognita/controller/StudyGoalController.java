@@ -34,16 +34,16 @@ public class StudyGoalController {
     }
 
     @GetMapping
-    public List<GoalResponse> findAllByUser(@AuthenticationPrincipal User user) {
-        return service.findAllByUser(user.getId());
+    public ResponseEntity<List<GoalResponse>> findAllByUser(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.findAllByUser(user.getId()));
     }
 
     @GetMapping("/page")
-    public Page<GoalResponse> findAllByUserPage(
+    public ResponseEntity<Page<GoalResponse>> findAllByUserPage(
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        return service.findAllByUser(user.getId(), PageRequest.of(page, size));
+        return ResponseEntity.ok(service.findAllByUser(user.getId(), PageRequest.of(page, size)));
     }
 
     @PostMapping
@@ -53,13 +53,13 @@ public class StudyGoalController {
     }
 
     @PutMapping("/{id}")
-    public GoalResponse update(@PathVariable UUID id, @Valid @RequestBody CreateGoalRequest request) {
-        return service.update(id, request);
+    public ResponseEntity<GoalResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateGoalRequest request) {
+        return ResponseEntity.ok(service.update(id, request));
     }
 
     @PatchMapping("/{id}/progress")
-    public GoalResponse updateProgress(@PathVariable UUID id, @RequestBody Integer hours) {
-        return service.updateProgress(id, hours);
+    public ResponseEntity<GoalResponse> updateProgress(@PathVariable UUID id, @RequestBody Integer hours) {
+        return ResponseEntity.ok(service.updateProgress(id, hours));
     }
 
     @DeleteMapping("/{id}")

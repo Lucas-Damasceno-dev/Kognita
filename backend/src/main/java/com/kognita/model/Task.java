@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
@@ -47,11 +48,14 @@ public class Task {
     @Column(name = "requires_proof")
     private boolean requiresProof;
 
-    @ManyToOne
+    @Column(name = "experience_points")
+    private int experiencePoints = 10;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subject_id")
     private Subject subject;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -97,6 +101,8 @@ public class Task {
     public void setSkillCategory(String skillCategory) { this.skillCategory = skillCategory; }
     public boolean isRequiresProof() { return requiresProof; }
     public void setRequiresProof(boolean requiresProof) { this.requiresProof = requiresProof; }
+    public int getExperiencePoints() { return experiencePoints; }
+    public void setExperiencePoints(int experiencePoints) { this.experiencePoints = experiencePoints; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
 }

@@ -6,13 +6,13 @@ import { catchError, of, timeout, tap, EMPTY } from 'rxjs';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
-import { Loading } from '../loading/loading';
+import { Skeleton } from '../skeleton/skeleton';
 import { Task } from '../models/task';
 import { Subject } from '../models/subject';
 
 @Component({
   selector: 'app-practice',
-  imports: [FormsModule, RouterLink, Loading],
+  imports: [FormsModule, RouterLink, Skeleton],
   templateUrl: './practice.html',
   styleUrl: './practice.css',
 })
@@ -44,50 +44,61 @@ export class Practice implements OnInit {
   }
 
   ngOnInit(): void {
-    this.auth.waitForUser().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      timeout(20_000),
-      catchError(() => EMPTY),
-      tap(user => {
-        if (user) this.load();
-      }),
-    ).subscribe();
+    this.auth
+      .waitForUser()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        timeout(20_000),
+        catchError(() => EMPTY),
+        tap((user) => {
+          if (user) this.load();
+        }),
+      )
+      .subscribe();
   }
 
   private load(): void {
     const user = this.auth.user();
     if (!user) return;
     this.loading.set(true);
-    this.api.getSubjects(user.id).pipe(
-      takeUntilDestroyed(this.destroyRef),
-      timeout(15_000),
-      catchError(() => of([])),
-    ).subscribe(subjects => {
-      this.subjects = Array.isArray(subjects) ? subjects : [];
-      this.loadTasks();
-    });
+    this.api
+      .getSubjects(user.id)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        timeout(15_000),
+        catchError(() => of([])),
+      )
+      .subscribe((subjects) => {
+        this.subjects = Array.isArray(subjects) ? subjects : [];
+        this.loadTasks();
+      });
   }
 
   loadTasks(): void {
     const user = this.auth.user();
     if (!user) return;
-    this.api.getPracticeTasks().pipe(
-      takeUntilDestroyed(this.destroyRef),
-      timeout(15_000),
-      catchError(() => of([])),
-    ).subscribe({
-      next: (tasks) => {
-        this.allTasks = tasks;
-        this.filterTasks();
-        this.loading.set(false);
-      },
-      error: () => { this.loading.set(false); },
-    });
+    this.api
+      .getPracticeTasks()
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        timeout(15_000),
+        catchError(() => of([])),
+      )
+      .subscribe({
+        next: (tasks) => {
+          this.allTasks = tasks;
+          this.filterTasks();
+          this.loading.set(false);
+        },
+        error: () => {
+          this.loading.set(false);
+        },
+      });
   }
 
   filterTasks(): void {
     if (this.selectedSubjectId) {
-      this.tasks = this.allTasks.filter(t => t.subjectId === this.selectedSubjectId);
+      this.tasks = this.allTasks.filter((t) => t.subjectId === this.selectedSubjectId);
     } else {
       this.tasks = [...this.allTasks];
     }
@@ -164,10 +175,11 @@ export class Practice implements OnInit {
 
     const user = this.auth.user();
     if (user) {
-      this.tasks.forEach(task => {
-        this.api.createChallengeAttempt({ taskId: task.id, usedAi: false }, user.id).pipe(
-          catchError(() => of(null)),
-        ).subscribe();
+      this.tasks.forEach((task) => {
+        this.api
+          .createChallengeAttempt({ taskId: task.id, usedAi: false }, user.id)
+          .pipe(catchError(() => of(null)))
+          .subscribe();
       });
     }
   }
