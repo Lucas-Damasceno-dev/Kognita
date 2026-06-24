@@ -1,63 +1,298 @@
 <div class="page-header">
-  <h1>Tasks</h1>
-  <button class="btn" (click)="editingId = null; showForm = !showForm; showForm ? null : resetForm()">
-    {{ showForm ? 'Cancel' : '+ Task' }}
-  </button>
+  <h1>Tarefas</h1>
+  <div class="header-actions">
+    <button class="btn btn-select" (click)="selectMode() ? exitSelectMode() : selectMode.set(true)">
+      {{ selectMode() ? 'Cancelar seleção' : 'Selecionar' }}
+    </button>
+  <button class="btn" (click)="editingId = null; showForm.update(v => !v); showForm() ? null : resetForm()">
+    {{ showForm() ? 'Cancelar' : '+ Tarefa' }}
+    </button>
+  </div>
+</div><div class="filter-bar">
+  <input type="text" [(ngModel)]="filterSearch" name="filterSearch" placeholder="Pesquisar tarefas..." (input)="applyFilter()" />
+  <select [(ngModel)]="filterStatus" name="filterStatus" (change)="applyFilter()">
+    <option value="">Todos os status</option>
+    <option value="pending">Pendente</option>
+    <option value="in_progress">Em andamento</option>
+    <option value="completed">Concluído</option>
+  </select>
+  <select [(ngModel)]="filterPriority" name="filterPriority" (change)="applyFilter()">
+    <option value="">Todas as prioridades</option>
+    <option value="low">Baixa</option>
+    <option value="medium">Média</option>
+    <option value="high">Alta</option>
+  </select>
 </div>
 
-@if (showForm) {
+@if (showForm()) {
   <form (ngSubmit)="save()" class="form-card">
     <label>
-      Title
+      Título
       <input type="text" [(ngModel)]="title" name="title" required />
     </label>
     <label>
-      Priority
+      Prioridade
       <select [(ngModel)]="priority" name="priority">
-        <option value="low">Low</option>
-        <option value="medium">Medium</option>
-        <option value="high">High</option>
+        <option value="low">Baixa</option>
+        <option value="medium">Média</option>
+        <option value="high">Alta</option>
       </select>
     </label>
     <label>
-      Subject
+      Matéria
       <select [(ngModel)]="subjectId" name="subjectId">
-        <option value="">None</option>
+        <option value="">Nenhuma</option>
         @for (s of subjects; track s.id) {
           <option [value]="s.id">{{ s.name }}</option>
         }
       </select>
     </label>
+    <label>
+      Descrição
+      <input type="text" [(ngModel)]="description" name="description" />
+    </label>
+    <label>
+      Categoria de Habilidade
+      <select [(ngModel)]="skillCategory" name="skillCategory">
+        <option value="">Nenhuma</option>
+        <option value="Teoria">Teoria</option>
+        <option value="Prática">Prática</option>
+        <option value="Memorização">Memorização</option>
+        <option value="Problemas">Problemas</option>
+        <option value="Revisão">Revisão</option>
+        <option value="Projeto">Projeto</option>
+      </select>
+    </label>
+    <label>
+      Data de entrega
+      <input type="date" [(ngModel)]="dueDate" name="dueDate" />
+    </label>
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : editingId ? 'Update' : 'Save' }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}</button>
       @if (editingId) {
-        <button type="button" class="btn" (click)="cancel()">Cancel</button>
+        <button type="button" class="btn" (click)="cancel()">Cancelar</button>
       }
     </div>
   </form>
 }
 
 @if (loading()) {
-  <app-loading />
+  <app-skeleton mode="kanban" />
 } @else {
-  <div class="list">
-    @for (item of tasks; track item.id) {
-      <div class="list-item" [class.done]="item.status === 'completed'">
-        <input type="checkbox" [checked]="item.status === 'completed'" (change)="toggleStatus(item)" />
-        <div>
-          <strong>{{ item.title }}</strong>
-          @if (item.subjectName) {
-            <span class="subject-tag">{{ item.subjectName }}</span>
+  <div class="kanban-board">
+    <div class="kanban-column">
+      <div class="column-header">
+        <h3>📋 Pendente</h3>
+        <div class="column-header-right">
+          @if (selectMode()) {
+            <input type="checkbox" class="select-all-checkbox"
+              [checked]="allSelectedIn('pending')"
+              (change)="toggleSelectAll('pending')" />
           }
-        </div>
-        <span class="priority-badge {{ item.priority }}">{{ item.priority }}</span>
-        <div class="list-actions">
-          <button class="btn btn-sm" (click)="edit(item)">Edit</button>
-          <button class="btn-icon" (click)="remove(item.id)">✕</button>
+          <span class="count">{{ pendingTasks.length }}</span>
         </div>
       </div>
-    } @empty {
-      <p class="empty">No tasks yet.</p>
-    }
+      <div id="pending" class="kanban-list"
+        [class.drag-over]="dropTargetId() === 'pending'"
+        (dragover)="onDragOver($event, 'pending')"
+        (dragleave)="onDragLeave('pending')"
+        (drop)="onDrop($event, 'pending')">
+        @for (item of pendingTasks; track item.id) {
+          <div class="kanban-item" [class.overdue]="isOverdue(item)"
+            [class.selected]="selectMode() && selectedIds().has(item.id)"
+            [class.dragging]="dragTaskId() === item.id"
+            draggable="!selectMode()"
+            (dragstart)="onDragStart(item)"
+            (dragend)="onDragEnd()">
+            <div class="kanban-item-header">
+              @if (selectMode()) {
+                <input type="checkbox" class="item-checkbox"
+                  [checked]="selectedIds().has(item.id)"
+                  (change)="toggleSelect(item.id)" />
+              }
+              <strong>{{ item.title }}</strong>
+              <span class="priority-badge {{ item.priority }}">{{ item.priority }}</span>
+            </div>
+            <div class="kanban-meta">
+              @if (item.dueDate) {
+                <span class="due-date" [class.overdue]="isOverdue(item)">📅 {{ item.dueDate }}</span>
+              }
+              @if (item.subjectName) {
+                <span class="subject-tag">{{ item.subjectName }}</span>
+              }
+              @if (item.skillCategory) {
+                <span class="skill-tag">{{ item.skillCategory }}</span>
+              }
+            </div>
+            @if (!selectMode()) {
+              <div class="kanban-actions">
+                <button class="btn-action play-btn" (click)="startPomodoro(item)" title="Iniciar Pomodoro">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                </button>
+                <button class="btn-action" (click)="moveTask(item, 'in_progress')" title="Iniciar" [disabled]="loadingTaskId() === item.id">
+                  ▶ Iniciar
+                </button>
+                <button class="btn-action complete-btn" (click)="completeTask(item)" title="Concluir" [disabled]="loadingTaskId() === item.id">
+                  ✅ Concluir
+                </button>
+                <button class="btn-action" (click)="edit(item)" title="Editar">✏️</button>
+                <button class="btn-action delete-btn" (click)="confirmDelete(item.id, item.title)" title="Excluir">🗑️</button>
+              </div>
+            }
+          </div>
+        } @empty {
+          <div class="kanban-empty">Nenhuma tarefa pendente</div>
+        }
+      </div>
+    </div>
+    <div class="kanban-column">
+      <div class="column-header">
+        <h3>⚡ Em andamento</h3>
+        <div class="column-header-right">
+          @if (selectMode()) {
+            <input type="checkbox" class="select-all-checkbox"
+              [checked]="allSelectedIn('in_progress')"
+              (change)="toggleSelectAll('in_progress')" />
+          }
+          <span class="count">{{ inProgressTasks.length }}</span>
+        </div>
+      </div>
+      <div id="in_progress" class="kanban-list"
+        [class.drag-over]="dropTargetId() === 'in_progress'"
+        (dragover)="onDragOver($event, 'in_progress')"
+        (dragleave)="onDragLeave('in_progress')"
+        (drop)="onDrop($event, 'in_progress')">
+        @for (item of inProgressTasks; track item.id) {
+          <div class="kanban-item" [class.overdue]="isOverdue(item)"
+            [class.selected]="selectMode() && selectedIds().has(item.id)"
+            [class.dragging]="dragTaskId() === item.id"
+            draggable="!selectMode()"
+            (dragstart)="onDragStart(item)"
+            (dragend)="onDragEnd()">
+            <div class="kanban-item-header">
+              @if (selectMode()) {
+                <input type="checkbox" class="item-checkbox"
+                  [checked]="selectedIds().has(item.id)"
+                  (change)="toggleSelect(item.id)" />
+              }
+              <strong>{{ item.title }}</strong>
+              <span class="priority-badge {{ item.priority }}">{{ item.priority }}</span>
+            </div>
+            <div class="kanban-meta">
+              @if (item.dueDate) {
+                <span class="due-date" [class.overdue]="isOverdue(item)">📅 {{ item.dueDate }}</span>
+              }
+              @if (item.subjectName) {
+                <span class="subject-tag">{{ item.subjectName }}</span>
+              }
+              @if (item.skillCategory) {
+                <span class="skill-tag">{{ item.skillCategory }}</span>
+              }
+            </div>
+            @if (!selectMode()) {
+              <div class="kanban-actions">
+                <button class="btn-action" (click)="moveTask(item, 'pending')" title="Voltar" [disabled]="loadingTaskId() === item.id">◀ Voltar</button>
+                <button class="btn-action complete-btn" (click)="completeTask(item)" title="Concluir" [disabled]="loadingTaskId() === item.id">
+                  ✅ Concluir
+                </button>
+                <button class="btn-action" (click)="edit(item)" title="Editar">✏️</button>
+                <button class="btn-action delete-btn" (click)="confirmDelete(item.id, item.title)" title="Excluir">🗑️</button>
+              </div>
+            }
+          </div>
+        } @empty {
+          <div class="kanban-empty">Nenhuma tarefa em andamento</div>
+        }
+      </div>
+    </div>
+    <div class="kanban-column">
+      <div class="column-header">
+        <h3>✅ Concluído</h3>
+        <div class="column-header-right">
+          @if (selectMode()) {
+            <input type="checkbox" class="select-all-checkbox"
+              [checked]="allSelectedIn('completed')"
+              (change)="toggleSelectAll('completed')" />
+          }
+          <span class="count">{{ completedTasks.length }}</span>
+        </div>
+      </div>
+      <div id="completed" class="kanban-list"
+        [class.drag-over]="dropTargetId() === 'completed'"
+        (dragover)="onDragOver($event, 'completed')"
+        (dragleave)="onDragLeave('completed')"
+        (drop)="onDrop($event, 'completed')">
+        @for (item of completedTasks; track item.id) {
+          <div class="kanban-item completed"
+            [class.selected]="selectMode() && selectedIds().has(item.id)"
+            [class.dragging]="dragTaskId() === item.id"
+            draggable="!selectMode()"
+            (dragstart)="onDragStart(item)"
+            (dragend)="onDragEnd()">
+            <div class="kanban-item-header">
+              @if (selectMode()) {
+                <input type="checkbox" class="item-checkbox"
+                  [checked]="selectedIds().has(item.id)"
+                  (change)="toggleSelect(item.id)" />
+              }
+              <strong>{{ item.title }}</strong>
+              <span class="priority-badge {{ item.priority }}">{{ item.priority }}</span>
+            </div>
+            <div class="kanban-meta">
+              @if (item.dueDate) {
+                <span class="due-date">📅 {{ item.dueDate }}</span>
+              }
+              @if (item.subjectName) {
+                <span class="subject-tag">{{ item.subjectName }}</span>
+              }
+              @if (item.skillCategory) {
+                <span class="skill-tag">{{ item.skillCategory }}</span>
+              }
+            </div>
+            @if (!selectMode()) {
+              <div class="kanban-actions">
+                <button class="btn-action" (click)="moveTask(item, 'in_progress')" title="Reabrir" [disabled]="loadingTaskId() === item.id">🔄 Reabrir</button>
+                <button class="btn-action" (click)="edit(item)" title="Editar">✏️</button>
+                <button class="btn-action delete-btn" (click)="confirmDelete(item.id, item.title)" title="Excluir">🗑️</button>
+              </div>
+            }
+          </div>
+        } @empty {
+          <div class="kanban-empty">Nenhuma tarefa concluída</div>
+        }
+      </div>
+    </div>
   </div>
+  @if (selectMode()) {
+    <div class="batch-bar">
+      <span class="batch-count">{{ selectedIds().size }} selecionada(s)</span>
+      <div class="batch-actions">
+        <button class="btn btn-primary btn-sm" (click)="batchComplete()"
+          [disabled]="selectedIds().size === 0 || batchProcessing()">
+          {{ batchProcessing() ? 'Concluindo...' : '✅ Concluir selecionadas' }}
+        </button>
+        <button class="btn btn-danger btn-sm" (click)="batchDeleteConfirm()"
+          [disabled]="selectedIds().size === 0 || batchProcessing()">
+          🗑️ Excluir selecionadas
+        </button>
+      </div>
+    </div>
+  }
+  <div class="pagination">
+    <button [disabled]="currentPage === 0 || batchProcessing()" (click)="prevPage()">Anterior</button>
+    <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+    <button [disabled]="currentPage >= totalPages - 1 || batchProcessing()" (click)="nextPage()">Próximo</button>
+  </div>
+}
+
+@if (showConfirm()) {
+  <app-confirm
+    [message]="confirmMessage"
+    [saving]="savingDelete()"
+    (confirmed)="handleConfirm()"
+    (cancelled)="handleCancel()" />
+}
+
+@if (showCheckin() && pendingCheckinTask) {
+  <app-checkin [taskName]="pendingCheckinTask.title" (confirm)="handleCheckin($event)" (cancel)="handleCheckinCancel()" />
 }

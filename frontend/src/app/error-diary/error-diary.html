@@ -1,0 +1,50 @@
+<div class="container">
+  <h2>Diário de Erros</h2>
+  
+  <button (click)="toggleForm()" class="btn-primary">
+    {{ showForm() ? 'Cancelar' : 'Registrar Novo Erro' }}
+  </button>
+
+  @if (showForm()) {
+    <div class="form">
+      @if (editingId) {
+        <p class="edit-label">Editando: <strong>{{ title }}</strong></p>
+      }
+      <input [(ngModel)]="title" placeholder="Título do Erro" class="input-field" />
+      <textarea [(ngModel)]="description" placeholder="Descrição do Erro" class="textarea-field"></textarea>
+      <textarea [(ngModel)]="solution" placeholder="Solução" class="textarea-field"></textarea>
+      <button (click)="save()" [disabled]="saving()" class="btn-primary">
+        {{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}
+      </button>
+    </div>
+  }
+
+  @if (loading()) {
+    <app-loading />
+  }
+
+  <div class="list">
+    @for (log of errorLogs; track log.id) {
+      <div class="card">
+        <div class="card-header">
+          <h3>{{ log.title }}</h3>
+          <div class="card-actions">
+            <button class="btn-icon" (click)="edit(log)" title="Editar">✏️</button>
+            <button class="btn-icon btn-icon--delete" (click)="confirmDelete(log.id)" title="Excluir">🗑️</button>
+          </div>
+        </div>
+        <p><strong>Descrição:</strong> {{ log.description }}</p>
+        <p><strong>Solução:</strong> {{ log.solution }}</p>
+        <small>{{ log.createdAt | date:'short' }}</small>
+      </div>
+    }
+  </div>
+</div>
+
+@if (showConfirm()) {
+  <app-confirm
+    [message]="confirmMessage"
+    [saving]="savingDelete()"
+    (confirmed)="handleConfirm()"
+    (cancelled)="handleCancel()" />
+}

@@ -41,6 +41,12 @@ public class Task {
     @Column(length = 10)
     private String priority = "medium";
 
+    @Column(name = "skill_category", length = 50)
+    private String skillCategory;
+
+    @Column(name = "requires_proof")
+    private boolean requiresProof;
+
     @ManyToOne
     @JoinColumn(name = "subject_id")
     private Subject subject;
@@ -87,6 +93,10 @@ public class Task {
     public void setUser(User user) { this.user = user; }
     public LocalDate getDueDate() { return dueDate; }
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
+    public String getSkillCategory() { return skillCategory; }
+    public void setSkillCategory(String skillCategory) { this.skillCategory = skillCategory; }
+    public boolean isRequiresProof() { return requiresProof; }
+    public void setRequiresProof(boolean requiresProof) { this.requiresProof = requiresProof; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
 }

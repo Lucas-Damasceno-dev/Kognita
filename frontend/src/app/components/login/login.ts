@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, HostListener, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -17,20 +17,31 @@ export class Login {
 
   email = '';
   password = '';
-  loading = false;
+  loading = signal(false);
+
+  hasUnsavedChanges(): boolean {
+    return this.email !== '' || this.password !== '';
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) event.preventDefault();
+  }
 
   submit(): void {
     if (!this.email || !this.password) return;
-    this.loading = true;
+    this.loading.set(true);
     this.auth.login(this.email, this.password).subscribe({
       next: () => {
-        this.toast.success('Welcome back!');
-        this.loading = false;
+        this.toast.success('Bem-vindo de volta!');
+        this.loading.set(false);
+        this.email = '';
+        this.password = '';
         this.router.navigate(['/dashboard']);
       },
       error: () => {
-        this.toast.error('Invalid email or password');
-        this.loading = false;
+        this.toast.error('Email ou senha inválidos');
+        this.loading.set(false);
       },
     });
   }

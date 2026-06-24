@@ -1,10 +1,10 @@
 <div class="auth-container">
   <form (ngSubmit)="submit()" class="auth-card">
-    <h1>Create account</h1>
-    <p class="subtitle">Start organizing your studies</p>
+    <h1>Criar Conta</h1>
+    <p class="subtitle">Comece a organizar seus estudos</p>
 
     <label>
-      Name
+      Nome
       <input type="text" [(ngModel)]="name" name="name" required autocomplete="name" />
     </label>
 
@@ -14,21 +14,21 @@
     </label>
 
     <label>
-      Password
+      Senha
       <input type="password" [(ngModel)]="password" name="password" required minlength="6" />
     </label>
 
     <label>
-      Confirm password
+      Confirmar senha
       <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" required />
     </label>
+    <button type="submit" [disabled]="loading()">
 
-    <button type="submit" [disabled]="loading">
-      {{ loading ? 'Creating account...' : 'Create account' }}
+      {{ loading() ? 'Criando conta...' : 'Criar Conta' }}
     </button>
 
     <p class="footnote">
-      Already have an account? <a routerLink="/login">Sign in</a>
+      Já tem conta? <a routerLink="/login">Entrar</a>
     </p>
   </form>
 </div>

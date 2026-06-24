@@ -1,0 +1,58 @@
+<div class="checkin-overlay" (click)="onCancel()">
+  <div class="checkin-modal" (click)="$event.stopPropagation()">
+    <h2>Check-in de Honestidade</h2>
+    <p>Você concluiu <strong>"{{ taskName() }}"</strong>.</p>
+
+    <!-- Stats bar -->
+    @if (stats(); as s) {
+      <div class="stats-bar">
+        <div class="stat">
+          <span class="stat-value">🔥 {{ s.currentStreak }}</span>
+          <span class="stat-label">dias de sequência</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+          <span class="stat-value">✅ {{ s.totalWithoutAi }}</span>
+          <span class="stat-label">desafios solo</span>
+        </div>
+        @if (s.todayCompleted) {
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <span class="stat-value">✅</span>
+            <span class="stat-label">já completou hoje</span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Goals -->
+    @for (goal of goals(); track goal.id) {
+      @if (goal.currentCount < goal.targetCount) {
+        <div class="goal-progress">
+          <span class="goal-label">🎯 Meta semanal: {{ goal.currentCount }}/{{ goal.targetCount }}</span>
+          <div class="goal-bar">
+            <div class="goal-fill" [style.width.%]="(goal.currentCount / goal.targetCount) * 100"></div>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- Questions -->
+    @if (config.challengeMode()) {
+      <p>Você está no <strong>Modo Zona de Prova</strong>. Registrando como feito <strong>sem IA</strong>.</p>
+      <button class="btn btn-primary" (click)="onNo()" [disabled]="saving()">🔥 Confirmar Conclusão</button>
+    } @else {
+      <p class="question">Usou IA para completar isso?</p>
+      <div class="actions">
+        <button class="btn btn-secondary" (click)="onYes()" [disabled]="saving()">
+          Sim, usei IA
+        </button>
+        <button class="btn btn-primary" (click)="onNo()" [disabled]="saving()">
+          Não, fiz sozinho 🚀
+        </button>
+      </div>
+    }
+    
+    <button class="btn-cancel" (click)="onCancel()">Cancelar</button>
+  </div>
+</div>

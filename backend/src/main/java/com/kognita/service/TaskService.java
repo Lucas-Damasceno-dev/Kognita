@@ -4,6 +4,9 @@ import com.kognita.dto.CreateTaskRequest;
 import com.kognita.dto.TaskResponse;
 import com.kognita.model.Task;
 import com.kognita.repository.TaskRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -21,8 +24,14 @@ public class TaskService {
         this.userService = userService;
     }
 
-    public List<TaskResponse> findAllByUser(UUID userId) {
-        return repository.findByUserId(userId).stream().map(TaskResponse::from).toList();
+    public Page<TaskResponse> findAllByUser(UUID userId, Pageable pageable) {
+        return repository.findByUserId(userId, pageable).map(TaskResponse::from);
+    }
+
+    public List<TaskResponse> getPracticeTasks(UUID userId) {
+        var all = repository.findByUserId(userId);
+        Collections.shuffle(all);
+        return all.stream().limit(3).map(TaskResponse::from).toList();
     }
 
     public TaskResponse findById(UUID id) {
@@ -38,6 +47,10 @@ public class TaskService {
         task.setPriority(request.priority() != null ? request.priority() : "medium");
         task.setDueDate(request.dueDate());
         task.setUser(user);
+        task.setSkillCategory(request.skillCategory());
+        if (request.requiresProof() != null) {
+            task.setRequiresProof(request.requiresProof());
+        }
         if (request.subjectId() != null) {
             task.setSubject(subjectService.findEntityById(request.subjectId()));
         }
@@ -51,6 +64,10 @@ public class TaskService {
         task.setStatus(request.status() != null ? request.status() : task.getStatus());
         task.setPriority(request.priority() != null ? request.priority() : task.getPriority());
         task.setDueDate(request.dueDate());
+        task.setSkillCategory(request.skillCategory());
+        if (request.requiresProof() != null) {
+            task.setRequiresProof(request.requiresProof());
+        }
         if (request.subjectId() != null) {
             task.setSubject(subjectService.findEntityById(request.subjectId()));
         } else {
@@ -63,6 +80,14 @@ public class TaskService {
         var task = repository.findById(id).orElseThrow();
         task.setStatus(status);
         return TaskResponse.from(repository.save(task));
+    }
+
+    public Page<TaskResponse> findAllByUserFiltered(UUID userId, String status, String priority, String search, Pageable pageable) {
+        return repository.findFiltered(userId, status, priority, search, pageable).map(TaskResponse::from);
+    }
+
+    public Task findEntityById(UUID id) {
+        return repository.findById(id).orElseThrow();
     }
 
     public void delete(UUID id) {

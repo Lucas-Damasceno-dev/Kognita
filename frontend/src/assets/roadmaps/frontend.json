@@ -1,0 +1,21 @@
+{
+  "data": {
+    "roadmap": {
+      "topics": [
+        { "name": "Internet" },
+        { "name": "HTML" },
+        { "name": "CSS" },
+        { "name": "JavaScript" },
+        { "name": "Version Control Systems (Git)" },
+        { "name": "Package Managers (npm, yarn)" },
+        { "name": "CSS Preprocessors (Sass, PostCSS)" },
+        { "name": "CSS Frameworks (Tailwind, Bootstrap)" },
+        { "name": "JavaScript Frameworks (React, Vue, Angular)" },
+        { "name": "Testing (Jest, Cypress)" },
+        { "name": "Type Checkers (TypeScript)" },
+        { "name": "Progressive Web Apps" },
+        { "name": "Server Side Rendering (Next.js, Nuxt)" }
+      ]
+    }
+  }
+}

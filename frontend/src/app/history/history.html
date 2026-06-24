@@ -1,0 +1,49 @@
+<h1>Histórico de Desafios (Sem IA)</h1>
+@if (loading()) {
+  <app-skeleton mode="list" />
+} @else {
+  <div class="history-grid">
+    @for (a of attempts(); track a.id) {
+      <div class="history-card">
+        <h3>{{ a.taskTitle }}</h3>
+        <p class="meta">{{ a.date }} @if (a.skillCategory) { | {{ a.skillCategory }} }</p>
+        
+        @if (editingId() === a.id) {
+          <textarea [ngModel]="editingNotes()" (ngModelChange)="editingNotes.set($event)" rows="3"></textarea>
+          <div class="card-actions">
+            <button class="btn btn-primary" (click)="save(a)" [disabled]="saving()">{{ saving() ? 'Salvando...' : 'Salvar' }}</button>
+            <button class="btn" (click)="editingId.set(null)">Cancelar</button>
+          </div>
+        } @else {
+          @if (a.notes) {
+            <p class="notes">{{ a.notes }}</p>
+          }
+          @if (a.howISolved) {
+            <p class="how-i-solved"><strong>Como resolvi:</strong> {{ a.howISolved }}</p>
+          }
+          <div class="card-actions">
+            <button class="btn" (click)="edit(a)">✏️ Editar</button>
+            <button class="btn" (click)="openMentorship(a)">👨‍🏫 Refatorar</button>
+          </div>
+        }
+      </div>
+    } @empty {
+      <p class="empty">Nenhum desafio concluído sem IA ainda. Complete tarefas sem ajuda para aparecerem aqui!</p>
+    }
+  </div>
+  
+  @if (showMentorship()) {
+    <div class="modal" (click)="closeMentorship()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <h3>👨‍🏫 Mentoria de Código</h3>
+        <p><strong>Passo a passo:</strong> {{ pendingMentorshipAttempt?.howISolved }}</p>
+        <p><strong>O que você melhoraria neste código?</strong></p>
+        <textarea [(ngModel)]="mentorshipReflection" placeholder="Sua reflexão..." rows="4"></textarea>
+        <div class="card-actions">
+          <button class="btn btn-primary" (click)="saveMentorship()" [disabled]="savingMentorship()">{{ savingMentorship() ? 'Salvando...' : '💾 Salvar Reflexão' }}</button>
+          <button class="btn" (click)="closeMentorship()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+  }
+}

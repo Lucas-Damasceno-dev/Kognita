@@ -15,6 +15,8 @@ public record TaskResponse(
     String subjectName,
     UUID userId,
     LocalDate dueDate,
+    String skillCategory,
+    boolean requiresProof,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt
 ) {
@@ -29,6 +31,8 @@ public record TaskResponse(
             task.getSubject() != null ? task.getSubject().getName() : null,
             task.getUser().getId(),
             task.getDueDate(),
+            task.getSkillCategory(),
+            task.isRequiresProof(),
             task.getCreatedAt(),
             task.getUpdatedAt()
         );

@@ -1,0 +1,60 @@
+<div class="page-header">
+  <h1>Metas de Desafio</h1>
+  <button class="btn" (click)="toggleForm()">
+    {{ showForm() ? 'Cancelar' : '+ Meta' }}
+  </button>
+</div>
+
+@if (showForm()) {
+  <form (ngSubmit)="save()" class="form-card">
+    <label>
+      Quantidade de desafios (alvo semanal)
+      <input type="number" [(ngModel)]="targetCount" name="targetCount" min="1" required />
+    </label>
+    <label>
+      Data limite
+      <input type="date" [(ngModel)]="deadlineDate" name="deadlineDate" required />
+    </label>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Salvando...' : 'Salvar' }}
+      </button>
+    </div>
+  </form>
+}
+
+@if (loading()) {
+  <app-loading />
+} @else {
+  <div class="list">
+    @for (goal of goals; track goal.id) {
+      <div class="list-item" [class.expired]="daysRemaining(goal.deadlineDate) < 0">
+        <div class="goal-info">
+          <strong>{{ goal.targetCount }} desafios</strong>
+          <p>
+            @if (daysRemaining(goal.deadlineDate) >= 0) {
+              Faltam {{ daysRemaining(goal.deadlineDate) }} dias
+            } @else {
+              Expirada
+            }
+          </p>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="progressPercent(goal)"></div>
+          </div>
+          <span class="progress-text">{{ goal.currentCount }} / {{ goal.targetCount }} ({{ progressPercent(goal) }}%)</span>
+        </div>
+        <button class="btn-icon" (click)="confirmDelete(goal.id, goal.targetCount)" title="Excluir">🗑️</button>
+      </div>
+    } @empty {
+      <p class="empty">Nenhuma meta de desafio ainda.</p>
+    }
+  </div>
+}
+
+@if (showConfirm()) {
+  <app-confirm
+    [message]="confirmMessage"
+    [saving]="savingDelete()"
+    (confirmed)="handleConfirm()"
+    (cancelled)="handleCancel()" />
+}

@@ -2,12 +2,16 @@ package com.kognita.controller;
 
 import com.kognita.dto.CreateSubjectRequest;
 import com.kognita.dto.SubjectResponse;
+import com.kognita.model.User;
 import com.kognita.service.SubjectService;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,8 +33,16 @@ public class SubjectController {
     }
 
     @GetMapping
-    public List<SubjectResponse> findAllByUser(@RequestParam UUID userId) {
-        return service.findAllByUser(userId);
+    public List<SubjectResponse> findAllByUser(@AuthenticationPrincipal User user) {
+        return service.findAllByUser(user.getId());
+    }
+
+    @GetMapping("/page")
+    public Page<SubjectResponse> findAllByUserPage(
+            @AuthenticationPrincipal User user,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return service.findAllByUser(user.getId(), PageRequest.of(page, size));
     }
 
     @GetMapping("/{id}")
@@ -39,8 +51,8 @@ public class SubjectController {
     }
 
     @PostMapping
-    public ResponseEntity<SubjectResponse> create(@Valid @RequestBody CreateSubjectRequest request, @RequestParam UUID userId) {
-        var response = service.create(request, userId);
+    public ResponseEntity<SubjectResponse> create(@Valid @RequestBody CreateSubjectRequest request, @AuthenticationPrincipal User user) {
+        var response = service.create(request, user.getId());
         return ResponseEntity.created(URI.create("/api/subjects/" + response.id())).body(response);
     }
 

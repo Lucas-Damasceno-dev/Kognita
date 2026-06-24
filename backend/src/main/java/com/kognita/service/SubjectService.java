@@ -6,6 +6,8 @@ import com.kognita.model.Subject;
 import com.kognita.repository.SubjectRepository;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,6 +23,10 @@ public class SubjectService {
 
     public List<SubjectResponse> findAllByUser(UUID userId) {
         return repository.findByUserId(userId).stream().map(SubjectResponse::from).toList();
+    }
+
+    public Page<SubjectResponse> findAllByUser(UUID userId, Pageable pageable) {
+        return repository.findByUserId(userId, pageable).map(SubjectResponse::from);
     }
 
     public SubjectResponse findById(UUID id) {

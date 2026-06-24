@@ -1,37 +1,207 @@
 <h1>Dashboard</h1>
 
 @if (loading()) {
-  <app-loading />
-} @else {
-  <div class="cards">
-    <div class="card">
-      <span class="card-value">{{ subjects.length }}</span>
-      <span class="card-label">Subjects</span>
-      <a routerLink="/subjects">View all</a>
+  <app-skeleton mode="dashboard" />
+} @else if (isNewUser) {
+  <div class="onboarding">
+    <div class="onboarding-header">
+      <h2>Bem-vindo ao Kognita! 🚀</h2>
+      <p>Seu dashboard ainda está vazio. Siga os passos abaixo para começar:</p>
     </div>
-    <div class="card">
-      <span class="card-value">{{ pendingTasks.length }}</span>
-      <span class="card-label">Pending tasks</span>
-      <a routerLink="/tasks">View all</a>
-    </div>
-    <div class="card">
-      <span class="card-value">{{ goals.length }}</span>
-      <span class="card-label">Goals</span>
-      <a routerLink="/goals">View all</a>
+    <div class="onboarding-steps">
+      <a routerLink="/subjects" class="onboarding-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h3>Crie sua primeira matéria</h3>
+          <p>Organize seus estudos por matérias — cada uma com cor e nome.</p>
+        </div>
+        <span class="step-action">Ir →</span>
+      </a>
+      <a routerLink="/tasks" class="onboarding-step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h3>Adicione tarefas</h3>
+          <p>Liste o que precisa estudar com prioridades e prazos.</p>
+        </div>
+        <span class="step-action">Ir →</span>
+      </a>
+      <a routerLink="/pomodoro" class="onboarding-step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h3>Registre sessões de estudo</h3>
+          <p>Use o Pomodoro ou o registro rápido para acumular horas.</p>
+        </div>
+        <span class="step-action">Ir →</span>
+      </a>
+      <a routerLink="/practice" class="onboarding-step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h3>Ative o Modo Desafio</h3>
+          <p>Treine sem IA e acompanhe sua evolução por habilidade.</p>
+        </div>
+        <span class="step-action">Ir →</span>
+      </a>
     </div>
   </div>
+} @else {
+  <div class="trust-section">
+    <div class="trust-card prominent-streak">
+      <span class="trust-label">🔥 Sequência atual</span>
+      <span class="trust-value">{{ streak }} dias</span>
+    </div>
+    <div class="trust-card">
+      <span class="trust-label">✅ Desafios solo</span>
+      <span class="trust-value">{{ totalWithoutAi }}</span>
+    </div>
+    @for (goal of challengeGoals(); track goal.id) {
+      <div class="trust-card">
+        <span class="trust-label">🎯 Meta semanal</span>
+        <span class="trust-value">{{ goal.currentCount }} / {{ goal.targetCount }}</span>
+      </div>
+    }
+  </div>
 
-  @if (pendingTasks.length > 0) {
-    <section>
-      <h2>Pending tasks</h2>
-      <div class="task-list">
-        @for (task of pendingTasks; track task.id) {
-          <div class="task-item">
-            <span class="priority-badge {{ task.priority }}">{{ task.priority }}</span>
-            <span>{{ task.title }}</span>
+  @if (confidenceSkills.length > 0) {
+    <section class="chart-card">
+      <h2>Confiança por habilidade</h2>
+      <div class="h-bar-chart">
+        @for (skill of confidenceSkills; track skill.name) {
+          <div class="h-bar-row">
+            <span class="h-bar-label">{{ skill.name }}</span>
+            <div class="h-bar-track">
+              <div class="h-bar-fill confidence-fill" [style.width.%]="skill.confidencePercent">
+                <span class="h-bar-value">{{ skill.confidencePercent }}%</span>
+              </div>
+            </div>
+            <span class="h-bar-sub">{{ skill.withoutAi }}/{{ skill.totalChallenges }}</span>
           </div>
         }
       </div>
     </section>
   }
+
+  <div class="cards">
+    <div class="card">
+      <span class="card-value">{{ subjects.length }}</span>
+      <span class="card-label">Matérias</span>
+      <a routerLink="/subjects">Ver todas</a>
+    </div>
+    <div class="card">
+      <span class="card-value">{{ pendingTasks.length }}</span>
+      <span class="card-label">Tarefas pendentes</span>
+      <a routerLink="/tasks">Ver todas</a>
+    </div>
+    <div class="card">
+      <span class="card-value">{{ goals.length }}</span>
+      <span class="card-label">Metas</span>
+      <a routerLink="/goals">Ver todas</a>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    @if (hoursPerSubject.length > 0) {
+      <section class="chart-card">
+        <h2>Horas por matéria</h2>
+        <div class="h-bar-chart">
+          @for (item of hoursPerSubject; track item.name) {
+            <div class="h-bar-row">
+              <span class="h-bar-label">{{ item.name }}</span>
+              <div class="h-bar-track">
+                <div class="h-bar-fill" [style.width.%]="(item.hours / maxHours) * 100" [style.background]="item.color">
+                  <span class="h-bar-value">{{ item.hours.toFixed(1) }}h</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (weeklyProgress.length > 0) {
+      <section class="chart-card">
+          <h2>Progresso semanal</h2>
+        <div class="v-bar-chart">
+          @for (item of weeklyProgress; track item.day) {
+            <div class="v-bar-col">
+              <div class="v-bar-track">
+                <div class="v-bar-fill" [style.height.%]="maxWeekly > 0 ? (item.hours / maxWeekly) * 100 : 0"></div>
+              </div>
+              <span class="v-bar-label">{{ item.day }}</span>
+              <span class="v-bar-value">{{ item.hours }}h</span>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <section class="chart-card">
+      <h2>Conclusão de tarefas</h2>
+      <div class="donut-container">
+        <div class="donut" [style.background]="'conic-gradient(var(--success) ' + taskCompletionRate + '%, var(--chart-donut-empty) ' + taskCompletionRate + '%)'">
+          <div class="donut-hole">
+            <span class="donut-value">{{ taskCompletionRate }}%</span>
+            <span class="donut-label">concluído</span>
+          </div>
+        </div>
+        <div class="donut-legend">
+          <span><span class="legend-dot" style="background:var(--success)"></span> Concluído</span>
+          <span><span class="legend-dot" style="background:var(--chart-donut-empty)"></span> Pendente</span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  @if (upcomingTasks.length > 0) {
+    <section>
+      <h2>Próximas tarefas (3 dias)</h2>
+      <div class="task-list">
+        @for (task of upcomingTasks; track task.id) {
+          <div class="task-item">
+            <span class="priority-badge {{ task.priority }}">{{ task.priority }}</span>
+            <span>{{ task.title }}</span>
+            <span class="due-badge">📅 {{ task.dueDate }}</span>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  @if (pendingTasks.length > 0) {
+    <section class="dashboard-section">
+      <h2>Tarefas Pendentes</h2>
+      <div class="task-list">
+        @for (task of (pendingShowAll() ? pendingTasks : pendingTasks.slice(0, pendingPageSize)); track task.id) {
+          <div class="task-item" [class.overdue]="isTaskOverdue(task)">
+            <span class="priority-badge {{ task.priority }}">{{ task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Média' : 'Baixa' }}</span>
+            <span class="task-title">{{ task.title }}</span>
+            <div class="task-item-actions">
+              <button class="btn-action-sm" (click)="startPomodoro(task)" title="Pomodoro">⏱️</button>
+              <button class="btn-action-sm complete-btn" (click)="quickCompleteTask(task)" title="Concluir" [disabled]="completingTaskId() === task.id">✅</button>
+            </div>
+          </div>
+        }
+      </div>
+      @if (pendingTasks.length > pendingPageSize) {
+        <button class="btn btn-link" (click)="pendingShowAll.update(v => !v)">
+          {{ pendingShowAll() ? 'Mostrar menos' : 'Ver todas (' + pendingTasks.length + ')' }}
+        </button>
+      }
+    </section>
+  }
+
+  <section class="dashboard-section quick-add-section">
+    <h2>Registro Rápido</h2>
+    <div class="quick-add-form">
+      <select [(ngModel)]="quickSubjectId" name="quickSubject">
+        <option value="">Matéria</option>
+        @for (s of subjects; track s.id) {
+          <option [value]="s.id">{{ s.name }}</option>
+        }
+      </select>
+      <input type="number" [(ngModel)]="quickDuration" name="quickDuration" min="1" placeholder="min" class="duration-input" />
+      <button class="btn btn-primary btn-sm" (click)="quickAddSession()" [disabled]="saving()">
+        {{ saving() ? '...' : '+ Sessão' }}
+      </button>
+    </div>
+  </section>
 }

@@ -8,6 +8,8 @@ export interface Task {
   subjectName?: string;
   userId: string;
   dueDate?: string;
+  skillCategory?: string;
+  requiresProof?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,4 +21,6 @@ export interface CreateTaskRequest {
   priority?: string;
   subjectId?: string;
   dueDate?: string;
+  skillCategory?: string;
+  requiresProof?: boolean;
 }

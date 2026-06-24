@@ -1,0 +1,58 @@
+<h1>Pomodoro</h1>
+
+<div class="pomodoro-card">
+  <div class="timer-section">
+    <div class="selectors">
+      <div class="selector-group">
+        <label>Matéria</label>
+        <select [(ngModel)]="selectedSubjectId" name="subjectId" (change)="onSubjectChange()">
+          <option value="">Selecione uma matéria</option>
+          @for (s of subjects; track s.id) {
+            <option [value]="s.id">{{ s.name }}</option>
+          }
+        </select>
+      </div>
+      @if (tasks.length > 0) {
+        <div class="selector-group">
+          <label>Tarefa (opcional)</label>
+          <select [(ngModel)]="selectedTaskId" name="taskId">
+            <option value="">Foco geral</option>
+            @for (t of tasks; track t.id) {
+              <option [value]="t.id">{{ t.title }}</option>
+            }
+          </select>
+        </div>
+      }
+    </div>
+
+    <div class="timer-ring">
+      <svg viewBox="0 0 120 120" class="progress-ring">
+        <circle cx="60" cy="60" r="54" class="ring-bg" />
+        <circle cx="60" cy="60" r="54" class="ring-fill"
+          [style.stroke-dashoffset]="(1 - progress / 100) * 339.292"
+          [class.break-mode]="isBreak()" />
+      </svg>
+      <div class="timer-display">
+        <span class="timer-label">{{ isBreak() ? 'Pausa' : 'Foco' }}</span>
+        <span class="timer-time">{{ displayTime }}</span>
+      </div>
+    </div>
+
+    <div class="timer-controls">
+      @if (!isRunning()) {
+        <button class="btn btn-primary" (click)="start()" [disabled]="saving()">
+          {{ timeLeft === 0 || isBreak() ? '▶ Iniciar' : '▶ Continuar' }}
+        </button>
+        @if (timeLeft > 0 && !isBreak()) {
+          <button class="btn" (click)="reset()">↺ Reiniciar</button>
+        }
+      } @else {
+        <button class="btn btn-warning" (click)="pause()">⏸ Pausar</button>
+      }
+    </div>
+
+    <div class="session-stats">
+      <span>Sessões concluídas: {{ sessionCount }}</span>
+    </div>
+  </div>
+</div>

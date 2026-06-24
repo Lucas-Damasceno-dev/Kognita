@@ -2,12 +2,17 @@ package com.kognita.controller;
 
 import com.kognita.dto.CreateStudySessionRequest;
 import com.kognita.dto.StudySessionResponse;
+import com.kognita.model.User;
 import com.kognita.service.StudySessionService;
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,13 +34,24 @@ public class StudySessionController {
     }
 
     @GetMapping
-    public List<StudySessionResponse> findAllByUser(@RequestParam UUID userId) {
-        return service.findAllByUser(userId);
+    public List<StudySessionResponse> findAllByUser(@AuthenticationPrincipal User user) {
+        return service.findAllByUser(user.getId());
+    }
+
+    @GetMapping("/page")
+    public Page<StudySessionResponse> findAllByUserPaginated(
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) UUID subjectId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return service.findAllByUserFiltered(user.getId(), subjectId, startDate, endDate, page, size);
     }
 
     @PostMapping
-    public ResponseEntity<StudySessionResponse> create(@Valid @RequestBody CreateStudySessionRequest request, @RequestParam UUID userId) {
-        var response = service.create(request, userId);
+    public ResponseEntity<StudySessionResponse> create(@Valid @RequestBody CreateStudySessionRequest request, @AuthenticationPrincipal User user) {
+        var response = service.create(request, user.getId());
         return ResponseEntity.created(URI.create("/api/study-sessions/" + response.id())).body(response);
     }
 

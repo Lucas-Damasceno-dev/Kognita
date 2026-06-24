@@ -23,11 +23,14 @@ class UserServiceTest {
     @Mock
     private UserRepository repository;
 
+    @Mock
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     private UserService service;
 
     @BeforeEach
     void setUp() {
-        service = new UserService(repository);
+        service = new UserService(repository, passwordEncoder);
     }
 
     @Test

@@ -1,13 +1,18 @@
 package com.kognita.controller;
 
 import com.kognita.dto.CreateTaskRequest;
+import com.kognita.dto.StatusUpdateRequest;
 import com.kognita.dto.TaskResponse;
+import com.kognita.model.User;
 import com.kognita.service.TaskService;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -30,8 +35,19 @@ public class TaskController {
     }
 
     @GetMapping
-    public List<TaskResponse> findAllByUser(@RequestParam UUID userId) {
-        return service.findAllByUser(userId);
+    public Page<TaskResponse> findAllByUser(
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) String search,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return service.findAllByUserFiltered(user.getId(), status, priority, search, PageRequest.of(page, size));
+    }
+
+    @GetMapping("/practice")
+    public List<TaskResponse> getPracticeTasks(@AuthenticationPrincipal User user) {
+        return service.getPracticeTasks(user.getId());
     }
 
     @GetMapping("/{id}")
@@ -40,8 +56,8 @@ public class TaskController {
     }
 
     @PostMapping
-    public ResponseEntity<TaskResponse> create(@Valid @RequestBody CreateTaskRequest request, @RequestParam UUID userId) {
-        var response = service.create(request, userId);
+    public ResponseEntity<TaskResponse> create(@Valid @RequestBody CreateTaskRequest request, @AuthenticationPrincipal User user) {
+        var response = service.create(request, user.getId());
         return ResponseEntity.created(URI.create("/api/tasks/" + response.id())).body(response);
     }
 
@@ -51,8 +67,8 @@ public class TaskController {
     }
 
     @PatchMapping("/{id}/status")
-    public TaskResponse updateStatus(@PathVariable UUID id, @RequestBody String status) {
-        return service.updateStatus(id, status);
+    public TaskResponse updateStatus(@PathVariable UUID id, @RequestBody StatusUpdateRequest request) {
+        return service.updateStatus(id, request.status());
     }
 
     @DeleteMapping("/{id}")

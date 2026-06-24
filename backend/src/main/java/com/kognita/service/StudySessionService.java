@@ -7,6 +7,10 @@ import com.kognita.repository.StudySessionRepository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -24,6 +28,16 @@ public class StudySessionService {
 
     public List<StudySessionResponse> findAllByUser(UUID userId) {
         return repository.findByUserId(userId).stream().map(StudySessionResponse::from).toList();
+    }
+
+    public Page<StudySessionResponse> findAllByUserPaginated(UUID userId, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "date"));
+        return repository.findByUserId(userId, pageable).map(StudySessionResponse::from);
+    }
+
+    public Page<StudySessionResponse> findAllByUserFiltered(UUID userId, UUID subjectId, LocalDate startDate, LocalDate endDate, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "date"));
+        return repository.findFiltered(userId, subjectId, startDate, endDate, pageable).map(StudySessionResponse::from);
     }
 
     public StudySessionResponse create(CreateStudySessionRequest request, UUID userId) {

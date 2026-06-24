@@ -1,7 +1,7 @@
 <div class="auth-container">
   <form (ngSubmit)="submit()" class="auth-card">
-    <h1>Sign in</h1>
-    <p class="subtitle">Welcome back to Kognita</p>
+    <h1>Entrar</h1>
+    <p class="subtitle">Bem-vindo de volta ao Kognita</p>
 
     <label>
       Email
@@ -9,16 +9,16 @@
     </label>
 
     <label>
-      Password
+      Senha
       <input type="password" [(ngModel)]="password" name="password" required />
     </label>
+    <button type="submit" [disabled]="loading()">
 
-    <button type="submit" [disabled]="loading">
-      {{ loading ? 'Signing in...' : 'Sign in' }}
+      {{ loading() ? 'Entrando...' : 'Entrar' }}
     </button>
 
     <p class="footnote">
-      Don't have an account? <a routerLink="/register">Create one</a>
+      Não tem conta? <a routerLink="/register">Criar uma</a>
     </p>
   </form>
 </div>

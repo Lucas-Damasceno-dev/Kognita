@@ -1,0 +1,19 @@
+{
+  "data": {
+    "roadmap": {
+      "topics": [
+        { "name": "Learn a Programming Language (Python, Go, Node.js)" },
+        { "name": "Understand OS Concepts" },
+        { "name": "Managing Servers" },
+        { "name": "Networking & Security" },
+        { "name": "Scripting (Bash, Python)" },
+        { "name": "CI/CD Pipelines" },
+        { "name": "Containers (Docker)" },
+        { "name": "Container Orchestration (Kubernetes)" },
+        { "name": "Infrastructure as Code (Terraform, Ansible)" },
+        { "name": "Cloud Providers (AWS, Azure, GCP)" },
+        { "name": "Monitoring & Observability (Prometheus, Grafana)" }
+      ]
+    }
+  }
+}

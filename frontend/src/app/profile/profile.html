@@ -1,0 +1,49 @@
+<h1>Perfil</h1>
+
+<form (ngSubmit)="save()" class="form-card">
+  <div class="avatar-section">
+    <div class="avatar-preview">
+      @if (avatarUrl && !avatarError()) {
+        <img [src]="avatarUrl" alt="Avatar" class="avatar-img" (error)="avatarError.set(true)" />
+      } @else {
+        <div class="avatar-placeholder">{{ name.charAt(0) }}</div>
+      }
+    </div>
+    <label class="avatar-label">
+      URL do Avatar
+      <input type="url" [(ngModel)]="avatarUrl" name="avatarUrl" placeholder="https://exemplo.com/avatar.jpg" (ngModelChange)="avatarError.set(false)" />
+    </label>
+  </div>
+
+  <label>
+    Nome
+    <input type="text" [(ngModel)]="name" name="name" required />
+  </label>
+  <label>
+    Email
+    <input type="email" [(ngModel)]="email" name="email" required />
+  </label>
+
+  <hr />
+
+  <h3>Alterar senha (opcional)</h3>
+
+  <label>
+    Senha atual
+    <input type="password" [(ngModel)]="currentPassword" name="currentPassword" autocomplete="current-password" />
+  </label>
+  <label>
+    Nova senha
+    <input type="password" [(ngModel)]="newPassword" name="newPassword" autocomplete="new-password" />
+  </label>
+  <label>
+    Confirmar nova senha
+    <input type="password" [(ngModel)]="confirmPassword" name="confirmPassword" autocomplete="new-password" />
+  </label>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary" [disabled]="saving()">
+      {{ saving() ? 'Salvando...' : 'Salvar alterações' }}
+    </button>
+  </div>
+</form>

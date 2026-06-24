@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, HostListener, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
@@ -19,23 +19,36 @@ export class Register {
   email = '';
   password = '';
   confirmPassword = '';
-  loading = false;
+  loading = signal(false);
+
+  hasUnsavedChanges(): boolean {
+    return this.name !== '' || this.email !== '' || this.password !== '' || this.confirmPassword !== '';
+  }
+
+  @HostListener('window:beforeunload', ['$event'])
+  onBeforeUnload(event: BeforeUnloadEvent): void {
+    if (this.hasUnsavedChanges()) event.preventDefault();
+  }
 
   submit(): void {
     if (this.password !== this.confirmPassword) {
-      this.toast.error('Passwords do not match');
+      this.toast.error('Senhas não conferem');
       return;
     }
-    this.loading = true;
+    this.loading.set(true);
     this.auth.register(this.name, this.email, this.password).subscribe({
       next: () => {
-        this.toast.success('Account created!');
-        this.loading = false;
+        this.toast.success('Conta criada!');
+        this.loading.set(false);
+        this.name = '';
+        this.email = '';
+        this.password = '';
+        this.confirmPassword = '';
         this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        this.toast.error(err.status === 409 ? 'Email already in use' : 'Registration failed');
-        this.loading = false;
+        this.toast.error(err.status === 409 ? 'Email já está em uso' : 'Falha ao criar conta');
+        this.loading.set(false);
       },
     });
   }

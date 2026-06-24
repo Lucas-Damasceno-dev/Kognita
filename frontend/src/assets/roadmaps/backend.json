@@ -1,0 +1,21 @@
+{
+  "data": {
+    "roadmap": {
+      "topics": [
+        { "name": "Internet & OS General Knowledge" },
+        { "name": "Learn a Language (Java, Go, Python, Node.js)" },
+        { "name": "Version Control (Git)" },
+        { "name": "Relational Databases (PostgreSQL, MySQL)" },
+        { "name": "NoSQL Databases (MongoDB, Redis)" },
+        { "name": "APIs (REST, GraphQL, gRPC)" },
+        { "name": "Caching" },
+        { "name": "Web Security (CORS, JWT, OAuth)" },
+        { "name": "Testing (Unit, Integration)" },
+        { "name": "CI/CD (GitHub Actions, Jenkins)" },
+        { "name": "Design Patterns" },
+        { "name": "Containerization (Docker)" },
+        { "name": "Message Brokers (RabbitMQ, Kafka)" }
+      ]
+    }
+  }
+}

@@ -1,43 +1,64 @@
 <div class="page-header">
-  <h1>Study Sessions</h1>
-  <button class="btn" (click)="editingId = null; showForm = !showForm; showForm ? null : resetForm()">
-    {{ showForm ? 'Cancel' : '+ Session' }}
+  <h1>Sessões de Estudo</h1>
+  <button class="btn" (click)="editingId = null; showForm.update(v => !v); showForm() ? null : resetForm()">
+    {{ showForm() ? 'Cancelar' : '+ Sessão' }}
   </button>
 </div>
 
-@if (showForm) {
+@if (showForm()) {
   <form (ngSubmit)="save()" class="form-card">
     <label>
-      Subject
+      Matéria
       <select [(ngModel)]="subjectId" name="subjectId" required>
-        <option value="">Select a subject</option>
+        <option value="">Selecione uma matéria</option>
         @for (s of subjects; track s.id) {
           <option [value]="s.id">{{ s.name }}</option>
         }
       </select>
     </label>
     <label>
-      Duration (minutes)
+      Duração (minutos)
       <input type="number" [(ngModel)]="durationMinutes" name="duration" min="1" required />
     </label>
     <label>
-      Notes
+      Anotações
       <input type="text" [(ngModel)]="notes" name="notes" />
     </label>
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" [disabled]="saving">{{ saving ? 'Saving...' : editingId ? 'Update' : 'Save' }}</button>
+      <button type="submit" class="btn btn-primary" [disabled]="saving()">{{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}</button>
       @if (editingId) {
-        <button type="button" class="btn" (click)="cancel()">Cancel</button>
+        <button type="button" class="btn" (click)="cancel()">Cancelar</button>
       }
     </div>
   </form>
 }
 
 @if (loading()) {
-  <app-loading />
+  <app-skeleton mode="list" />
 } @else {
+  <div class="filter-bar">
+    <select [(ngModel)]="filterSubjectId" name="filterSubjectId" (change)="applyFilter()">
+      <option value="">Todas as matérias</option>
+      @for (s of subjects; track s.id) {
+        <option [value]="s.id">{{ s.name }}</option>
+      }
+    </select>
+    <input type="date" [(ngModel)]="startDate" name="startDate" (change)="applyFilter()" placeholder="Data início" />
+    <input type="date" [(ngModel)]="endDate" name="endDate" (change)="applyFilter()" placeholder="Data fim" />
+  </div>
+  <div class="sort-bar">
+    <button class="sort-btn" [class.active]="sortBy === 'subjectName'" (click)="setSort('subjectName')">
+      Matéria {{ sortBy === 'subjectName' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+    </button>
+    <button class="sort-btn" [class.active]="sortBy === 'date'" (click)="setSort('date')">
+      Data {{ sortBy === 'date' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+    </button>
+    <button class="sort-btn" [class.active]="sortBy === 'durationMinutes'" (click)="setSort('durationMinutes')">
+      Duração {{ sortBy === 'durationMinutes' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}
+    </button>
+  </div>
   <div class="list">
-    @for (item of sessions; track item.id) {
+    @for (item of sortedSessions; track item.id) {
       <div class="list-item">
         <div>
           <strong>{{ item.subjectName }}</strong>
@@ -48,12 +69,25 @@
         </div>
         <span class="date">{{ item.date }}</span>
         <div class="list-actions">
-          <button class="btn btn-sm" (click)="edit(item)">Edit</button>
-          <button class="btn-icon" (click)="remove(item.id)">✕</button>
+          <button class="btn btn-sm" (click)="edit(item)">Editar</button>
+          <button class="btn-icon" (click)="confirmDelete(item.id, item.subjectName + ' session')">✕</button>
         </div>
       </div>
     } @empty {
-      <p class="empty">No sessions yet.</p>
+      <p class="empty">Nenhuma sessão ainda.</p>
     }
   </div>
+  <div class="pagination">
+    <button [disabled]="page === 0" (click)="prevPage()">Anterior</button>
+    <span>Página {{ page + 1 }} de {{ totalPages }}</span>
+    <button [disabled]="page >= totalPages - 1" (click)="nextPage()">Próximo</button>
+  </div>
+}
+
+@if (showConfirm()) {
+  <app-confirm
+    [message]="confirmMessage"
+    [saving]="savingDelete()"
+    (confirmed)="handleConfirm()"
+    (cancelled)="handleCancel()" />
 }

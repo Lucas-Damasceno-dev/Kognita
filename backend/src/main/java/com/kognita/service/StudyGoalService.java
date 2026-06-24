@@ -6,6 +6,8 @@ import com.kognita.model.StudyGoal;
 import com.kognita.repository.StudyGoalRepository;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,6 +23,10 @@ public class StudyGoalService {
 
     public List<GoalResponse> findAllByUser(UUID userId) {
         return repository.findByUserId(userId).stream().map(GoalResponse::from).toList();
+    }
+
+    public Page<GoalResponse> findAllByUser(UUID userId, Pageable pageable) {
+        return repository.findByUserId(userId, pageable).map(GoalResponse::from);
     }
 
     public GoalResponse create(CreateGoalRequest request, UUID userId) {

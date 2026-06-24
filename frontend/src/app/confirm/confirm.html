@@ -1,0 +1,9 @@
+<div class="confirm-overlay" (click)="onCancel()">
+  <div class="confirm-dialog" (click)="$event.stopPropagation()">
+    <p>{{ message() }}</p>
+    <div class="confirm-actions">
+      <button class="btn btn-danger" (click)="onConfirm()" [disabled]="saving()">{{ saving() ? 'Excluindo...' : confirmText() }}</button>
+      <button class="btn" (click)="onCancel()">{{ cancelText() }}</button>
+    </div>
+  </div>
+</div>

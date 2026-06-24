@@ -1,0 +1,65 @@
+<h1>Importar</h1>
+
+<section class="import-card">
+  <div class="card-header">
+    <h2>📂 Importar Estrutura de Estudos</h2>
+    <p>Crie categorias (matérias) e adicione as tarefas que deseja importar.</p>
+  </div>
+
+  <div class="categories-list">
+    @for (cat of categories(); track trackByIndex($index); let ci = $index) {
+      <div class="category-block">
+        <div class="category-header">
+          <input type="text" [(ngModel)]="cat.name" name="catName{{ci}}" placeholder="Nome da matéria (ex: React, Docker, SQL)" class="input cat-input" />
+          <button class="btn-icon danger" (click)="removeCategory(ci)" title="Remover categoria">✕</button>
+        </div>
+        <div class="tasks-list">
+          @for (task of cat.tasks; track trackByIndex($index); let ti = $index) {
+            <div class="task-row">
+              <input type="text" [(ngModel)]="cat.tasks[ti]" name="taskName{{ci}}_{{ti}}" placeholder="Nome da tarefa" class="input task-input" />
+              <button class="btn-icon" (click)="removeTask(ci, ti)" title="Remover tarefa">✕</button>
+            </div>
+          }
+        </div>
+        <button class="btn-link" (click)="addTask(ci)">+ Adicionar tarefa</button>
+      </div>
+    }
+  </div>
+
+  @if (categories().length === 0) {
+    <div class="empty-state">
+      <p>Nenhuma categoria adicionada ainda.</p>
+    </div>
+  }
+
+  <div class="card-actions">
+    <button class="btn btn-primary" (click)="addCategory()">+ Adicionar Categoria</button>
+    @if (validPayload.length > 0) {
+      <button class="btn btn-success" (click)="importStudies()" [disabled]="saving() || hasEmptyFields">
+        {{ saving() ? 'Importando...' : '📥 Importar ' + validPayload.length + ' categorias' }}
+      </button>
+    }
+  </div>
+</section>
+
+<section class="import-card">
+  <div class="card-header">
+    <h2>🗺️ Importar Roadmap do roadmap.sh</h2>
+    <p>Selecione um roadmap para importar como matérias e tarefas.</p>
+  </div>
+
+  <div class="roadmap-form">
+    <select [(ngModel)]="selectedRoadmap" (change)="loadRoadmap()" class="input">
+      <option value="">Selecione um Roadmap</option>
+      <option value="backend">Backend</option>
+      <option value="frontend">Frontend</option>
+      <option value="devops">DevOps</option>
+    </select>
+
+    <textarea [(ngModel)]="roadmapJson" placeholder="Conteúdo do roadmap (JSON)" class="input roadmap-textarea" rows="8"></textarea>
+
+    <button class="btn btn-primary" (click)="importRoadmap()" [disabled]="!roadmapJson().trim()">
+      📥 Importar Roadmap
+    </button>
+  </div>
+</section>

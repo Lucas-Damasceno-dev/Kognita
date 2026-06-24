@@ -1,0 +1,309 @@
+h1 {
+  margin: 0 0 1rem;
+  color: var(--text);
+}
+
+.practice-desc {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.practice-start {
+  max-width: 500px;
+}
+
+.practice-config {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.practice-config label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.practice-config select {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--input-border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  background: var(--bg-card);
+  color: var(--text);
+  min-width: 180px;
+}
+
+.task-count {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.btn-start {
+  font-size: 1rem;
+  padding: 0.75rem 2rem;
+}
+
+.empty {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.empty a {
+  color: var(--primary);
+}
+
+/* Active practice */
+.practice-active {
+  max-width: 600px;
+}
+
+.practice-header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.practice-timer {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.timer-ring-svg {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.ring-bg {
+  fill: none;
+  stroke: var(--chart-bar-bg);
+  stroke-width: 6;
+}
+
+.ring-fill {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-dasharray: 339.292;
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+.practice-timer.warning .ring-fill {
+  stroke: var(--overdue);
+}
+
+.practice-timer.paused .ring-fill {
+  stroke: var(--text-muted);
+  animation: none;
+}
+
+.practice-timer.paused .timer-value {
+  color: var(--text-muted);
+}
+
+.practice-timer.paused .timer-label {
+  color: var(--priority-medium-text);
+}
+
+.timer-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+}
+
+.timer-label {
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.timer-value {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.practice-timer.warning .timer-value {
+  color: var(--overdue);
+}
+
+.practice-progress-info {
+  flex: 1;
+}
+
+.practice-progress-info span {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.progress-dots {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--chart-bar-bg);
+  transition: 0.15s;
+}
+
+.dot.active {
+  background: var(--primary);
+  transform: scale(1.3);
+}
+
+.dot.done {
+  background: var(--success);
+}
+
+.task-card {
+  background: var(--bg-card);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  margin-bottom: 1.5rem;
+}
+
+.task-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.task-card-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--text);
+}
+
+.priority-badge {
+  font-size: 0.65rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 99px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.priority-badge.high { background: var(--priority-high-bg); color: var(--priority-high-text); }
+.priority-badge.medium { background: var(--priority-medium-bg); color: var(--priority-medium-text); }
+.priority-badge.low { background: var(--priority-low-bg); color: var(--priority-low-text); }
+
+.task-desc {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.practice-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.btn {
+  padding: 0.6rem 1.5rem;
+  border: 1px solid var(--btn-border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: 0.15s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btn:hover {
+  background: var(--btn-hover-bg);
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+  border: none;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-primary:disabled,
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-warning {
+  background: var(--priority-medium-bg);
+  color: var(--priority-medium-text);
+  border: 1px solid rgba(180, 83, 9, 0.3);
+}
+
+.btn-warning:hover {
+  background: rgba(180, 83, 9, 0.2);
+}
+
+/* Finished */
+.practice-finished {
+  text-align: center;
+  padding: 3rem 1rem;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.finish-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.practice-finished h2 {
+  color: var(--text);
+  margin: 0 0 0.75rem;
+}
+
+.practice-finished p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin: 0 0 0.5rem;
+}
+
+.finish-note {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.finish-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
