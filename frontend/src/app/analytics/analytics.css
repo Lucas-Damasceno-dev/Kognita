@@ -142,3 +142,66 @@
     font-size: 1.25rem;
   }
 }
+
+.v-bar div.retention-fill {
+  background: linear-gradient(to top, var(--primary), #a78bfa);
+}
+
+@media print {
+  .no-print,
+  .btn,
+  .btn-ghost,
+  .view-toggle,
+  aside,
+  .sidebar,
+  .navbar {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt !important;
+  }
+
+  .chart-card {
+    border: 1px solid #cccccc !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    margin-bottom: 2rem !important;
+    padding: 1rem !important;
+  }
+
+  .challenge-fill {
+    background-color: #3b82f6 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .v-bar > div {
+    background-color: #e5e7eb !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .v-bar div.retention-fill {
+    background: #8b5cf6 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .skill-row-bar-fill {
+    background: #3b82f6 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .heatmap-cell.level-0 { background: #ebedf0 !important; }
+  .heatmap-cell.level-1 { background: #c6e48b !important; }
+  .heatmap-cell.level-2 { background: #7bc96f !important; }
+  .heatmap-cell.level-3 { background: #239a3b !important; }
+  .heatmap-cell.level-4 { background: #196127 !important; }
+}
+

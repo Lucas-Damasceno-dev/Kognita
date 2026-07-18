@@ -7,6 +7,7 @@ import { AuthService } from '../services/auth.service';
 import { Skeleton } from '../skeleton/skeleton';
 import { StudySession } from '../models/study-session';
 import { ChallengeAttempt } from '../models/challenge-attempt';
+import { Flashcard } from '../models/flashcard';
 
 @Component({
   selector: 'app-analytics',
@@ -25,6 +26,9 @@ export class Analytics implements OnInit {
   weeklyHours: { label: string; hours: number }[] = [];
   monthlyHours: { label: string; hours: number }[] = [];
   weeklyChallenges: { label: string; count: number }[] = [];
+  heatmapDays: { date: string; count: number; level: number; tooltip: string }[] = [];
+  forgettingCurvePoints: { label: string; retention: number }[] = [];
+  skillDistribution: { label: string; percentage: number; minutes: number }[] = [];
   totalHours = 0;
   totalSessions = 0;
   avgSessionMin = 0;
@@ -47,22 +51,90 @@ export class Analytics implements OnInit {
     forkJoin({
       sessions: this.api.getSessions().pipe(catchError(() => of([] as StudySession[]))),
       history: this.api.getHistory().pipe(catchError(() => of([] as ChallengeAttempt[]))),
+      flashcards: this.api.getFlashcards().pipe(catchError(() => of([] as Flashcard[]))),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((r) => {
         const sessions = Array.isArray(r.sessions) ? r.sessions : [];
         const history = Array.isArray(r.history) ? r.history : [];
+        const flashcards = Array.isArray(r.flashcards) ? r.flashcards : [];
         this.computeWeekly(sessions, history);
         this.computeMonthly(sessions, history);
+        this.computeHeatmap(sessions, history);
+        this.computeForgettingCurve(flashcards);
+        this.computeSkillDistribution(sessions);
         this.totalSessions = sessions.length;
         this.totalHours =
           Math.round((sessions.reduce((a, s) => a + s.durationMinutes, 0) / 60) * 10) / 10;
         this.avgSessionMin =
           sessions.length > 0
-            ? Math.round(sessions.reduce((a, s) => a + s.durationMinutes, 0) / sessions.length)
-            : 0;
+             ? Math.round(sessions.reduce((a, s) => a + s.durationMinutes, 0) / sessions.length)
+             : 0;
         this.loading.set(false);
       });
+  }
+
+  private computeHeatmap(sessions: StudySession[], history: ChallengeAttempt[]): void {
+    const activityMap = new Map<string, number>();
+
+    // Count sessions
+    for (const s of sessions) {
+      const key = s.date; // YYYY-MM-DD
+      activityMap.set(key, (activityMap.get(key) || 0) + 1);
+    }
+
+    // Count challenges (attempts)
+    for (const h of history) {
+      const key = h.createdAt.substring(0, 10); // YYYY-MM-DD
+      activityMap.set(key, (activityMap.get(key) || 0) + 1);
+    }
+
+    // Generate dates starting from Sunday 52 weeks ago
+    const today = new Date();
+    const daysToShow = 365;
+    const heatmapList = [];
+
+    // Find the Sunday of the week 52 weeks ago
+    const startDate = new Date(today);
+    startDate.setDate(today.getDate() - daysToShow);
+    const startDayOfWeek = startDate.getDay();
+    // Adjust startDate to the nearest Sunday
+    startDate.setDate(startDate.getDate() - startDayOfWeek);
+
+    const endDate = new Date(today);
+    // Adjust endDate to the nearest Saturday to complete the last week
+    const endDayOfWeek = endDate.getDay();
+    endDate.setDate(endDate.getDate() + (6 - endDayOfWeek));
+
+    const temp = new Date(startDate);
+    while (temp <= endDate) {
+      const key = temp.toISOString().split('T')[0];
+      const count = activityMap.get(key) || 0;
+      
+      let level = 0;
+      if (count === 1) level = 1;
+      else if (count === 2) level = 2;
+      else if (count >= 3 && count < 5) level = 3;
+      else if (count >= 5) level = 4;
+
+      const formattedDate = temp.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+      const tooltip = `${formattedDate}: ${count} ${count === 1 ? 'atividade' : 'atividades'}`;
+
+      heatmapList.push({
+        date: key,
+        count,
+        level,
+        tooltip
+      });
+
+      temp.setDate(temp.getDate() + 1);
+    }
+
+    this.heatmapDays = heatmapList;
   }
 
   private computeWeekly(sessions: StudySession[], history: ChallengeAttempt[]): void {
@@ -138,6 +210,60 @@ export class Analytics implements OnInit {
     }
   }
 
+  private computeForgettingCurve(cards: Flashcard[]): void {
+    this.forgettingCurvePoints = [];
+    if (!cards || cards.length === 0) {
+      // Mock curve for empty state
+      for (let day = 0; day <= 30; day += 3) {
+        const retention = Math.round(100 * Math.exp(-day / 10));
+        this.forgettingCurvePoints.push({ label: `D+${day}`, retention });
+      }
+      return;
+    }
+
+    for (let day = 0; day <= 30; day += 3) {
+      let totalRetention = 0;
+      for (const card of cards) {
+        const s = card.intervalDays > 0 ? card.intervalDays : 1;
+        const retention = Math.exp(-day / s);
+        totalRetention += retention;
+      }
+      const avgRetentionPercent = Math.round((totalRetention / cards.length) * 100);
+      this.forgettingCurvePoints.push({ label: `D+${day}`, retention: avgRetentionPercent });
+    }
+  }
+
+  private computeSkillDistribution(sessions: any[]): void {
+    this.skillDistribution = [];
+    if (!sessions || sessions.length === 0) {
+      this.skillDistribution = [
+        { label: 'Geral', percentage: 100, minutes: 0 }
+      ];
+      return;
+    }
+
+    const skillMap = new Map<string, number>();
+    let totalMin = 0;
+    for (const s of sessions) {
+      const name = s.subjectName || 'Geral';
+      skillMap.set(name, (skillMap.get(name) || 0) + s.durationMinutes);
+      totalMin += s.durationMinutes;
+    }
+
+    if (totalMin === 0) {
+      this.skillDistribution = [
+        { label: 'Geral', percentage: 100, minutes: 0 }
+      ];
+      return;
+    }
+
+    const sorted = [...skillMap.entries()].sort((a, b) => b[1] - a[1]);
+    for (const [name, mins] of sorted) {
+      const pct = Math.round((mins / totalMin) * 100);
+      this.skillDistribution.push({ label: name, percentage: pct, minutes: mins });
+    }
+  }
+
   get maxWeeklyHours(): number {
     return Math.max(...this.weeklyHours.map((w) => w.hours), 1);
   }
@@ -152,5 +278,9 @@ export class Analytics implements OnInit {
 
   switchView(v: 'weekly' | 'monthly'): void {
     this.view = v;
+  }
+
+  exportPDF(): void {
+    window.print();
   }
 }
