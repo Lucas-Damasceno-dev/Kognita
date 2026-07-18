@@ -17,6 +17,7 @@ public record TaskResponse(
     LocalDate dueDate,
     String skillCategory,
     boolean requiresProof,
+    boolean verifiedByGit,
     OffsetDateTime createdAt,
     OffsetDateTime updatedAt
 ) {
@@ -33,6 +34,7 @@ public record TaskResponse(
             task.getDueDate(),
             task.getSkillCategory(),
             task.isRequiresProof(),
+            task.isVerifiedByGit(),
             task.getCreatedAt(),
             task.getUpdatedAt()
         );

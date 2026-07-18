@@ -15,6 +15,8 @@ public record ChallengeAttemptResponse(
     String howISolved,
     String skillCategory,
     LocalDate date,
+    String gitCommitHash,
+    boolean verifiedByGit,
     OffsetDateTime createdAt
 ) {
     public static ChallengeAttemptResponse from(ChallengeAttempt attempt) {
@@ -28,6 +30,8 @@ public record ChallengeAttemptResponse(
             attempt.getHowISolved(),
             attempt.getSkillCategory(),
             attempt.getDate(),
+            attempt.getGitCommitHash(),
+            attempt.isVerifiedByGit(),
             attempt.getCreatedAt()
         );
     }

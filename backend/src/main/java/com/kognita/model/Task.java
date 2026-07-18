@@ -62,6 +62,9 @@ public class Task {
     @Column(name = "due_date")
     private LocalDate dueDate;
 
+    @Column(name = "verified_by_git")
+    private boolean verifiedByGit = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -103,6 +106,8 @@ public class Task {
     public void setRequiresProof(boolean requiresProof) { this.requiresProof = requiresProof; }
     public int getExperiencePoints() { return experiencePoints; }
     public void setExperiencePoints(int experiencePoints) { this.experiencePoints = experiencePoints; }
+    public boolean isVerifiedByGit() { return verifiedByGit; }
+    public void setVerifiedByGit(boolean verifiedByGit) { this.verifiedByGit = verifiedByGit; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
 }

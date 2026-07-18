@@ -34,6 +34,8 @@ public class ChallengeAttempt {
     private boolean usedAi;
 
     private String notes;
+
+    @Column(name = "how_i_solved")
     private String howISolved;
 
     @Column(name = "skill_category", length = 50)
@@ -41,6 +43,12 @@ public class ChallengeAttempt {
 
     @Column(nullable = false)
     private LocalDate date;
+
+    @Column(name = "git_commit_hash")
+    private String gitCommitHash;
+
+    @Column(name = "verified_by_git")
+    private boolean verifiedByGit = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
@@ -71,5 +79,9 @@ public class ChallengeAttempt {
     public void setSkillCategory(String skillCategory) { this.skillCategory = skillCategory; }
     public LocalDate getDate() { return date; }
     public void setDate(LocalDate date) { this.date = date; }
+    public String getGitCommitHash() { return gitCommitHash; }
+    public void setGitCommitHash(String gitCommitHash) { this.gitCommitHash = gitCommitHash; }
+    public boolean isVerifiedByGit() { return verifiedByGit; }
+    public void setVerifiedByGit(boolean verifiedByGit) { this.verifiedByGit = verifiedByGit; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
 }

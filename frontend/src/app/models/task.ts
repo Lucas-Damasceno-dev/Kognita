@@ -10,6 +10,7 @@ export interface Task {
   dueDate?: string;
   skillCategory?: string;
   requiresProof?: boolean;
+  verifiedByGit: boolean;
   createdAt: string;
   updatedAt: string;
 }
