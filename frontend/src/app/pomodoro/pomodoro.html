@@ -7,13 +7,15 @@
       <select [(ngModel)]="selectedSubjectId" name="subjectId" (change)="onSubjectChange()" style="width: 100%; margin-top: 0.25rem;">
         <option value="">Selecione uma matéria</option>
         @for (s of subjects; track s.id) {
-          <option [value]="s.id">{{ s.name }}</option>
+          <option [value]="s.id">
+            {{ s.name }}{{ isWeeklySubject(s.id) ? ' (🎯 1.5x XP!)' : '' }}
+          </option>
         }
       </select>
     </label>
     @if (tasks.length > 0) {
       <label style="margin-top: 0.75rem;">
-        Tarefa (opcional)
+        desafio (opcional)
         <select [(ngModel)]="selectedTaskId" name="taskId" style="width: 100%; margin-top: 0.25rem;">
           <option value="">Foco geral</option>
           @for (t of tasks; track t.id) {
@@ -42,17 +44,22 @@
     </div>
   </div>
 
-  <div class="timer-controls">
-    @if (!isRunning()) {
-      <button class="btn btn-primary" (click)="start()" [disabled]="saving()" [attr.aria-label]="timeLeft === 0 || isBreak() ? 'Iniciar' : 'Continuar'">
-        {{ timeLeft === 0 || isBreak() ? '▶ Iniciar' : '▶ Continuar' }}
-      </button>
-      @if (timeLeft > 0 && !isBreak()) {
-        <button class="btn btn-ghost" (click)="reset()" aria-label="Reiniciar">↺ Reiniciar</button>
+  <div class="timer-controls" style="display: flex; flex-direction: column; gap: 0.75rem; align-items: center; width: 100%;">
+    <div style="display: flex; gap: 0.5rem; width: 100%; justify-content: center;">
+      @if (!isRunning()) {
+        <button class="btn btn-primary" (click)="start()" [disabled]="saving()" [attr.aria-label]="timeLeft === 0 || isBreak() ? 'Iniciar' : 'Continuar'">
+          {{ timeLeft === 0 || isBreak() ? '▶ Iniciar' : '▶ Continuar' }}
+        </button>
+        @if (timeLeft > 0 && !isBreak()) {
+          <button class="btn btn-ghost" (click)="reset()" aria-label="Reiniciar">↺ Reiniciar</button>
+        }
+      } @else {
+        <button class="btn btn-ghost" (click)="pause()" aria-label="Pausar">⏸ Pausar</button>
       }
-    } @else {
-      <button class="btn btn-ghost" (click)="pause()" aria-label="Pausar">⏸ Pausar</button>
-    }
+    </div>
+    <button class="btn btn-ghost btn-sm" (click)="toggleZenMode()" style="width: 100%; max-width: 200px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem;">
+      🧘 Modo Zen (Foco Imersivo)
+    </button>
   </div>
 
   <div class="timer-info">
@@ -66,3 +73,74 @@
     </div>
   </div>
 </div>
+
+@if (zenMode()) {
+  <div class="zen-overlay" style="position: fixed; inset: 0; background: #0b0f19; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ffffff; padding: 2rem; box-sizing: border-box; font-family: system-ui, sans-serif;">
+    <button (click)="toggleZenMode()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; color: white; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" title="Sair do Modo Zen">✕</button>
+
+    <div style="text-align: center; margin-bottom: 2rem;">
+      <span style="font-size: 0.9rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary, #3b82f6); font-weight: 600;">Modo Foco Zen</span>
+      <h2 style="margin: 0.5rem 0 0 0; font-size: 1.75rem; font-weight: 500;">Estudando</h2>
+    </div>
+
+    <!-- Central Timer Display -->
+    <div style="font-size: 8rem; font-weight: 300; font-family: monospace; line-height: 1; letter-spacing: -0.05em; margin: 1rem 0; color: #ffffff; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">
+      {{ displayTime }}
+    </div>
+
+    <!-- Active Session/Break Phase badge -->
+    <div style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; padding: 0.35rem 1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3rem;">
+      {{ isBreak() ? 'Pausa' : 'Sessão de Foco' }}
+    </div>
+
+    <!-- Control Buttons -->
+    <div style="display: flex; gap: 1rem; margin-bottom: 4rem; align-items: center;">
+      @if (!isRunning()) {
+        <button (click)="start()" style="background: #3b82f6; border: none; color: white; padding: 0.75rem 2rem; border-radius: 30px; font-size: 1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); display: flex; align-items: center; gap: 0.5rem;">
+          ▶ Iniciar
+        </button>
+        @if (timeLeft > 0 && !isBreak()) {
+          <button (click)="reset()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem 1.5rem; border-radius: 30px; font-size: 0.95rem; cursor: pointer;">
+            ↺ Reset
+          </button>
+        }
+      } @else {
+        <button (click)="pause()" style="background: rgba(255,255,255,0.15); border: none; color: white; padding: 0.75rem 2rem; border-radius: 30px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+          ⏸ Pausar
+        </button>
+      }
+    </div>
+
+    <!-- Sound Control Selector -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.05); padding: 1rem 1.5rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); min-width: 250px;">
+      <span style="font-size: 0.8rem; color: #9ca3af; font-weight: 500;">🎧 Sons Ambientes de Foco</span>
+      <select [(ngModel)]="selectedAmbientSound" (change)="onAmbientSoundChange()" style="background: #111827; border: 1px solid #374151; color: white; padding: 0.5rem; border-radius: 6px; width: 100%; cursor: pointer; outline: none;">
+        <option value="none">Nenhum som (Silencioso)</option>
+        <option value="white">Ruído Branco (Estático Suave)</option>
+        <option value="pink">Ruído Rosa (Som de Chuva)</option>
+        <option value="brown">Ruído Marrom (Cachoeira/Oceano)</option>
+      </select>
+    </div>
+  </div>
+}
+
+
+@if (showConfirmTaskComplete()) {
+  <app-confirm
+    title="Desafio Concluído?"
+    message="O timer acabou. Você conseguiu finalizar o desafio que estava trabalhando?"
+    confirmText="Sim, terminei!"
+    cancelText="Ainda não"
+    confirmStyle="primary"
+    (confirm)="handleTaskCompleteConfirm()"
+    (cancel)="handleTaskCompleteCancel()"
+  />
+}
+
+@if (showCheckin()) {
+  <app-checkin
+    [taskName]="'Desafio'"
+    (confirm)="handleCheckin($event)"
+    (cancel)="handleCheckinCancel()"
+  />
+}

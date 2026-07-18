@@ -31,7 +31,7 @@ export class Tasks implements OnInit {
   tasks = signal<Task[]>([]);
   subjects = signal<Subject[]>([]);
   currentPage = signal(0);
-  pageSize = signal(10);
+  pageSize = signal(100);
   totalPages = signal(0);
   
   title = signal('');
@@ -80,9 +80,59 @@ export class Tasks implements OnInit {
     return arr;
   });
 
-  pendingTasks = computed(() => this.sortedTasks().filter((t) => t.status === 'pending'));
-  inProgressTasks = computed(() => this.sortedTasks().filter((t) => t.status === 'in_progress'));
-  completedTasks = computed(() => this.sortedTasks().filter((t) => t.status === 'completed'));
+  activeFilterTags = signal<string[]>([]);
+
+  uniqueTags = computed(() => {
+    const set = new Set<string>();
+    for (const t of this.tasks()) {
+      if (t.skillCategory) {
+        const tags = t.skillCategory.split(/[\s,]+/).map(x => x.trim()).filter(Boolean);
+        for (const tag of tags) {
+          const cleaned = tag.startsWith('#') ? tag : '#' + tag;
+          set.add(cleaned);
+          if (cleaned.includes('/')) {
+            const parts = cleaned.split('/');
+            set.add(parts[0]);
+          }
+        }
+      }
+    }
+    return Array.from(set).sort();
+  });
+
+  filteredAndSortedTasks = computed(() => {
+    const list = this.sortedTasks();
+    const activeFilters = this.activeFilterTags();
+    if (activeFilters.length === 0) return list;
+
+    return list.filter(t => {
+      if (!t.skillCategory) return false;
+      const taskTags = t.skillCategory.split(/[\s,]+/).map(x => {
+        const trimmed = x.trim();
+        return trimmed.startsWith('#') ? trimmed : '#' + trimmed;
+      }).filter(Boolean);
+
+      return activeFilters.some(filter => {
+        return taskTags.some(taskTag => {
+          return taskTag === filter || taskTag.startsWith(filter + '/');
+        });
+      });
+    });
+  });
+
+  toggleFilterTag(tag: string): void {
+    this.activeFilterTags.update(curr => {
+      if (curr.includes(tag)) {
+        return curr.filter(x => x !== tag);
+      } else {
+        return [...curr, tag];
+      }
+    });
+  }
+
+  pendingTasks = computed(() => this.filteredAndSortedTasks().filter((t) => t.status === 'pending'));
+  inProgressTasks = computed(() => this.filteredAndSortedTasks().filter((t) => t.status === 'in_progress'));
+  completedTasks = computed(() => this.filteredAndSortedTasks().filter((t) => t.status === 'completed'));
 
 
   filterStatus = signal('');
@@ -271,6 +321,19 @@ export class Tasks implements OnInit {
     this.resetForm();
   }
 
+  isWeeklySubject(id?: string): boolean {
+    if (!id) return false;
+    const list = this.subjects();
+    if (!list || list.length === 0) return false;
+    const sorted = [...list].sort((a, b) => a.id.localeCompare(b.id));
+    const now = new Date();
+    const oneJan = new Date(now.getFullYear(), 0, 1);
+    const numberOfDays = Math.floor((now.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
+    const weekOfYear = Math.ceil((now.getDay() + 1 + numberOfDays) / 7);
+    const weeklySub = sorted[weekOfYear % sorted.length];
+    return weeklySub ? weeklySub.id === id : false;
+  }
+
   resetForm(): void {
     this.editingId.set(null);
     this.title.set('');
@@ -281,6 +344,14 @@ export class Tasks implements OnInit {
     this.dueDate.set('');
     this.showForm.set(false);
     this.saving.set(false);
+  }
+
+  getTaskTags(category?: string): string[] {
+    if (!category) return [];
+    return category.split(/[\s,]+/).map(x => {
+      const trimmed = x.trim();
+      return trimmed.startsWith('#') ? trimmed : '#' + trimmed;
+    }).filter(Boolean);
   }
 
   save(): void {
@@ -317,7 +388,7 @@ export class Tasks implements OnInit {
     if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
     event.preventDefault();
     if (!this.showForm()) {
-      this.editingId = null;
+      this.editingId.set(null);
       this.showForm.set(true);
     }
   }
@@ -351,13 +422,13 @@ export class Tasks implements OnInit {
       this.updateStatus(task.id, 'pending');
       return;
     }
-    this.pendingCheckinTask = task;
+    this.pendingCheckinTask.set(task);
     this.showCheckin.set(true);
   }
 
   handleCheckin(usedAi: boolean): void {
-    if (!this.pendingCheckinTask) return;
-    const task = this.pendingCheckinTask;
+    if (!this.pendingCheckinTask()) return;
+    const task = this.pendingCheckinTask()!;
     const user = this.auth.user();
     if (!user) return;
 
@@ -369,30 +440,30 @@ export class Tasks implements OnInit {
           this.toast.success(usedAi ? 'Registrado (com IA)' : 'Desafio concluído sem IA!');
           this.updateStatus(task.id, 'completed');
           this.showCheckin.set(false);
-          this.pendingCheckinTask = null;
+          this.pendingCheckinTask.set(null);
         },
         error: () => {
           this.showCheckin.set(false);
-          this.pendingCheckinTask = null;
+          this.pendingCheckinTask.set(null);
         },
       });
   }
 
   handleCheckinCancel(): void {
     this.showCheckin.set(false);
-    this.pendingCheckinTask = null;
+    this.pendingCheckinTask.set(null);
   }
 
   nextPage() {
-    if (this.currentPage < this.totalPages - 1) {
-      this.currentPage++;
+    if (this.currentPage() < this.totalPages() - 1) {
+      this.currentPage.update(v => v + 1);
       this.load();
     }
   }
 
   prevPage() {
-    if (this.currentPage > 0) {
-      this.currentPage--;
+    if (this.currentPage() > 0) {
+      this.currentPage.update(v => v - 1);
       this.load();
     }
   }
@@ -405,12 +476,19 @@ export class Tasks implements OnInit {
   }
 
   // Drag-and-drop handlers
-  onDragStart(task: Task): void {
+  onDragStart(event: DragEvent, task: Task): void {
     this.dragTaskId.set(task.id);
+    if (event.dataTransfer) {
+      event.dataTransfer.setData('text/plain', task.id);
+      event.dataTransfer.effectAllowed = 'move';
+    }
   }
 
   onDragOver(event: DragEvent, columnId: string): void {
     event.preventDefault();
+    if (event.dataTransfer) {
+      event.dataTransfer.dropEffect = 'move';
+    }
     this.dropTargetId.set(columnId);
   }
 
@@ -428,7 +506,7 @@ export class Tasks implements OnInit {
 
     if (!taskId) return;
 
-    const task = this.tasks.find((t) => t.id === taskId);
+    const task = this.tasks().find((t) => t.id === taskId);
     if (!task) return;
 
     const targetStatus = columnId;
@@ -451,27 +529,27 @@ export class Tasks implements OnInit {
   }
 
   confirmDelete(id: string, name: string): void {
-    this.pendingDeleteId = id;
-    this.confirmMessage = `Delete task "${name}"? This action cannot be undone.`;
+    this.pendingDeleteId.set(id);
+    this.confirmMessage.set(`Delete task "${name}"? This action cannot be undone.`);
     this.showConfirm.set(true);
   }
 
   handleConfirm(): void {
     if (this.selectedIds().size > 0) {
       this.batchDelete();
-    } else if (this.pendingDeleteId) {
+    } else if (this.pendingDeleteId()) {
       this.savingDelete.set(true);
-      this.api.deleteTask(this.pendingDeleteId).subscribe({
+      this.api.deleteTask(this.pendingDeleteId()!).subscribe({
         next: () => {
           this.toast.success('Tarefa excluída');
-          this.tasks = this.tasks.filter((t) => t.id !== this.pendingDeleteId);
+          this.tasks.set(this.tasks().filter((t) => t.id !== this.pendingDeleteId()));
           this.showConfirm.set(false);
-          this.pendingDeleteId = null;
+          this.pendingDeleteId.set(null);
           this.savingDelete.set(false);
         },
         error: () => {
           this.showConfirm.set(false);
-          this.pendingDeleteId = null;
+          this.pendingDeleteId.set(null);
           this.savingDelete.set(false);
         },
       });
@@ -480,7 +558,7 @@ export class Tasks implements OnInit {
 
   handleCancel(): void {
     this.showConfirm.set(false);
-    this.pendingDeleteId = null;
+    this.pendingDeleteId.set(null);
   }
 
   moveTask(task: Task, newStatus: string): void {
@@ -494,7 +572,7 @@ export class Tasks implements OnInit {
   }
 
   hasUnsavedChanges(): boolean {
-    return this.showForm() && (this.title.trim() !== '' || this.description.trim() !== '');
+    return this.showForm() && (this.title().trim() !== '' || this.description().trim() !== '');
   }
 
   @HostListener('window:beforeunload', ['$event'])

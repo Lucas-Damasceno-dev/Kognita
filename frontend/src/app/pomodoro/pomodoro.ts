@@ -7,12 +7,14 @@ import { finalize } from 'rxjs/operators';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
+import { Checkin } from '../checkin/checkin';
+import { Confirm } from '../confirm/confirm';
 import { Subject } from '../models/subject';
 import { Task } from '../models/task';
 
 @Component({
   selector: 'app-pomodoro',
-  imports: [FormsModule],
+  imports: [FormsModule, Checkin, Confirm],
   templateUrl: './pomodoro.html',
   styleUrl: './pomodoro.css',
 })
@@ -37,8 +39,21 @@ export class Pomodoro implements OnInit {
   private intervalId: any = null;
 
   saving = signal(false);
+  showCheckin = signal(false);
+  showConfirmTaskComplete = signal(false);
+
+  // Zen Mode
+  zenMode = signal(false);
+  selectedAmbientSound = 'none';
+  private audioContext: AudioContext | null = null;
+  private whiteNoiseNode: AudioBufferSourceNode | null = null;
+  private noiseFilterNode: BiquadFilterNode | null = null;
 
   ngOnInit(): void {
+    this.destroyRef.onDestroy(() => {
+      this.stopAmbientSound();
+    });
+
     this.route.queryParams.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
       if (params['subjectId']) {
         this.selectedSubjectId = params['subjectId'];
@@ -74,6 +89,17 @@ export class Pomodoro implements OnInit {
           this.onSubjectChange();
         }
       });
+  }
+
+  isWeeklySubject(id: string): boolean {
+    if (!this.subjects || this.subjects.length === 0) return false;
+    const sorted = [...this.subjects].sort((a, b) => a.id.localeCompare(b.id));
+    const now = new Date();
+    const oneJan = new Date(now.getFullYear(), 0, 1);
+    const numberOfDays = Math.floor((now.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
+    const weekOfYear = Math.ceil((now.getDay() + 1 + numberOfDays) / 7);
+    const weeklySub = sorted[weekOfYear % sorted.length];
+    return weeklySub ? weeklySub.id === id : false;
   }
 
   onSubjectChange(): void {
@@ -112,18 +138,22 @@ export class Pomodoro implements OnInit {
   private permissionRequested = false;
 
   private sendNotification(title: string, body: string): void {
-    if (!('Notification' in window)) return;
+    try {
+      if (!('Notification' in window)) return;
 
-    if (Notification.permission === 'granted') {
-      new Notification(title, { body, icon: '/favicon.ico' });
-    } else if (Notification.permission !== 'denied' && !this.permissionRequested) {
-      this.permissionRequested = true;
-      Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-          new Notification(title, { body, icon: '/favicon.ico' });
-        }
-      });
-    }
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body, icon: '/favicon.ico' });
+      } else if (Notification.permission !== 'denied' && !this.permissionRequested) {
+        this.permissionRequested = true;
+        Notification.requestPermission().then((permission) => {
+          if (permission === 'granted') {
+            try {
+              new Notification(title, { body, icon: '/favicon.ico' });
+            } catch {}
+          }
+        }).catch(() => {});
+      }
+    } catch {}
   }
 
   private playBeep(): void {
@@ -265,9 +295,130 @@ export class Pomodoro implements OnInit {
               `${duration} min de estudo registrados. Hora da pausa!`,
             );
             this.timeLeft = this.breakDuration * 60;
-            this.isBreak.set(true);
+            if (this.selectedTaskId) {
+              this.showConfirmTaskComplete.set(true);
+            } else {
+              this.isBreak.set(true);
+            }
           }
         },
       });
+  }
+
+  
+  handleTaskCompleteConfirm(): void {
+    this.showConfirmTaskComplete.set(false);
+    this.showCheckin.set(true);
+  }
+
+  handleTaskCompleteCancel(): void {
+    this.showConfirmTaskComplete.set(false);
+    this.isBreak.set(true);
+    // User didn't complete it, just go to break.
+  }
+
+  handleCheckin(usedAi: boolean): void {
+    if (!this.selectedTaskId) return;
+    const user = this.auth.user();
+    if (!user) return;
+    
+    this.saving.set(true);
+    this.api
+      .createChallengeAttempt({ taskId: this.selectedTaskId, usedAi }, user.id)
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        finalize(() => this.saving.set(false))
+      )
+      .subscribe({
+        next: () => {
+          this.toast.success(usedAi ? 'Registrado (com IA)' : 'Desafio concluído sem IA!');
+          this.api.updateTaskStatus(this.selectedTaskId, 'completed').subscribe(() => {
+            this.selectedTaskId = ''; // Clear task
+            this.onSubjectChange(); // Refresh task list
+            this.showCheckin.set(false);
+            this.isBreak.set(true); // Now we start the break
+          });
+        },
+        error: () => {
+          this.showCheckin.set(false);
+          this.isBreak.set(true);
+        },
+      });
+  }
+
+  handleCheckinCancel(): void {
+    this.showCheckin.set(false);
+    this.isBreak.set(true);
+  }
+
+  toggleZenMode(): void {
+    this.zenMode.update((v) => !v);
+  }
+
+  onAmbientSoundChange(): void {
+    this.stopAmbientSound();
+    if (this.selectedAmbientSound !== 'none') {
+      this.playAmbientSound(this.selectedAmbientSound);
+    }
+  }
+
+  private playAmbientSound(type: string): void {
+    try {
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+      if (this.audioContext.state === 'suspended') {
+        this.audioContext.resume();
+      }
+
+      const bufferSize = 2 * this.audioContext.sampleRate;
+      const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = Math.random() * 2 - 1;
+      }
+
+      this.whiteNoiseNode = this.audioContext.createBufferSource();
+      this.whiteNoiseNode.buffer = noiseBuffer;
+      this.whiteNoiseNode.loop = true;
+
+      this.noiseFilterNode = this.audioContext.createBiquadFilter();
+      this.noiseFilterNode.type = 'lowpass';
+
+      if (type === 'brown') {
+        this.noiseFilterNode.frequency.value = 250; // Deep Ocean / Waterfall
+      } else if (type === 'pink') {
+        this.noiseFilterNode.frequency.value = 650; // Rain / Wind
+      } else {
+        this.noiseFilterNode.frequency.value = 1500; // Bright Static Noise
+      }
+
+      const gainNode = this.audioContext.createGain();
+      gainNode.gain.setValueAtTime(0.04, this.audioContext.currentTime); // Low background volume
+
+      this.whiteNoiseNode.connect(this.noiseFilterNode);
+      this.noiseFilterNode.connect(gainNode);
+      gainNode.connect(this.audioContext.destination);
+
+      this.whiteNoiseNode.start(0);
+    } catch {
+      // AudioContext not supported or blocked
+    }
+  }
+
+  private stopAmbientSound(): void {
+    try {
+      if (this.whiteNoiseNode) {
+        this.whiteNoiseNode.stop();
+        this.whiteNoiseNode.disconnect();
+        this.whiteNoiseNode = null;
+      }
+      if (this.noiseFilterNode) {
+        this.noiseFilterNode.disconnect();
+        this.noiseFilterNode = null;
+      }
+    } catch {
+      // Ignore errors stopping audio nodes
+    }
   }
 }

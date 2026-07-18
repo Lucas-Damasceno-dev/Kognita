@@ -1,14 +1,14 @@
 <div class="page-header">
-  <h1>Tarefas</h1>
+  <h1>Desafios</h1>
   <div>
     <button class="btn" (click)="selectMode() ? exitSelectMode() : selectMode.set(true)">
       {{ selectMode() ? 'Cancelar seleção' : 'Selecionar' }}
     </button>
     <button
       class="btn"
-      (click)="editingId = null; showForm.update((v) => !v); showForm() ? null : resetForm()"
+      (click)="editingId.set(null); showForm.update((v) => !v); showForm() ? null : resetForm()"
     >
-      {{ showForm() ? 'Cancelar' : '+ Tarefa' }}
+      {{ showForm() ? 'Cancelar' : '+ Desafio' }}
     </button>
   </div>
 </div>
@@ -17,9 +17,9 @@
     type="text"
     [(ngModel)]="filterSearch"
     name="filterSearch"
-    placeholder="Pesquisar tarefas..."
+    placeholder="Pesquisar desafios..."
     (input)="applyFilter()"
-    aria-label="Pesquisar tarefas"
+    aria-label="Pesquisar desafios"
   />
   <select [(ngModel)]="filterStatus" name="filterStatus" (change)="applyFilter()" aria-label="Filtrar por status">
     <option value="">Todos os status</option>
@@ -34,6 +34,32 @@
     <option value="high">Alta</option>
   </select>
 </div>
+
+@if (uniqueTags().length > 0) {
+  <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+    <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">🏷️ Filtrar por Tags:</span>
+    @for (tag of uniqueTags(); track tag) {
+      <button 
+        type="button" 
+        (click)="toggleFilterTag(tag)" 
+        [style.background]="activeFilterTags().includes(tag) ? 'var(--primary, #3b82f6)' : 'var(--bg-hover, #f3f4f6)'"
+        [style.color]="activeFilterTags().includes(tag) ? '#ffffff' : 'var(--text)'"
+        style="border: 1px solid var(--border); border-radius: 20px; padding: 0.2rem 0.6rem; font-size: 0.75rem; cursor: pointer; transition: all 0.15s ease;"
+      >
+        {{ tag }}
+      </button>
+    }
+    @if (activeFilterTags().length > 0) {
+      <button 
+        type="button" 
+        (click)="activeFilterTags.set([])" 
+        style="background: transparent; border: none; color: #ef4444; font-size: 0.75rem; cursor: pointer; font-weight: 600;"
+      >
+        Limpar
+      </button>
+    }
+  </div>
+}
 
 @if (showForm()) {
   <form #taskForm="ngForm" (ngSubmit)="save()" class="card" style="display: flex; flex-direction: column; gap: 0.75rem;">
@@ -56,7 +82,7 @@
       Matéria
       <select [(ngModel)]="subjectId" name="subjectId">
         <option value="">Nenhuma</option>
-        @for (s of subjects; track s.id) {
+        @for (s of subjects(); track s.id) {
           <option [value]="s.id">{{ s.name }}</option>
         }
       </select>
@@ -83,9 +109,9 @@
     </label>
     <div class="form-actions">
       <button type="submit" class="btn btn-primary" [disabled]="saving()">
-        {{ saving() ? 'Salvando...' : editingId ? 'Atualizar' : 'Salvar' }}
+        {{ saving() ? 'Salvando...' : editingId() ? 'Atualizar' : 'Salvar' }}
       </button>
-      @if (editingId) {
+      @if (editingId()) {
         <button type="button" class="btn" (click)="cancel()">Cancelar</button>
       }
     </div>
@@ -108,7 +134,7 @@
               aria-label="Selecionar todas pendentes"
             />
           }
-          <span class="column-count">{{ pendingTasks.length }}</span>
+          <span class="column-count">{{ pendingTasks().length }}</span>
         </div>
       </div>
       <div
@@ -120,15 +146,15 @@
         (dragleave)="onDragLeave('pending')"
         (drop)="onDrop($event, 'pending')"
       >
-        @for (item of pendingTasks; track item.id) {
+        @for (item of pendingTasks(); track item.id) {
           <div
             class="kanban-item"
             role="listitem"
             [attr.aria-grabbed]="dragTaskId() === item.id ? 'true' : 'false'"
             [class.selected]="selectMode() && selectedIds().has(item.id)"
             [class.dragging]="dragTaskId() === item.id"
-            draggable="!selectMode()"
-            (dragstart)="onDragStart(item)"
+            [attr.draggable]="!selectMode() ? 'true' : 'false'"
+            (dragstart)="onDragStart($event, item)"
             (dragend)="onDragEnd()"
           >
             <div class="kanban-item-header">
@@ -150,10 +176,23 @@
                 >
               }
               @if (item.subjectName) {
-                <span class="subject-tag">{{ item.subjectName }}</span>
+                <span class="subject-tag">
+                  {{ item.subjectName }}
+                  @if (isWeeklySubject(item.subjectId)) {
+                    <span title="Desafio da Semana: 1.5x XP!" style="color: #10b981; font-weight: 700; margin-left: 3px;">🎯 1.5x</span>
+                  }
+                </span>
               }
-              @if (item.skillCategory) {
-                <span class="tag">{{ item.skillCategory }}</span>
+              @for (tag of getTaskTags(item.skillCategory); track tag) {
+                <span class="tag" style="background: rgba(99, 102, 241, 0.08); color: #6366f1; border-left: 2px solid #6366f1; font-weight: 500;">{{ tag }}</span>
+              }
+              @if (item.verifiedByGit) {
+                <span class="github-badge" title="Verificado automaticamente via Git commit">
+                  <svg class="github-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" style="vertical-align: middle; margin-right: 3px;">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                  </svg>
+                  Git
+                </span>
               }
             </div>
             @if (!selectMode()) {
@@ -197,7 +236,7 @@
             }
           </div>
         } @empty {
-          <app-empty-state>Nenhuma tarefa pendente</app-empty-state>
+          <app-empty-state>Nenhuma desafio pendente</app-empty-state>
         }
       </div>
     </div>
@@ -213,7 +252,7 @@
               aria-label="Selecionar todas em andamento"
             />
           }
-          <span class="column-count">{{ inProgressTasks.length }}</span>
+          <span class="column-count">{{ inProgressTasks().length }}</span>
         </div>
       </div>
       <div
@@ -225,15 +264,15 @@
         (dragleave)="onDragLeave('in_progress')"
         (drop)="onDrop($event, 'in_progress')"
       >
-        @for (item of inProgressTasks; track item.id) {
+        @for (item of inProgressTasks(); track item.id) {
           <div
             class="kanban-item"
             role="listitem"
             [attr.aria-grabbed]="dragTaskId() === item.id ? 'true' : 'false'"
             [class.selected]="selectMode() && selectedIds().has(item.id)"
             [class.dragging]="dragTaskId() === item.id"
-            draggable="!selectMode()"
-            (dragstart)="onDragStart(item)"
+            [attr.draggable]="!selectMode() ? 'true' : 'false'"
+            (dragstart)="onDragStart($event, item)"
             (dragend)="onDragEnd()"
           >
             <div class="kanban-item-header">
@@ -255,10 +294,23 @@
                 >
               }
               @if (item.subjectName) {
-                <span class="subject-tag">{{ item.subjectName }}</span>
+                <span class="subject-tag">
+                  {{ item.subjectName }}
+                  @if (isWeeklySubject(item.subjectId)) {
+                    <span title="Desafio da Semana: 1.5x XP!" style="color: #10b981; font-weight: 700; margin-left: 3px;">🎯 1.5x</span>
+                  }
+                </span>
               }
-              @if (item.skillCategory) {
-                <span class="tag">{{ item.skillCategory }}</span>
+              @for (tag of getTaskTags(item.skillCategory); track tag) {
+                <span class="tag" style="background: rgba(99, 102, 241, 0.08); color: #6366f1; border-left: 2px solid #6366f1; font-weight: 500;">{{ tag }}</span>
+              }
+              @if (item.verifiedByGit) {
+                <span class="github-badge" title="Verificado automaticamente via Git commit">
+                  <svg class="github-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" style="vertical-align: middle; margin-right: 3px;">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                  </svg>
+                  Git
+                </span>
               }
             </div>
             @if (!selectMode()) {
@@ -292,7 +344,7 @@
             }
           </div>
         } @empty {
-          <app-empty-state>Nenhuma tarefa em andamento</app-empty-state>
+          <app-empty-state>Nenhuma desafio em andamento</app-empty-state>
         }
       </div>
     </div>
@@ -308,7 +360,7 @@
               aria-label="Selecionar todas concluídas"
             />
           }
-          <span class="column-count">{{ completedTasks.length }}</span>
+          <span class="column-count">{{ completedTasks().length }}</span>
         </div>
       </div>
       <div
@@ -320,15 +372,15 @@
         (dragleave)="onDragLeave('completed')"
         (drop)="onDrop($event, 'completed')"
       >
-        @for (item of completedTasks; track item.id) {
+        @for (item of completedTasks(); track item.id) {
           <div
             class="kanban-item completed"
             role="listitem"
             [attr.aria-grabbed]="dragTaskId() === item.id ? 'true' : 'false'"
             [class.selected]="selectMode() && selectedIds().has(item.id)"
             [class.dragging]="dragTaskId() === item.id"
-            draggable="!selectMode()"
-            (dragstart)="onDragStart(item)"
+            [attr.draggable]="!selectMode() ? 'true' : 'false'"
+            (dragstart)="onDragStart($event, item)"
             (dragend)="onDragEnd()"
           >
             <div class="kanban-item-header">
@@ -348,10 +400,23 @@
                 <span class="due-date"><span aria-hidden="true">📅</span> {{ item.dueDate }}</span>
               }
               @if (item.subjectName) {
-                <span class="subject-tag">{{ item.subjectName }}</span>
+                <span class="subject-tag">
+                  {{ item.subjectName }}
+                  @if (isWeeklySubject(item.subjectId)) {
+                    <span title="Desafio da Semana: 1.5x XP!" style="color: #10b981; font-weight: 700; margin-left: 3px;">🎯 1.5x</span>
+                  }
+                </span>
               }
-              @if (item.skillCategory) {
-                <span class="tag">{{ item.skillCategory }}</span>
+              @for (tag of getTaskTags(item.skillCategory); track tag) {
+                <span class="tag" style="background: rgba(99, 102, 241, 0.08); color: #6366f1; border-left: 2px solid #6366f1; font-weight: 500;">{{ tag }}</span>
+              }
+              @if (item.verifiedByGit) {
+                <span class="github-badge" title="Verificado automaticamente via Git commit">
+                  <svg class="github-icon" viewBox="0 0 16 16" width="12" height="12" fill="currentColor" style="vertical-align: middle; margin-right: 3px;">
+                    <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+                  </svg>
+                  Git
+                </span>
               }
             </div>
             @if (!selectMode()) {
@@ -377,7 +442,7 @@
             }
           </div>
         } @empty {
-          <app-empty-state>Nenhuma tarefa concluída</app-empty-state>
+          <app-empty-state>Nenhuma desafio concluída</app-empty-state>
         }
       </div>
     </div>
@@ -390,7 +455,7 @@
           class="btn btn-primary btn-sm"
           (click)="confirmBatchComplete()"
           [disabled]="selectedIds().size === 0 || batchProcessing()"
-          aria-label="Concluir tarefas selecionadas"
+          aria-label="Concluir desafios selecionadas"
         >
           @if (batchProcessing()) {
             Concluindo...
@@ -402,7 +467,7 @@
           class="btn btn-danger btn-sm"
           (click)="batchDeleteConfirm()"
           [disabled]="selectedIds().size === 0 || batchProcessing()"
-          aria-label="Excluir tarefas selecionadas"
+          aria-label="Excluir desafios selecionadas"
         >
           <span aria-hidden="true">🗑️</span> Excluir selecionadas
         </button>
@@ -410,11 +475,11 @@
     </div>
   }
   <div style="display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1rem;font-size:0.875rem;color:var(--text-secondary)">
-    <button class="btn btn-sm" [disabled]="currentPage === 0 || batchProcessing()" (click)="prevPage()">
+    <button class="btn btn-sm" [disabled]="currentPage() === 0 || batchProcessing()" (click)="prevPage()">
       Anterior
     </button>
-    <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
-    <button class="btn btn-sm" [disabled]="currentPage >= totalPages - 1 || batchProcessing()" (click)="nextPage()">
+    <span>Página {{ currentPage() + 1 }} de {{ totalPages() }}</span>
+    <button class="btn btn-sm" [disabled]="currentPage() >= totalPages() - 1 || batchProcessing()" (click)="nextPage()">
       Próximo
     </button>
   </div>
@@ -422,7 +487,7 @@
 
 @if (showConfirm()) {
   <app-confirm
-    [message]="confirmMessage"
+    [message]="confirmMessage()"
     [saving]="savingDelete()"
     (confirmed)="handleConfirm()"
     (cancelled)="handleCancel()"
@@ -432,7 +497,7 @@
 @if (showBatchCompleteConfirm()) {
   <app-confirm
     title="Confirmar conclusão"
-    message="Deseja marcar {{ selectedIds().size }} tarefa(s) como concluída(s)?"
+    message="Deseja marcar {{ selectedIds().size }} desafio(s) como concluída(s)?"
     confirmText="Concluir"
     cancelText="Cancelar"
     [saving]="batchProcessing()"
@@ -441,9 +506,9 @@
   />
 }
 
-@if (showCheckin() && pendingCheckinTask) {
+@if (showCheckin() && pendingCheckinTask()) {
   <app-checkin
-    [taskName]="pendingCheckinTask.title"
+    [taskName]="pendingCheckinTask()?.title || ''"
     (confirm)="handleCheckin($event)"
     (cancel)="handleCheckinCancel()"
   />
