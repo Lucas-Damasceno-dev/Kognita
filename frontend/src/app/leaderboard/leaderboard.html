@@ -1,0 +1,150 @@
+<div class="container">
+  <header class="header">
+    <div class="header-info">
+      <h1>🏆 Ranking Global</h1>
+      <p class="subtitle">Veja quem está liderando os estudos e provando sua capacidade técnica sem usar IA.</p>
+    </div>
+    
+    <div class="filters">
+      <button 
+        [class.active]="currentFilter() === 'xp'" 
+        (click)="setFilter('xp')"
+        class="filter-btn">
+        ✨ Experiência (XP)
+      </button>
+      <button 
+        [class.active]="currentFilter() === 'streak'" 
+        (click)="setFilter('streak')"
+        class="filter-btn">
+        🔥 Sequência (Streak)
+      </button>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="skeleton-container">
+      <app-skeleton mode="list"></app-skeleton>
+    </div>
+  } @else {
+    <!-- Podium for Top 3 -->
+    @if (getTopThree().length > 0) {
+      <div class="podium">
+        <!-- 2nd Place -->
+        @if (getTopThree().length > 1) {
+          <div class="podium-card silver">
+            <div class="place-badge">2</div>
+            <div class="avatar-container">
+              @if (getTopThree()[1].avatarUrl) {
+                <img [src]="getTopThree()[1].avatarUrl" alt="" class="podium-avatar {{ getTopThree()[1].avatarBorder }}" />
+              } @else {
+                <div class="podium-avatar-placeholder {{ getTopThree()[1].avatarBorder }}">{{ getTopThree()[1].name.charAt(0) }}</div>
+              }
+            </div>
+            <h3 class="podium-name">{{ getTopThree()[1].name }}</h3>
+            <span class="podium-title">{{ getTopThree()[1].title || 'Recruta do Código' }}</span>
+            <div class="podium-stat">
+              @if (currentFilter() === 'xp') {
+                <span>✨ {{ getTopThree()[1].totalExperience }} XP</span>
+              } @else {
+                <span>🔥 {{ getTopThree()[1].streakCount || 0 }} dias</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- 1st Place -->
+        @if (getTopThree().length > 0) {
+          <div class="podium-card gold">
+            <div class="crown">👑</div>
+            <div class="place-badge">1</div>
+            <div class="avatar-container">
+              @if (getTopThree()[0].avatarUrl) {
+                <img [src]="getTopThree()[0].avatarUrl" alt="" class="podium-avatar {{ getTopThree()[0].avatarBorder }}" />
+              } @else {
+                <div class="podium-avatar-placeholder {{ getTopThree()[0].avatarBorder }}">{{ getTopThree()[0].name.charAt(0) }}</div>
+              }
+            </div>
+            <h3 class="podium-name">{{ getTopThree()[0].name }}</h3>
+            <span class="podium-title">{{ getTopThree()[0].title || 'Recruta do Código' }}</span>
+            <div class="podium-stat">
+              @if (currentFilter() === 'xp') {
+                <span>✨ {{ getTopThree()[0].totalExperience }} XP</span>
+              } @else {
+                <span>🔥 {{ getTopThree()[0].streakCount || 0 }} dias</span>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- 3rd Place -->
+        @if (getTopThree().length > 2) {
+          <div class="podium-card bronze">
+            <div class="place-badge">3</div>
+            <div class="avatar-container">
+              @if (getTopThree()[2].avatarUrl) {
+                <img [src]="getTopThree()[2].avatarUrl" alt="" class="podium-avatar {{ getTopThree()[2].avatarBorder }}" />
+              } @else {
+                <div class="podium-avatar-placeholder {{ getTopThree()[2].avatarBorder }}">{{ getTopThree()[2].name.charAt(0) }}</div>
+              }
+            </div>
+            <h3 class="podium-name">{{ getTopThree()[2].name }}</h3>
+            <span class="podium-title">{{ getTopThree()[2].title || 'Recruta do Código' }}</span>
+            <div class="podium-stat">
+              @if (currentFilter() === 'xp') {
+                <span>✨ {{ getTopThree()[2].totalExperience }} XP</span>
+              } @else {
+                <span>🔥 {{ getTopThree()[2].streakCount || 0 }} dias</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Leaderboard Table -->
+    <div class="table-container">
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th class="col-rank">Posição</th>
+            <th>Usuário</th>
+            <th class="col-level">Nível</th>
+            <th class="col-score">
+              {{ currentFilter() === 'xp' ? 'Experiência' : 'Sequência' }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (user of getRemainingUsers(); track user.id; let idx = $index) {
+            <tr [class.is-current]="user.id === auth.user()?.id">
+              <td class="col-rank font-num">{{ idx + 4 }}</td>
+              <td>
+                <div class="user-info">
+                  @if (user.avatarUrl) {
+                    <img [src]="user.avatarUrl" alt="" class="user-avatar {{ user.avatarBorder }}" />
+                  } @else {
+                    <div class="user-avatar-placeholder {{ user.avatarBorder }}">{{ user.name.charAt(0) }}</div>
+                  }
+                  <div class="user-details">
+                    <span class="user-name">{{ user.name }}</span>
+                    <span class="user-sub">{{ user.title || 'Recruta do Código' }}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="col-level font-num">
+                <span class="level-tag">Nível {{ getUserLevel(user.totalExperience) }}</span>
+              </td>
+              <td class="col-score font-num">
+                @if (currentFilter() === 'xp') {
+                  <span class="xp-val">✨ {{ user.totalExperience }} XP</span>
+                } @else {
+                  <span class="streak-val">🔥 {{ user.streakCount || 0 }} dias</span>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

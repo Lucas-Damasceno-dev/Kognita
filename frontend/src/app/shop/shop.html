@@ -1,0 +1,47 @@
+<div class="container">
+  <header class="header">
+    <div class="header-info">
+      <h1>🛍️ Loja de Recompensas</h1>
+      <p class="subtitle">Use seu XP acumulado estudando sem IA para comprar itens e personalizar seu perfil.</p>
+    </div>
+    <div class="xp-badge">
+      <span>Seu saldo:</span>
+      <strong>✨ {{ auth.user()?.totalExperience || 0 }} XP</strong>
+    </div>
+  </header>
+
+  <div class="shop-grid">
+    @for (item of shopItems; track item.id) {
+      <div class="shop-card" [class.equipped]="isEquipped(item)" [class.cant-afford]="(auth.user()?.totalExperience || 0) < item.cost">
+        <div class="card-icon">{{ item.icon }}</div>
+        
+        <div class="card-body">
+          <div class="card-header">
+            <h3>{{ item.name }}</h3>
+            @if (isEquipped(item)) {
+              <span class="equipped-badge">Equipado</span>
+            }
+          </div>
+          <p class="card-desc">{{ item.description }}</p>
+        </div>
+
+        <div class="card-footer">
+          <span class="cost font-num">✨ {{ item.cost }} XP</span>
+          
+          <button 
+            [disabled]="isEquipped(item) || (auth.user()?.totalExperience || 0) < item.cost || loading()"
+            (click)="buyItem(item)"
+            class="buy-btn">
+            @if (isEquipped(item)) {
+              Equipado
+            } @else if ((auth.user()?.totalExperience || 0) < item.cost) {
+              XP Insuficiente
+            } @else {
+              Comprar
+            }
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+</div>

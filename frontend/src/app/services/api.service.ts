@@ -15,6 +15,8 @@ import { ChallengeGoal, CreateChallengeGoalRequest } from '../models/challenge-g
 import { ErrorLog, CreateErrorLogRequest } from '../models/error-log';
 import { ImportRequest, RoadmapRequest, CategoryTasks } from '../models/import-models';
 import { JobAnalysis } from '../models/job-analysis';
+import { Flashcard, CreateFlashcardRequest } from '../models/flashcard';
+import { Achievement } from '../models/achievement';
 import { Observable, map } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
@@ -24,17 +26,11 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   // Users
-  getUsers(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.api}/users`);
-  }
 
   getUser(id: string): Observable<User> {
     return this.http.get<User>(`${this.api}/users/${id}`);
   }
 
-  createUser(req: CreateUserRequest): Observable<User> {
-    return this.http.post<User>(`${this.api}/users`, req);
-  }
 
   deleteUser(id: string): Observable<void> {
     return this.http.delete<void>(`${this.api}/users/${id}`);
@@ -51,6 +47,10 @@ export class ApiService {
     },
   ): Observable<User> {
     return this.http.put<User>(`${this.api}/users/${id}`, req);
+  }
+
+  buyStreakFreeze(): Observable<User> {
+    return this.http.post<User>(`${this.api}/users/buy-freeze`, {});
   }
 
   // Subjects
@@ -76,9 +76,15 @@ export class ApiService {
     return this.http.put<Subject>(`${this.api}/subjects/${id}`, req);
   }
 
+
   deleteSubject(id: string): Observable<void> {
     return this.http.delete<void>(`${this.api}/subjects/${id}`);
   }
+
+  archiveSubject(id: string): Observable<Subject> {
+    return this.http.put<Subject>(`${this.api}/subjects/${id}/archive`, {});
+  }
+
 
   // Study Sessions
   getSessions(): Observable<StudySession[]> {
@@ -259,6 +265,10 @@ export class ApiService {
     return this.http.delete<void>(`${this.api}/error-logs/${id}`);
   }
 
+  rechallengeErrorLog(id: string): Observable<any> {
+    return this.http.post<any>(`${this.api}/error-logs/${id}/rechallenge`, {});
+  }
+
   // Jobs
   analyzeJob(req: { jobDescription: string }): Observable<JobAnalysis> {
     return this.http.post<JobAnalysis>(`${this.api}/jobs/analyze`, req);
@@ -276,5 +286,58 @@ export class ApiService {
   // Export Data
   exportData(): Observable<unknown> {
     return this.http.get<unknown>(`${this.api}/export`);
+  }
+
+  // Achievements
+  getAchievements(): Observable<Achievement[]> {
+    return this.http.get<Achievement[]>(`${this.api}/users/achievements`);
+  }
+
+  // Flashcards
+  getFlashcards(): Observable<Flashcard[]> {
+    return this.http.get<Flashcard[]>(`${this.api}/flashcards`);
+  }
+
+  getDueFlashcards(): Observable<Flashcard[]> {
+    return this.http.get<Flashcard[]>(`${this.api}/flashcards/due`);
+  }
+
+  createFlashcard(req: CreateFlashcardRequest): Observable<Flashcard> {
+    return this.http.post<Flashcard>(`${this.api}/flashcards`, req);
+  }
+
+  updateFlashcard(id: string, req: CreateFlashcardRequest): Observable<Flashcard> {
+    return this.http.put<Flashcard>(`${this.api}/flashcards/${id}`, req);
+  }
+
+  deleteFlashcard(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.api}/flashcards/${id}`);
+  }
+
+  reviewFlashcard(id: string, rating: number): Observable<Flashcard> {
+    return this.http.post<Flashcard>(`${this.api}/flashcards/${id}/review`, { rating });
+  }
+
+  post<T>(url: string, body: any): Observable<T> {
+    return this.http.post<T>(`${this.api}${url}`, body);
+  }
+
+  // Leaderboard
+  getLeaderboard(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.api}/users/leaderboard`);
+  }
+
+  // Shop
+  buyTitle(title: string, cost: number): Observable<User> {
+    return this.http.post<User>(`${this.api}/users/buy-title`, { title, cost });
+  }
+
+  buyBorder(border: string, cost: number): Observable<User> {
+    return this.http.post<User>(`${this.api}/users/buy-border`, { border, cost });
+  }
+
+  // Daily Quest
+  claimDailyQuest(): Observable<User> {
+    return this.http.post<User>(`${this.api}/users/daily-quest-claim`, {});
   }
 }

@@ -12,8 +12,9 @@ import { Subject } from '../models/subject';
 import { Task } from '../models/task';
 import { StudyGoal } from '../models/study-goal';
 import { StudySession } from '../models/study-session';
-import { ChallengeStats } from '../models/challenge-attempt';
+import { ChallengeStats, ChallengeAttempt } from '../models/challenge-attempt';
 import { ChallengeGoal } from '../models/challenge-goal';
+import { ErrorLog } from '../models/error-log';
 
 @Component({
   selector: 'app-dashboard',
@@ -35,6 +36,9 @@ export class Dashboard implements OnInit {
   pendingTasks = signal<Task[]>([]);
   goals = signal<StudyGoal[]>([]);
   sessions = signal<StudySession[]>([]);
+  errorLogs = signal<ErrorLog[]>([]);
+  history = signal<ChallengeAttempt[]>([]);
+  dailyQuestClaimed = signal<boolean>(false);
 
   hoursPerSubject = signal<{ name: string; hours: number; color: string }[]>([]);
   weeklyProgress = signal<{ day: string; hours: number }[]>([]);
@@ -46,12 +50,42 @@ export class Dashboard implements OnInit {
   pendingPageSize = 5;
   pendingShowAll = signal(false);
 
+  todayStr = computed(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+
+  questPomodoro = computed(() => this.sessions().some(s => s.date === this.todayStr()));
+  
+  questError = computed(() => this.errorLogs().some(e => {
+    if (!e.createdAt) return false;
+    return e.createdAt.split('T')[0] === this.todayStr();
+  }));
+  
+  questNoAi = computed(() => this.history().some(h => {
+    if (!h.createdAt) return false;
+    return !h.usedAi && h.createdAt.split('T')[0] === this.todayStr();
+  }));
+
+  allQuestsCompleted = computed(() => this.questPomodoro() && this.questError() && this.questNoAi());
+
   maxHours = computed(() => Math.max(...this.hoursPerSubject().map((s) => s.hours), 1));
   maxWeekly = computed(() => Math.max(...this.weeklyProgress().map((w) => w.hours), 1));
   confidenceSkills = computed(() => (this.challengeStats()?.skills?.sort((a, b) => b.confidencePercent - a.confidencePercent) ?? []));
   streak = computed(() => this.challengeStats()?.currentStreak ?? 0);
   totalWithoutAi = computed(() => this.challengeStats()?.totalWithoutAi ?? 0);
   isNewUser = computed(() => !this.loading() && this.subjects().length === 0 && this.allTasks().length === 0 && this.sessions().length === 0);
+
+  weeklySubject = computed(() => {
+    const list = this.subjects();
+    if (!list || list.length === 0) return null;
+    const sorted = [...list].sort((a, b) => a.id.localeCompare(b.id));
+    const now = new Date();
+    const oneJan = new Date(now.getFullYear(), 0, 1);
+    const numberOfDays = Math.floor((now.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
+    const weekOfYear = Math.ceil((now.getDay() + 1 + numberOfDays) / 7);
+    return sorted[weekOfYear % sorted.length];
+  });
 
   upcomingTasks = computed(() => {
     const today = new Date();
@@ -98,6 +132,8 @@ export class Dashboard implements OnInit {
       sessions: this.api.getSessions().pipe(timeout(15_000), catchError(() => of([] as StudySession[]))),
       challengeStats: this.api.getChallengeStats().pipe(timeout(15_000), catchError(() => of(null))),
       challengeGoals: this.api.getChallengeGoals().pipe(timeout(15_000), catchError(() => of([] as ChallengeGoal[]))),
+      errorLogs: this.api.getErrorLogs().pipe(timeout(15_000), catchError(() => of([] as ErrorLog[]))),
+      history: this.api.getHistory().pipe(timeout(15_000), catchError(() => of([] as ChallengeAttempt[]))),
     })
       .pipe(
         takeUntilDestroyed(this.destroyRef),
@@ -112,6 +148,14 @@ export class Dashboard implements OnInit {
           this.sessions.set(Array.isArray(r.sessions) ? r.sessions : []);
           this.challengeStats.set(r.challengeStats);
           this.challengeGoals.set(Array.isArray(r.challengeGoals) ? r.challengeGoals : []);
+          this.errorLogs.set(Array.isArray(r.errorLogs) ? r.errorLogs : []);
+          this.history.set(Array.isArray(r.history) ? r.history : []);
+          
+          const userId = user.id;
+          const today = this.todayStr();
+          const claimed = localStorage.getItem(`claimed_daily_quest_${userId}_${today}`) === 'true';
+          this.dailyQuestClaimed.set(claimed);
+
           this.computeCharts();
           this.checkGoalReminders();
         },
@@ -269,5 +313,26 @@ export class Dashboard implements OnInit {
         }
       }
     }
+  }
+
+  claimDailyQuest(): void {
+    if (!this.allQuestsCompleted() || this.dailyQuestClaimed()) return;
+    
+    this.api.claimDailyQuest()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (updatedUser) => {
+          this.auth.user.set(updatedUser);
+          localStorage.setItem('kognita_user', JSON.stringify(updatedUser));
+          const userId = updatedUser.id;
+          const today = this.todayStr();
+          localStorage.setItem(`claimed_daily_quest_${userId}_${today}`, 'true');
+          this.dailyQuestClaimed.set(true);
+          this.toast.success('Parabéns! Você resgatou +50 XP da missão diária de hoje! 🏆');
+        },
+        error: () => {
+          this.toast.error('Erro ao resgatar recompensa diária.');
+        }
+      });
   }
 }

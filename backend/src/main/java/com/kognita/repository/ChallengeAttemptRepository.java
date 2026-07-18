@@ -11,6 +11,8 @@ import org.springframework.data.repository.query.Param;
 public interface ChallengeAttemptRepository extends JpaRepository<ChallengeAttempt, UUID> {
     List<ChallengeAttempt> findByUserId(UUID userId);
 
+    long countByUserIdAndUsedAi(UUID userId, boolean usedAi);
+
     List<ChallengeAttempt> findByUserIdAndDate(UUID userId, LocalDate date);
 
     List<ChallengeAttempt> findByUserIdAndDateBetweenOrderByDateDesc(UUID userId, LocalDate start, LocalDate end);

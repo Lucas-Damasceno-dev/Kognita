@@ -9,9 +9,29 @@ public record UserResponse(
     String name,
     String email,
     String avatarUrl,
-    OffsetDateTime createdAt
+    OffsetDateTime createdAt,
+    long totalExperience,
+    String githubRepo,
+    String title,
+    String avatarBorder,
+    Integer streakCount,
+    java.time.LocalDate lastActiveDate,
+    Integer streakFreezes
 ) {
     public static UserResponse from(User user) {
-        return new UserResponse(user.getId(), user.getName(), user.getEmail(), user.getAvatarUrl(), user.getCreatedAt());
+        return new UserResponse(
+            user.getId(),
+            user.getName(),
+            user.getEmail(),
+            user.getAvatarUrl(),
+            user.getCreatedAt(),
+            user.getTotalExperience(),
+            user.getGithubRepo(),
+            user.getTitle(),
+            user.getAvatarBorder(),
+            user.getStreakCount(),
+            user.getLastActiveDate(),
+            user.getStreakFreezes()
+        );
     }
 }

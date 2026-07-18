@@ -462,3 +462,37 @@ p.empty {
   white-space: nowrap;
   border-width: 0;
 }
+
+/* Cosmetics Avatar Borders */
+.border-none {
+  border: 2px solid transparent;
+}
+
+.border-blue {
+  border: 2px solid #3b82f6 !important;
+  box-shadow: 0 0 6px rgba(59, 130, 246, 0.6);
+}
+
+.border-purple {
+  border: 2px solid #a855f7 !important;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.9);
+}
+
+.border-gold {
+  border: 2px solid #eab308 !important;
+  box-shadow: 0 0 12px rgba(234, 179, 8, 0.8);
+}
+
+.border-rainbow {
+  border: 2px solid transparent !important;
+  background: linear-gradient(var(--bg-card), var(--bg-card)) padding-box,
+              linear-gradient(135deg, #ef4444, #f97316, #eab308, #22c55e, #3b82f6, #6366f1, #a855f7) border-box !important;
+  animation: rainbow-rotate 3s linear infinite;
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+}
+
+@keyframes rainbow-rotate {
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}

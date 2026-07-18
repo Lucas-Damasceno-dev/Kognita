@@ -12,15 +12,15 @@
       <a routerLink="/subjects" class="onboarding-step">
         <div class="step-icon">1</div>
         <div class="step-content">
-          <h3>Crie sua primeira matéria</h3>
-          <p>Organize seus estudos por matérias — cada uma com cor e nome.</p>
+          <h3>Crie matérias ou Importe um Roadmap</h3>
+          <p>Comece criando uma matéria manualmente ou use a aba <strong>Importar</strong>.</p>
         </div>
         <span class="step-action">Ir →</span>
       </a>
       <a routerLink="/tasks" class="onboarding-step">
         <div class="step-icon">2</div>
         <div class="step-content">
-          <h3>Adicione tarefas</h3>
+          <h3>Adicione desafios</h3>
           <p>Liste o que precisa estudar com prioridades e prazos.</p>
         </div>
         <span class="step-action">Ir →</span>
@@ -44,6 +44,22 @@
     </div>
   </div>
 } @else {
+  @if (weeklySubject()) {
+    <div class="weekly-subject-banner" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <span style="font-size: 2.25rem;">🎯</span>
+        <div>
+          <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary, #3b82f6);">Desafio da Semana Ativo</span>
+          <h3 style="margin: 0.25rem 0; font-size: 1.25rem; font-weight: 700; color: var(--text);">Matéria da Semana: <span [style.color]="weeklySubject()?.color">{{ weeklySubject()?.name }}</span></h3>
+          <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Conclua desafios desta matéria para ganhar <strong style="color: #10b981;">1.5x mais XP</strong>!</p>
+        </div>
+      </div>
+      <a [routerLink]="['/tasks']" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 0.25rem; text-decoration: none;">
+        Ver Desafios
+      </a>
+    </div>
+  }
+
   <div class="trust-section">
     <div class="trust-card prominent-streak">
       <span class="trust-label"><span role="img" aria-label="fogo">🔥</span> Sequência atual</span>
@@ -59,6 +75,60 @@
         <span class="trust-value">{{ goal.currentCount }} / {{ goal.targetCount }}</span>
       </div>
     }
+  </div>
+
+  <div class="daily-quests-section" style="margin-bottom: 1.5rem; background: var(--bg-card, #ffffff); border: 1px solid var(--border-color, #e5e7eb); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+      <h2 style="margin: 0; font-size: 1.35rem; font-weight: 800; color: var(--text-main, #111827);">🎯 Missões Diárias</h2>
+      
+      <button 
+        [disabled]="!allQuestsCompleted() || dailyQuestClaimed()" 
+        (click)="claimDailyQuest()"
+        class="btn btn-sm"
+        [style.background]="dailyQuestClaimed() ? 'var(--bg-hover, #f3f4f6)' : allQuestsCompleted() ? 'var(--primary, #3b82f6)' : 'var(--bg-hover, #f3f4f6)'"
+        [style.color]="dailyQuestClaimed() ? 'var(--text-muted, #6b7280)' : allQuestsCompleted() ? 'white' : 'var(--text-muted, #6b7280)'"
+        style="font-weight: 700; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.2s ease; cursor: pointer;">
+        @if (dailyQuestClaimed()) {
+          ✅ Recompensa Resgatada
+        } @else if (allQuestsCompleted()) {
+          🎁 Resgatar Recompensa (+50 XP)
+        } @else {
+          🔒 Conclua as missões para ganhar +50 XP
+        }
+      </button>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-radius: 8px; background: var(--bg-hover, #f9fafb); border: 1px solid var(--border-color, #e5e7eb);">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.25rem;">🧘</span>
+          <span [style.text-decoration]="questPomodoro() ? 'line-through' : 'none'" [style.color]="questPomodoro() ? 'var(--text-muted, #6b7280)' : 'inherit'">Completar pelo menos 1 Pomodoro de estudo hoje</span>
+        </div>
+        <span style="font-weight: 700;" [style.color]="questPomodoro() ? '#10b981' : '#6b7280'">
+          {{ questPomodoro() ? 'Concluído' : '0 / 1' }}
+        </span>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-radius: 8px; background: var(--bg-hover, #f9fafb); border: 1px solid var(--border-color, #e5e7eb);">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.25rem;">⚔️</span>
+          <span [style.text-decoration]="questNoAi() ? 'line-through' : 'none'" [style.color]="questNoAi() ? 'var(--text-muted, #6b7280)' : 'inherit'">Resolver pelo menos 1 desafio sem usar IA hoje</span>
+        </div>
+        <span style="font-weight: 700;" [style.color]="questNoAi() ? '#10b981' : '#6b7280'">
+          {{ questNoAi() ? 'Concluído' : '0 / 1' }}
+        </span>
+      </div>
+
+      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-radius: 8px; background: var(--bg-hover, #f9fafb); border: 1px solid var(--border-color, #e5e7eb);">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span style="font-size: 1.25rem;">🐞</span>
+          <span [style.text-decoration]="questError() ? 'line-through' : 'none'" [style.color]="questError() ? 'var(--text-muted, #6b7280)' : 'inherit'">Registrar 1 erro no seu Diário de Erros hoje</span>
+        </div>
+        <span style="font-weight: 700;" [style.color]="questError() ? '#10b981' : '#6b7280'">
+          {{ questError() ? 'Concluído' : '0 / 1' }}
+        </span>
+      </div>
+    </div>
   </div>
 
   @if (confidenceSkills().length > 0) {
@@ -87,7 +157,7 @@
     </div>
     <div class="card">
       <span class="stat-value">{{ pendingTasks().length }}</span>
-      <span class="stat-label">Tarefas pendentes</span>
+      <span class="stat-label">Desafios pendentes</span>
     </div>
     <div class="card">
       <span class="stat-value">{{ goals().length }}</span>
@@ -139,7 +209,7 @@
     }
 
     <section class="card chart-card" role="region" aria-labelledby="completion-heading">
-      <h2 id="completion-heading">Conclusão de tarefas</h2>
+      <h2 id="completion-heading">Conclusão de desafios</h2>
       <div class="donut-container">
         <div
           class="donut"
@@ -169,7 +239,7 @@
 
   @if (upcomingTasks().length > 0) {
     <section role="region" aria-labelledby="upcoming-heading">
-      <h2 id="upcoming-heading">Próximas tarefas (3 dias)</h2>
+      <h2 id="upcoming-heading">Próximas desafios (3 dias)</h2>
       <div class="task-list">
         @for (task of upcomingTasks(); track task.id) {
           <div class="task-item">
@@ -184,7 +254,7 @@
 
   @if (pendingTasks().length > 0) {
     <section class="dashboard-section" role="region" aria-labelledby="pending-heading">
-      <h2 id="pending-heading">Tarefas Pendentes</h2>
+      <h2 id="pending-heading">Desafios Pendentes</h2>
       <div class="task-list">
         @for (
           task of pendingShowAll() ? pendingTasks() : pendingTasks().slice(0, pendingPageSize);
@@ -204,7 +274,7 @@
                 (click)="quickCompleteTask(task)"
                 title="Concluir"
                 [disabled]="completingTaskId() === task.id"
-                aria-label="Concluir tarefa {{ task.title }}"
+                aria-label="Concluir desafio {{ task.title }}"
               >
                 ✅
               </button>

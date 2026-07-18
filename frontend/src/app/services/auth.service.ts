@@ -28,8 +28,7 @@ export class AuthService {
 
   register(name: string, email: string, password: string): Observable<AuthResponse> {
     return this.http
-      .post<AuthResponse>(`${this.api}/register`, { name, email, password })
-      .pipe(tap((res) => this.saveSession(res)));
+      .post<AuthResponse>(`${this.api}/register`, { name, email, password });
   }
 
   login(email: string, password: string): Observable<AuthResponse> {
@@ -60,6 +59,11 @@ export class AuthService {
       timeout(10_000),
       catchError(() => of(null as unknown as User)),
     );
+  }
+
+  updateUserSession(updatedUser: User): void {
+    localStorage.setItem(this.userKey, JSON.stringify(updatedUser));
+    this.user.set(updatedUser);
   }
 
   private saveSession(res: AuthResponse): void {

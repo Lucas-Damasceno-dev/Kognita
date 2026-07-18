@@ -4,9 +4,9 @@
   <div class="avatar-section">
     <div class="avatar-preview">
       @if (avatarUrl && !avatarError()) {
-        <img [src]="avatarUrl" alt="Avatar" class="profile-avatar" (error)="avatarError.set(true)" />
+        <img [src]="avatarUrl" alt="Avatar" class="profile-avatar {{ selectedBorder }}" (error)="avatarError.set(true)" />
       } @else {
-        <div class="profile-avatar-placeholder">{{ name.charAt(0) }}</div>
+        <div class="profile-avatar-placeholder {{ selectedBorder }}">{{ name.charAt(0) }}</div>
       }
     </div>
     <label for="avatarUrlInput" class="avatar-label">URL do Avatar</label>
@@ -34,6 +34,65 @@
   </label>
     <input type="email" id="emailInput" [(ngModel)]="email" name="email" required aria-describedby="emailHint" />
   <small id="emailHint" class="text-muted">Seu email principal de contato</small>
+
+  <label for="githubRepoInput">
+    Repositório do GitHub (Integração)
+  </label>
+    <input type="text" id="githubRepoInput" [(ngModel)]="githubRepo" name="githubRepo" placeholder="usuario/repositorio" aria-describedby="githubRepoHint" />
+  <small id="githubRepoHint" class="text-muted">Formato: <code>usuario/repositorio</code>. Usado para validar desafios via commit.</small>
+
+  <hr />
+
+  <h3 id="cosmetics-heading">Cosméticos de Nível</h3>
+  <p class="text-muted" style="margin: -0.5rem 0 1rem 0; font-size: 0.8rem;">Suba de nível para desbloquear novos títulos e molduras para o seu avatar!</p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+    <div>
+      <label for="titleSelect">Título do Perfil</label>
+      <select id="titleSelect" [(ngModel)]="selectedTitle" name="selectedTitle" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);">
+        @for (t of availableTitles; track t.name) {
+          <option [value]="t.name" [disabled]="getUserLevel() < t.level">
+            {{ t.name }} {{ getUserLevel() < t.level ? '(🔒 Bloqueado Lvl ' + t.level + ')' : '' }}
+          </option>
+        }
+      </select>
+    </div>
+    <div>
+      <label for="borderSelect">Moldura do Avatar</label>
+      <select id="borderSelect" [(ngModel)]="selectedBorder" name="selectedBorder" style="width: 100%; padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text);">
+        @for (b of availableBorders; track b.id) {
+          <option [value]="b.id" [disabled]="getUserLevel() < b.level">
+            {{ b.name }} {{ getUserLevel() < b.level ? '(🔒 Bloqueado Lvl ' + b.level + ')' : '' }}
+          </option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <hr />
+
+  <h3 id="streak-heading">🔥 Ofensiva Diária (Daily Study Streak)</h3>
+  <p class="text-muted" style="margin: -0.5rem 0 1rem 0; font-size: 0.8rem;">Mantenha a consistência estudando diariamente! Complete Pomodoros ou revise flashcards para manter sua ofensiva ativa.</p>
+  
+  <div class="card card-elevated" style="padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1.5rem; flex-wrap: wrap;">
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <div style="font-size: 2.5rem; line-height: 1;">🔥</div>
+      <div>
+        <div style="font-size: 1.25rem; font-weight: 700; color: var(--text);">{{ auth.user()?.streakCount || 0 }} Dias de Ofensiva</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted, #6b7280);">
+          Último dia ativo: {{ auth.user()?.lastActiveDate || 'Nenhum registro recente' }}
+        </div>
+      </div>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; text-align: right; min-width: 200px;">
+      <div style="font-size: 0.85rem; font-weight: 600; color: var(--text);">
+        ❄️ Congeladores Ativos: <span style="color: #60a5fa; font-weight: 700;">{{ auth.user()?.streakFreezes || 0 }}</span>
+      </div>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="buyStreakFreeze()" style="display: inline-flex; align-items: center; gap: 0.25rem; border: 1px dashed var(--primary); color: var(--primary);">
+        Comprar Congelador (200 XP)
+      </button>
+    </div>
+  </div>
 
   <hr />
 
@@ -75,6 +134,27 @@
   </div>
 </form>
 
+<div class="card achievements-card" style="margin-top: 1.5rem;">
+  <h3 style="margin-top: 0; display: flex; align-items: center; gap: 0.5rem;">🏆 Conquistas & Medalhas</h3>
+  <p class="text-muted" style="margin: 0.25rem 0 1rem 0; font-size: 0.85rem;">Pratique e crie bons hábitos para desbloquear conquistas técnicas!</p>
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1rem;">
+    @for (ach of achievements(); track ach.id) {
+      <div style="display: flex; gap: 1rem; border: 1px solid var(--border, #e5e7eb); border-radius: 8px; padding: 1rem; background: var(--bg-card, #ffffff); opacity: {{ ach.unlocked ? 1 : 0.45 }}; transition: opacity 0.3s ease;">
+        <span style="font-size: 2.25rem; display: flex; align-items: center; justify-content: center; line-height: 1;">{{ ach.icon }}</span>
+        <div style="display: flex; flex-direction: column; justify-content: center;">
+          <strong style="font-size: 0.95rem; color: var(--text, #1f2937);">{{ ach.title }}</strong>
+          <span style="font-size: 0.8rem; color: var(--text-muted, #6b7280); line-height: 1.3; margin-top: 0.15rem;">{{ ach.description }}</span>
+          @if (ach.unlocked) {
+            <span style="font-size: 0.7rem; color: #10b981; font-weight: 600; margin-top: 0.35rem;">✓ Desbloqueada</span>
+          } @else {
+            <span style="font-size: 0.7rem; color: var(--text-muted, #9ca3af); font-weight: 600; margin-top: 0.35rem;">🔒 Bloqueada</span>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
+
 <hr />
 
   <div class="card data-export" role="region" aria-labelledby="export-heading">
@@ -85,3 +165,25 @@
   </p>
   <button type="button" class="btn btn-ghost" (click)="exportData()">Exportar Dados</button>
 </div>
+
+<hr />
+
+<div class="card danger-zone" role="region" aria-labelledby="danger-heading" style="border-color: #ef4444; background: rgba(239, 68, 68, 0.05);">
+  <h3 id="danger-heading" style="color: #ef4444; margin-top: 0;">Zona de Perigo</h3>
+  <p style="color: var(--text-muted);">
+    Ao excluir sua conta, todos os seus dados (matérias, desafios, sessões de estudo, histórico) serão apagados permanentemente. Esta ação não pode ser desfeita.
+  </p>
+  <button type="button" class="btn btn-sm" style="background: #ef4444; color: white; border: none; font-weight: bold;" (click)="confirmDeleteAccount()">Excluir Minha Conta</button>
+</div>
+
+@if (showDeleteConfirm()) {
+  <app-confirm
+    title="Excluir Conta Permanentemente?"
+    message="Tem certeza absoluta? Todos os seus dados serão perdidos para sempre."
+    confirmText="Sim, excluir conta"
+    cancelText="Cancelar"
+    confirmStyle="danger"
+    (confirm)="deleteAccount()"
+    (cancel)="showDeleteConfirm.set(false)"
+  />
+}

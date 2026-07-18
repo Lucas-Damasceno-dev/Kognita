@@ -7,5 +7,11 @@ public record UpdateUserRequest(
     @Email String email,
     String currentPassword,
     String newPassword,
-    String avatarUrl
+    String avatarUrl,
+    String githubRepo,
+    String title,
+    String avatarBorder,
+    Integer streakCount,
+    java.time.LocalDate lastActiveDate,
+    Integer streakFreezes
 ) {}

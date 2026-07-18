@@ -4,6 +4,13 @@ export interface User {
   email: string;
   avatarUrl?: string;
   createdAt: string;
+  totalExperience: number;
+  githubRepo?: string;
+  title?: string;
+  avatarBorder?: string;
+  streakCount?: number;
+  lastActiveDate?: string;
+  streakFreezes?: number;
 }
 
 export interface CreateUserRequest {

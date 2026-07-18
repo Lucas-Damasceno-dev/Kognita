@@ -4,6 +4,8 @@ import com.kognita.dto.CreateUserRequest;
 import com.kognita.dto.UpdateUserRequest;
 import com.kognita.dto.UserResponse;
 import com.kognita.service.UserService;
+import com.kognita.model.User;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.UUID;
@@ -39,13 +41,52 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
+    public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        if (!user.getId().equals(id)) {
+            return ResponseEntity.status(403).build();
+        }
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<UserResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request) {
+    public ResponseEntity<UserResponse> update(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request, @AuthenticationPrincipal User user) {
+        if (!user.getId().equals(id)) {
+            return ResponseEntity.status(403).build();
+        }
         return ResponseEntity.ok(service.update(id, request));
     }
+
+    @GetMapping("/achievements")
+    public ResponseEntity<java.util.List<com.kognita.dto.AchievementResponse>> getAchievements(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.getAchievements(user.getId()));
+    }
+
+    @PostMapping("/buy-freeze")
+    public ResponseEntity<UserResponse> buyStreakFreeze(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.buyStreakFreeze(user.getId()));
+    }
+
+    @GetMapping("/leaderboard")
+    public ResponseEntity<java.util.List<UserResponse>> getLeaderboard() {
+        return ResponseEntity.ok(service.getLeaderboard());
+    }
+
+    @PostMapping("/buy-title")
+    public ResponseEntity<UserResponse> buyTitle(@AuthenticationPrincipal User user, @RequestBody BuyTitleRequest request) {
+        return ResponseEntity.ok(service.buyTitle(user.getId(), request.title(), request.cost()));
+    }
+
+    @PostMapping("/buy-border")
+    public ResponseEntity<UserResponse> buyBorder(@AuthenticationPrincipal User user, @RequestBody BuyBorderRequest request) {
+        return ResponseEntity.ok(service.buyBorder(user.getId(), request.border(), request.cost()));
+    }
+
+    @PostMapping("/daily-quest-claim")
+    public ResponseEntity<UserResponse> claimDailyQuest(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.claimDailyQuest(user.getId()));
+    }
+
+    public record BuyTitleRequest(String title, int cost) {}
+    public record BuyBorderRequest(String border, int cost) {}
 }

@@ -34,6 +34,23 @@ public class User {
     @Column(name = "total_experience")
     private long totalExperience = 0;
 
+    @Column(name = "github_repo")
+    private String githubRepo;
+
+    private String title = "Recruta do Código";
+
+    @Column(name = "avatar_border")
+    private String avatarBorder = "border-none";
+
+    @Column(name = "streak_count")
+    private Integer streakCount = 0;
+
+    @Column(name = "last_active_date")
+    private java.time.LocalDate lastActiveDate;
+
+    @Column(name = "streak_freezes")
+    private Integer streakFreezes = 0;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
@@ -71,6 +88,18 @@ public class User {
     public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
     public long getTotalExperience() { return totalExperience; }
     public void setTotalExperience(long totalExperience) { this.totalExperience = totalExperience; }
+    public String getGithubRepo() { return githubRepo; }
+    public void setGithubRepo(String githubRepo) { this.githubRepo = githubRepo; }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    public String getAvatarBorder() { return avatarBorder; }
+    public void setAvatarBorder(String avatarBorder) { this.avatarBorder = avatarBorder; }
+    public Integer getStreakCount() { return streakCount; }
+    public void setStreakCount(Integer streakCount) { this.streakCount = streakCount; }
+    public java.time.LocalDate getLastActiveDate() { return lastActiveDate; }
+    public void setLastActiveDate(java.time.LocalDate lastActiveDate) { this.lastActiveDate = lastActiveDate; }
+    public Integer getStreakFreezes() { return streakFreezes; }
+    public void setStreakFreezes(Integer streakFreezes) { this.streakFreezes = streakFreezes; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
 }

@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit } from '@angular/core';
+import { Component, inject, signal, OnInit, computed } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { ConfigService } from '../services/config.service';
@@ -16,6 +16,10 @@ export class Layout implements OnInit {
 
   isDark = signal(false);
   sidebarOpen = signal(false);
+
+  userXP = computed(() => this.auth.user()?.totalExperience ?? 0);
+  userLevel = computed(() => Math.floor(this.userXP() / 100) + 1);
+  xpProgress = computed(() => this.userXP() % 100);
 
   ngOnInit(): void {
     const saved = localStorage.getItem('kognita_theme');
