@@ -41,20 +41,67 @@
       Cor <span aria-hidden="true">{{ sortBy === 'color' ? (sortDir === 'asc' ? '▲' : '▼') : '⇅' }}</span>
     </button>
   </div>
-  <div class="list" role="list">
+  <div class="list" role="list" style="display: flex; flex-direction: column; gap: 0.75rem;">
     @for (item of sortedSubjects; track item.id) {
-      <div class="list-item" role="listitem">
-        <span class="subject-color" [style.background]="item.color"></span>
-        <div>
-          <strong>{{ item.name }}</strong>
-          @if (item.description) {
-            <p>{{ item.description }}</p>
-          }
+      <div style="border: 1px solid var(--border); border-radius: 12px; background: var(--bg-card); overflow: hidden;">
+        <div class="list-item" role="listitem" style="border-bottom: none; padding: 1rem; margin-bottom: 0;">
+          <span class="subject-color" [style.background]="item.color"></span>
+          <div style="flex: 1;">
+            <strong>{{ item.name }}</strong>
+            @if (item.description) {
+              <p style="margin: 0.25rem 0 0 0; font-size: 0.85rem; color: var(--text-muted);">{{ item.description }}</p>
+            }
+          </div>
+          <div class="list-actions">
+            <button type="button" class="btn btn-sm btn-ghost" (click)="toggleNotes(item)" style="display: inline-flex; align-items: center; gap: 0.25rem;">
+              {{ activeNotesSubjectId === item.id ? 'Fechar Notas' : '📓 Notas' }}
+            </button>
+            <button type="button" class="btn btn-sm" (click)="edit(item)">Editar</button>
+            <button type="button" class="btn btn-sm btn-ghost" (click)="archive(item)" title="Arquivar">📦</button>
+            <button class="btn-ghost" type="button" (click)="confirmDelete(item.id, item.name)" aria-label="Excluir {{ item.name }}">✕</button>
+          </div>
         </div>
-        <div class="list-actions">
-          <button class="btn btn-sm" (click)="edit(item)">Editar</button>
-          <button class="btn-ghost" type="button" (click)="confirmDelete(item.id, item.name)" aria-label="Excluir {{ item.name }}">✕</button>
-        </div>
+
+        @if (activeNotesSubjectId === item.id) {
+          <div class="notes-panel" style="padding: 1.25rem; border-top: 1px solid var(--border); background: var(--bg-hover, #fafafa); display: flex; flex-direction: column; gap: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h4 style="margin: 0;">📓 Caderno de Notas (Markdown)</h4>
+              <div style="display: flex; gap: 0.5rem;">
+                @if (isEditingNotes) {
+                  <button type="button" class="btn btn-primary btn-sm" (click)="saveNotes(item)">Salvar Notas</button>
+                  <button type="button" class="btn btn-sm" (click)="isEditingNotes = false">Cancelar</button>
+                } @else {
+                  <button type="button" class="btn btn-sm btn-primary" (click)="isEditingNotes = true">Editar Notas</button>
+                }
+              </div>
+            </div>
+
+            @if (isEditingNotes) {
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; min-height: 250px;">
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Escrever (Markdown suportado)</span>
+                  <textarea 
+                    [(ngModel)]="notesContent" 
+                    placeholder="# Meu Resumo&#10;Escreva notas de estudo aqui..." 
+                    style="flex: 1; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); font-family: monospace; font-size: 0.9rem; resize: vertical; min-height: 200px; background: var(--bg-card); color: var(--text);"
+                  ></textarea>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <span style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary);">Visualização</span>
+                  <div 
+                    [innerHTML]="renderMarkdown(notesContent)" 
+                    style="flex: 1; padding: 0.75rem; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-card); overflow-y: auto; font-size: 0.9rem; max-height: 300px;"
+                  ></div>
+                </div>
+              </div>
+            } @else {
+              <div 
+                [innerHTML]="renderMarkdown(item.notes || '')" 
+                style="padding: 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-card); font-size: 0.95rem; line-height: 1.6;"
+              ></div>
+            }
+          </div>
+        }
       </div>
     } @empty {
       <app-empty-state>

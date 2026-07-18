@@ -40,6 +40,11 @@ public class Subject {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @Column(columnDefinition = "TEXT")
+    private String notes;
+
+    private Boolean archived = false;
+
     @PrePersist
     protected void onCreate() {
         createdAt = OffsetDateTime.now();
@@ -63,6 +68,10 @@ public class Subject {
     public void setColor(String color) { this.color = color; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
+    public Boolean getArchived() { return archived; }
+    public void setArchived(Boolean archived) { this.archived = archived; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
 }

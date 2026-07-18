@@ -9,5 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SubjectRepository extends JpaRepository<Subject, UUID> {
     List<Subject> findByUserId(UUID userId);
+    List<Subject> findByUserIdAndArchivedFalse(UUID userId);
     Page<Subject> findByUserId(UUID userId, Pageable pageable);
+    Page<Subject> findByUserIdAndArchivedFalse(UUID userId, Pageable pageable);
 }

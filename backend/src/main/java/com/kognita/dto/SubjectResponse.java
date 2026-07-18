@@ -10,7 +10,9 @@ public record SubjectResponse(
     String description,
     String color,
     UUID userId,
-    OffsetDateTime createdAt
+    String notes,
+    OffsetDateTime createdAt,
+    Boolean archived
 ) {
     public static SubjectResponse from(Subject subject) {
         return new SubjectResponse(
@@ -19,7 +21,9 @@ public record SubjectResponse(
             subject.getDescription(),
             subject.getColor(),
             subject.getUser().getId(),
-            subject.getCreatedAt()
+            subject.getNotes(),
+            subject.getCreatedAt(),
+            subject.getArchived()
         );
     }
 }
