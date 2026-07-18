@@ -53,18 +53,18 @@ public class StudyGoalController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<GoalResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateGoalRequest request) {
-        return ResponseEntity.ok(service.update(id, request));
+    public ResponseEntity<GoalResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateGoalRequest request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.update(id, request, user.getId()));
     }
 
     @PatchMapping("/{id}/progress")
-    public ResponseEntity<GoalResponse> updateProgress(@PathVariable UUID id, @RequestBody Integer hours) {
-        return ResponseEntity.ok(service.updateProgress(id, hours));
+    public ResponseEntity<GoalResponse> updateProgress(@PathVariable UUID id, @RequestBody Integer hours, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.updateProgress(id, hours, user.getId()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        service.delete(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

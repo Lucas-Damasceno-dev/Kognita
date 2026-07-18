@@ -56,13 +56,13 @@ public class StudySessionController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<StudySessionResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateStudySessionRequest request) {
-        return ResponseEntity.ok(service.update(id, request));
+    public ResponseEntity<StudySessionResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateStudySessionRequest request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.update(id, request, user.getId()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        service.delete(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

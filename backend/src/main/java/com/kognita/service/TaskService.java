@@ -36,8 +36,12 @@ public class TaskService {
         return all.stream().limit(3).map(TaskResponse::from).toList();
     }
 
-    public TaskResponse findById(UUID id) {
-        return repository.findById(id).map(TaskResponse::from).orElseThrow();
+    public TaskResponse findById(UUID id, UUID userId) {
+        var task = repository.findById(id).orElseThrow();
+        if (!task.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
+        return TaskResponse.from(task);
     }
 
     @Transactional
@@ -55,14 +59,21 @@ public class TaskService {
             task.setRequiresProof(request.requiresProof());
         }
         if (request.subjectId() != null) {
-            task.setSubject(subjectService.findEntityById(request.subjectId()));
+            var subject = subjectService.findEntityById(request.subjectId());
+            if (!subject.getUser().getId().equals(userId)) {
+                throw new RuntimeException("Not authorized");
+            }
+            task.setSubject(subject);
         }
         return TaskResponse.from(repository.save(task));
     }
 
     @Transactional
-    public TaskResponse update(UUID id, CreateTaskRequest request) {
+    public TaskResponse update(UUID id, CreateTaskRequest request, UUID userId) {
         var task = repository.findById(id).orElseThrow();
+        if (!task.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
         task.setTitle(request.title());
         task.setDescription(request.description());
         task.setStatus(request.status() != null ? request.status() : task.getStatus());
@@ -73,7 +84,11 @@ public class TaskService {
             task.setRequiresProof(request.requiresProof());
         }
         if (request.subjectId() != null) {
-            task.setSubject(subjectService.findEntityById(request.subjectId()));
+            var subject = subjectService.findEntityById(request.subjectId());
+            if (!subject.getUser().getId().equals(userId)) {
+                throw new RuntimeException("Not authorized");
+            }
+            task.setSubject(subject);
         } else {
             task.setSubject(null);
         }
@@ -81,11 +96,18 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskResponse updateStatus(UUID id, String status) {
+    public TaskResponse updateStatus(UUID id, String status, UUID userId) {
         var task = repository.findById(id).orElseThrow();
+        if (!task.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
         if ("completed".equals(status) && !"completed".equals(task.getStatus())) {
             var user = task.getUser();
-            user.setTotalExperience(user.getTotalExperience() + task.getExperiencePoints());
+            int xp = task.getExperiencePoints();
+            if (task.getSubject() != null && subjectService.isWeeklySubject(task.getSubject().getId(), userId)) {
+                xp = (int) (xp * 1.5);
+            }
+            user.setTotalExperience(user.getTotalExperience() + xp);
             userService.save(user);
         }
         task.setStatus(status);
@@ -101,7 +123,11 @@ public class TaskService {
     }
 
     @Transactional
-    public void delete(UUID id) {
-        repository.deleteById(id);
+    public void delete(UUID id, UUID userId) {
+        var task = repository.findById(id).orElseThrow();
+        if (!task.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
+        repository.delete(task);
     }
 }

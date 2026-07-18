@@ -43,13 +43,13 @@ public class ChallengeAttemptController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ChallengeAttemptResponse> update(@PathVariable UUID id, @RequestBody CreateChallengeAttemptRequest request) {
-        return ResponseEntity.ok(service.update(id, request));
+    public ResponseEntity<ChallengeAttemptResponse> update(@PathVariable UUID id, @RequestBody CreateChallengeAttemptRequest request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.update(id, request, user.getId()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        service.delete(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 

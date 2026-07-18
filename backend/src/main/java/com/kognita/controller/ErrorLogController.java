@@ -48,4 +48,11 @@ public class ErrorLogController {
         service.delete(id, user.getId());
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/rechallenge")
+    public ResponseEntity<com.kognita.dto.TaskResponse> scheduleRechallenge(
+            @PathVariable UUID id, 
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.scheduleRechallenge(id, user.getId()));
+    }
 }

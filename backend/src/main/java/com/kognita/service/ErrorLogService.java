@@ -36,7 +36,11 @@ public class ErrorLogService {
         errorLog.setSolution(request.solution());
         errorLog.setUser(user);
         if (request.taskId() != null) {
-            errorLog.setTask(taskService.findEntityById(request.taskId()));
+            var task = taskService.findEntityById(request.taskId());
+            if (!task.getUser().getId().equals(userId)) {
+                throw new RuntimeException("Not authorized");
+            }
+            errorLog.setTask(task);
         }
         return ErrorLogResponse.from(repository.save(errorLog));
     }
@@ -51,7 +55,11 @@ public class ErrorLogService {
         errorLog.setDescription(request.description());
         errorLog.setSolution(request.solution());
         if (request.taskId() != null) {
-            errorLog.setTask(taskService.findEntityById(request.taskId()));
+            var task = taskService.findEntityById(request.taskId());
+            if (!task.getUser().getId().equals(userId)) {
+                throw new RuntimeException("Not authorized");
+            }
+            errorLog.setTask(task);
         }
         return ErrorLogResponse.from(repository.save(errorLog));
     }
@@ -67,5 +75,39 @@ public class ErrorLogService {
 
     public long countByUser(UUID userId) {
         return repository.countByUserId(userId);
+    }
+
+    @Transactional
+    public com.kognita.dto.TaskResponse scheduleRechallenge(UUID id, UUID userId) {
+        var errorLog = repository.findById(id).orElseThrow();
+        if (!errorLog.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
+
+        var title = "Reimplementar Solução: " + errorLog.getTitle();
+        var description = "Desafio de reforço baseado no erro cadastrado:\n" +
+                errorLog.getDescription() + "\n\nSolução anterior:\n" + errorLog.getSolution();
+
+        UUID subjectId = null;
+        String skillCategory = null;
+        if (errorLog.getTask() != null) {
+            if (errorLog.getTask().getSubject() != null) {
+                subjectId = errorLog.getTask().getSubject().getId();
+            }
+            skillCategory = errorLog.getTask().getSkillCategory();
+        }
+
+        var rechallengeRequest = new com.kognita.dto.CreateTaskRequest(
+                title,
+                description,
+                "pending",
+                "medium",
+                subjectId,
+                java.time.LocalDate.now().plusDays(3),
+                skillCategory,
+                false
+        );
+
+        return taskService.create(rechallengeRequest, userId);
     }
 }

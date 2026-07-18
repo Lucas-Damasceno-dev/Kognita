@@ -40,13 +40,13 @@ export class Register {
     this.loading.set(true);
     this.auth.register(this.name, this.email, this.password).subscribe({
       next: () => {
-        this.toast.success('Conta criada!');
+        this.toast.success('Conta criada! Faça login para continuar.');
         this.loading.set(false);
         this.name = '';
         this.email = '';
         this.password = '';
         this.confirmPassword = '';
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/login']);
       },
       error: (err) => {
         this.toast.error(err.status === 409 ? 'Email já está em uso' : 'Falha ao criar conta');

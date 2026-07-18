@@ -28,6 +28,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       } else if (!req.url.includes('/api/auth/')) {
         const msg = statusMessages[err.status] || `Erro na requisição (${err.status})`;
         toast.error(msg);
+        if (err.status === 401) {
+          localStorage.removeItem('kognita_token');
+          localStorage.removeItem('kognita_user');
+          window.location.href = '/login';
+        }
       }
       return throwError(() => err);
     }),

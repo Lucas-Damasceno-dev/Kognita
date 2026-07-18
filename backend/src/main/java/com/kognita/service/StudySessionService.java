@@ -45,20 +45,32 @@ public class StudySessionService {
     @Transactional
     public StudySessionResponse create(CreateStudySessionRequest request, UUID userId) {
         var user = userService.findEntityById(userId);
-        var subject = subjectService.findById(request.subjectId());
+        var subject = subjectService.findEntityById(request.subjectId());
+        if (!subject.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
         var session = new StudySession();
-        session.setSubject(subjectService.findEntityById(request.subjectId()));
+        session.setSubject(subject);
         session.setUser(user);
         session.setDurationMinutes(request.durationMinutes());
         session.setNotes(request.notes());
         session.setDate(request.date() != null ? request.date() : LocalDate.now());
-        return StudySessionResponse.from(repository.save(session));
+        var saved = repository.save(session);
+        userService.registerActivity(userId);
+        return StudySessionResponse.from(saved);
     }
 
     @Transactional
-    public StudySessionResponse update(UUID id, CreateStudySessionRequest request) {
+    public StudySessionResponse update(UUID id, CreateStudySessionRequest request, UUID userId) {
         var session = repository.findById(id).orElseThrow();
-        session.setSubject(subjectService.findEntityById(request.subjectId()));
+        if (!session.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
+        var subject = subjectService.findEntityById(request.subjectId());
+        if (!subject.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
+        session.setSubject(subject);
         session.setDurationMinutes(request.durationMinutes());
         session.setNotes(request.notes());
         session.setDate(request.date() != null ? request.date() : LocalDate.now());
@@ -66,7 +78,11 @@ public class StudySessionService {
     }
 
     @Transactional
-    public void delete(UUID id) {
-        repository.deleteById(id);
+    public void delete(UUID id, UUID userId) {
+        var session = repository.findById(id).orElseThrow();
+        if (!session.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
+        repository.delete(session);
     }
 }

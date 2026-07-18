@@ -51,8 +51,8 @@ public class TaskController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TaskResponse> findById(@PathVariable UUID id) {
-        return ResponseEntity.ok(service.findById(id));
+    public ResponseEntity<TaskResponse> findById(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.findById(id, user.getId()));
     }
 
     @PostMapping
@@ -62,18 +62,18 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateTaskRequest request) {
-        return ResponseEntity.ok(service.update(id, request));
+    public ResponseEntity<TaskResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateTaskRequest request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.update(id, request, user.getId()));
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<TaskResponse> updateStatus(@PathVariable UUID id, @RequestBody StatusUpdateRequest request) {
-        return ResponseEntity.ok(service.updateStatus(id, request.status()));
+    public ResponseEntity<TaskResponse> updateStatus(@PathVariable UUID id, @RequestBody StatusUpdateRequest request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.updateStatus(id, request.status(), user.getId()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        service.delete(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

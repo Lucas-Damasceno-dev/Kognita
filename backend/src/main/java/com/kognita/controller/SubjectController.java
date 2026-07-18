@@ -33,21 +33,29 @@ public class SubjectController {
     }
 
     @GetMapping
-    public ResponseEntity<List<SubjectResponse>> findAllByUser(@AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(service.findAllByUser(user.getId()));
+    public ResponseEntity<List<SubjectResponse>> findAllByUser(
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false, defaultValue = "false") Boolean includeArchived) {
+        return ResponseEntity.ok(service.findAllByUser(user.getId(), includeArchived));
     }
 
     @GetMapping("/page")
     public ResponseEntity<Page<SubjectResponse>> findAllByUserPage(
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size) {
-        return ResponseEntity.ok(service.findAllByUser(user.getId(), PageRequest.of(page, size)));
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false, defaultValue = "false") Boolean includeArchived) {
+        return ResponseEntity.ok(service.findAllByUser(user.getId(), PageRequest.of(page, size), includeArchived));
+    }
+
+    @PutMapping("/{id}/archive")
+    public ResponseEntity<SubjectResponse> archive(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.archive(id, user.getId()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<SubjectResponse> findById(@PathVariable UUID id) {
-        return ResponseEntity.ok(service.findById(id));
+    public ResponseEntity<SubjectResponse> findById(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.findById(id, user.getId()));
     }
 
     @PostMapping
@@ -57,13 +65,13 @@ public class SubjectController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<SubjectResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateSubjectRequest request) {
-        return ResponseEntity.ok(service.update(id, request));
+    public ResponseEntity<SubjectResponse> update(@PathVariable UUID id, @Valid @RequestBody CreateSubjectRequest request, @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(service.update(id, request, user.getId()));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id) {
-        service.delete(id);
+    public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal User user) {
+        service.delete(id, user.getId());
         return ResponseEntity.noContent().build();
     }
 }

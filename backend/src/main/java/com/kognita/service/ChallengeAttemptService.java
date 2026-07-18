@@ -37,6 +37,9 @@ public class ChallengeAttemptService {
     public ChallengeAttemptResponse create(CreateChallengeAttemptRequest request, UUID userId) {
         var user = userService.findEntityById(userId);
         var task = taskService.findEntityById(request.taskId());
+        if (!task.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
         var attempt = new ChallengeAttempt();
         attempt.setTask(task);
         attempt.setUser(user);
@@ -54,16 +57,23 @@ public class ChallengeAttemptService {
     }
 
     @Transactional
-    public ChallengeAttemptResponse update(UUID id, CreateChallengeAttemptRequest request) {
+    public ChallengeAttemptResponse update(UUID id, CreateChallengeAttemptRequest request, UUID userId) {
         var attempt = repository.findById(id).orElseThrow();
+        if (!attempt.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
         attempt.setHowISolved(request.howISolved());
         attempt.setNotes(request.notes());
         return ChallengeAttemptResponse.from(repository.save(attempt));
     }
 
     @Transactional
-    public void delete(UUID id) {
-        repository.deleteById(id);
+    public void delete(UUID id, UUID userId) {
+        var attempt = repository.findById(id).orElseThrow();
+        if (!attempt.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
+        repository.delete(attempt);
     }
 
     public List<ChallengeAttemptResponse> getHistory(UUID userId, String skillCategory) {
@@ -84,14 +94,27 @@ public class ChallengeAttemptService {
         var dates = repository.findDistinctDatesWithoutAi(userId);
         int streak = 0;
         LocalDate today = LocalDate.now();
-        for (int i = 0; i < dates.size(); i++) {
-            LocalDate expected = today.minusDays(i);
-            if (dates.get(i).equals(expected)) {
-                streak++;
-            } else {
-                break;
+        if (!dates.isEmpty()) {
+            LocalDate startCheckDate = today;
+            if (!dates.get(0).equals(startCheckDate)) {
+                if (dates.get(0).equals(startCheckDate.minusDays(1))) {
+                    startCheckDate = startCheckDate.minusDays(1);
+                } else {
+                    startCheckDate = null;
+                }
+            }
+            if (startCheckDate != null) {
+                for (int i = 0; i < dates.size(); i++) {
+                    LocalDate expected = startCheckDate.minusDays(i);
+                    if (dates.get(i).equals(expected)) {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                }
             }
         }
+
 
         long totalWithoutAi = rawStats.stream()
             .mapToLong(r -> ((Number) r[2]).longValue())

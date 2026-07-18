@@ -23,12 +23,22 @@ public class StudyGoalService {
         this.userService = userService;
     }
 
+    @Transactional
     public List<GoalResponse> findAllByUser(UUID userId) {
-        return repository.findByUserId(userId).stream().map(GoalResponse::from).toList();
+        var goals = repository.findByUserId(userId);
+        for (var goal : goals) {
+            checkAndRolloverGoal(goal);
+        }
+        return goals.stream().map(GoalResponse::from).toList();
     }
 
+    @Transactional
     public Page<GoalResponse> findAllByUser(UUID userId, Pageable pageable) {
-        return repository.findByUserId(userId, pageable).map(GoalResponse::from);
+        var page = repository.findByUserId(userId, pageable);
+        for (var goal : page.getContent()) {
+            checkAndRolloverGoal(goal);
+        }
+        return page.map(GoalResponse::from);
     }
 
     @Transactional
@@ -39,29 +49,79 @@ public class StudyGoalService {
         goal.setDescription(request.description());
         goal.setTargetHours(request.targetHours());
         goal.setDeadline(request.deadline());
+        goal.setIsRecurring(request.isRecurring() != null ? request.isRecurring() : false);
+        goal.setRecurrencePeriod(request.recurrencePeriod() != null ? request.recurrencePeriod() : "none");
+        goal.setStreakCount(0);
         goal.setUser(user);
         return GoalResponse.from(repository.save(goal));
     }
 
     @Transactional
-    public GoalResponse update(UUID id, CreateGoalRequest request) {
+    public GoalResponse update(UUID id, CreateGoalRequest request, UUID userId) {
         var goal = repository.findById(id).orElseThrow();
+        if (!goal.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
         goal.setTitle(request.title());
         goal.setDescription(request.description());
         goal.setTargetHours(request.targetHours());
         goal.setDeadline(request.deadline());
+        goal.setIsRecurring(request.isRecurring() != null ? request.isRecurring() : false);
+        goal.setRecurrencePeriod(request.recurrencePeriod() != null ? request.recurrencePeriod() : "none");
         return GoalResponse.from(repository.save(goal));
     }
 
     @Transactional
-    public GoalResponse updateProgress(UUID id, Integer hours) {
+    public GoalResponse updateProgress(UUID id, Integer hours, UUID userId) {
         var goal = repository.findById(id).orElseThrow();
+        if (!goal.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
         goal.setCurrentHours(goal.getCurrentHours() + hours);
         return GoalResponse.from(repository.save(goal));
     }
 
     @Transactional
-    public void delete(UUID id) {
-        repository.deleteById(id);
+    public void delete(UUID id, UUID userId) {
+        var goal = repository.findById(id).orElseThrow();
+        if (!goal.getUser().getId().equals(userId)) {
+            throw new RuntimeException("Not authorized");
+        }
+        repository.delete(goal);
+    }
+
+    private void checkAndRolloverGoal(StudyGoal goal) {
+        if (goal.getIsRecurring() != null && goal.getIsRecurring() && goal.getDeadline() != null) {
+            java.time.LocalDate today = java.time.LocalDate.now();
+            if (goal.getDeadline().isBefore(today)) {
+                // Determine if achieved
+                boolean achieved = goal.getCurrentHours() >= goal.getTargetHours();
+                if (achieved) {
+                    goal.setStreakCount((goal.getStreakCount() != null ? goal.getStreakCount() : 0) + 1);
+                } else {
+                    goal.setStreakCount(0);
+                }
+
+                // Roll over deadline and current hours
+                goal.setCurrentHours(0);
+
+                // Keep advancing the deadline until it is today or in the future
+                java.time.LocalDate deadline = goal.getDeadline();
+                String period = goal.getRecurrencePeriod() != null ? goal.getRecurrencePeriod() : "weekly";
+
+                while (deadline.isBefore(today)) {
+                    if ("weekly".equals(period)) {
+                        deadline = deadline.plusWeeks(1);
+                    } else if ("monthly".equals(period)) {
+                        deadline = deadline.plusMonths(1);
+                    } else {
+                        deadline = deadline.plusWeeks(1);
+                        break;
+                    }
+                }
+                goal.setDeadline(deadline);
+                repository.save(goal);
+            }
+        }
     }
 }
