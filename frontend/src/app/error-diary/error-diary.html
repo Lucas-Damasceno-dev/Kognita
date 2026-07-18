@@ -47,8 +47,18 @@
   <app-loading />
 }
 
+<div class="search-container" style="margin-bottom: 1.5rem; display: flex; gap: 0.5rem; width: 100%;">
+  <input 
+    type="text" 
+    placeholder="Buscar erro por título, descrição ou solução..." 
+    [ngModel]="searchQuery()"
+    (ngModelChange)="searchQuery.set($event)"
+    style="flex: 1; padding: 0.625rem 0.875rem; border: 1px solid var(--border-color, #e5e7eb); border-radius: 0.5rem; background: var(--bg-card, #fff); color: var(--text-main, #111827); font-size: 0.9rem;" 
+  />
+</div>
+
 <div class="list">
-  @for (log of errorLogs; track log.id) {
+  @for (log of filteredLogs(); track log.id) {
     <div class="list-item error-item">
       <div>
         <div class="error-title">{{ log.title }}</div>
@@ -57,6 +67,15 @@
         <small>{{ log.createdAt | date: 'short' }}</small>
       </div>
       <div class="list-actions">
+        <button 
+          class="btn btn-ghost btn-sm" 
+          (click)="rechallenge(log.id)" 
+          title="Agendar Re-desafio no Kanban"
+          aria-label="Agendar re-desafio para {{ log.title }}"
+          style="display: inline-flex; align-items: center; gap: 0.25rem;"
+        >
+          🔁 Re-desafio
+        </button>
         <button class="btn btn-ghost btn-sm" (click)="edit(log)" title="Editar">✏️</button>
         <button
           class="btn btn-ghost btn-sm"

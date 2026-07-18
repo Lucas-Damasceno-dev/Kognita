@@ -1,5 +1,5 @@
+import { Component, OnInit, inject, DestroyRef, signal, HostListener, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, DestroyRef, signal, HostListener } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { catchError, finalize, of, tap, EMPTY } from 'rxjs';
@@ -22,7 +22,20 @@ export class ErrorDiary implements OnInit {
   private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
 
-  errorLogs: ErrorLog[] = [];
+  errorLogs = signal<ErrorLog[]>([]);
+  searchQuery = signal('');
+
+  filteredLogs = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    const logs = this.errorLogs();
+    if (!query) return logs;
+    return logs.filter(log => 
+      log.title.toLowerCase().includes(query) || 
+      (log.description && log.description.toLowerCase().includes(query)) ||
+      (log.solution && log.solution.toLowerCase().includes(query))
+    );
+  });
+
   title = '';
   description = '';
   solution = '';
@@ -61,7 +74,7 @@ export class ErrorDiary implements OnInit {
       )
       .subscribe({
         next: (logs) => {
-          this.errorLogs = logs;
+          this.errorLogs.set(logs);
         },
         error: () => {},
       });
@@ -156,5 +169,16 @@ export class ErrorDiary implements OnInit {
   @HostListener('window:beforeunload', ['$event'])
   onBeforeUnload(event: BeforeUnloadEvent): void {
     if (this.hasUnsavedChanges()) event.preventDefault();
+  }
+
+  rechallenge(id: string): void {
+    this.api.rechallengeErrorLog(id).subscribe({
+      next: () => {
+        this.toast.success('Re-desafio criado e agendado no Kanban!');
+      },
+      error: () => {
+        this.toast.error('Erro ao agendar re-desafio.');
+      }
+    });
   }
 }
