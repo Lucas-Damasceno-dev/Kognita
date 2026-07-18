@@ -51,6 +51,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pomodoro/pomodoro').then(m => m.Pomodoro),
       },
       {
+        path: 'flashcards',
+        loadComponent: () => import('./flashcards/flashcards').then(m => m.Flashcards),
+      },
+      {
         path: 'history',
         loadComponent: () => import('./history/history').then(m => m.History),
       },
@@ -64,6 +68,10 @@ export const routes: Routes = [
         loadComponent: () => import('./analytics/analytics').then(m => m.Analytics),
       },
       {
+        path: 'calendar',
+        loadComponent: () => import('./calendar/calendar').then(m => m.CalendarView),
+      },
+      {
         path: 'error-diary',
         loadComponent: () => import('./error-diary/error-diary').then(m => m.ErrorDiary),
         canDeactivate: [canDeactivateGuard],
@@ -75,6 +83,18 @@ export const routes: Routes = [
       {
         path: 'importer',
         loadComponent: () => import('./importer/importer').then(m => m.Importer),
+      },
+      {
+        path: 'leaderboard',
+        loadComponent: () => import('./leaderboard/leaderboard').then(m => m.Leaderboard),
+      },
+      {
+        path: 'shop',
+        loadComponent: () => import('./shop/shop').then(m => m.Shop),
+      },
+      {
+        path: 'reports',
+        loadComponent: () => import('./reports/reports').then(m => m.Reports),
       },
       { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
       { path: '**', loadComponent: () => import('./not-found/not-found').then(m => m.NotFound) },

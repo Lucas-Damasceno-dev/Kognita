@@ -1,0 +1,299 @@
+<div class="flashcards-container">
+  <div class="header-section">
+    <h1>Flashcards (Repetição Espaçada)</h1>
+    <div class="tab-bar">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab() === 'review'" 
+        (click)="activeTab.set('review'); resetReviewSession()"
+        aria-label="Aba de Revisão"
+      >
+        📥 Revisar
+        @if (dueCards().length > 0) {
+          <span class="badge">{{ dueCards().length }}</span>
+        }
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab() === 'manage'" 
+        (click)="activeTab.set('manage')"
+        aria-label="Aba de Gerenciamento"
+      >
+        ⚙️ Gerenciar
+        <span class="badge secondary">{{ flashcards().length }}</span>
+      </button>
+    </div>
+  </div>
+
+  @if (loading()) {
+    <app-skeleton mode="list" />
+  } @else {
+    <!-- REVIEW TAB -->
+    @if (activeTab() === 'review') {
+      <div class="review-tab">
+        @if (dueCards().length === 0) {
+          <app-empty-state>
+            <div class="empty-content">
+              <span class="empty-icon">🎉</span>
+              <h2>Tudo Limpo!</h2>
+              <p>Você revisou todos os flashcards programados para hoje. Volte mais tarde!</p>
+              <button class="btn btn-primary" (click)="activeTab.set('manage')">Criar Novo Flashcard</button>
+            </div>
+          </app-empty-state>
+        } @else if (reviewCompleted()) {
+          <div class="success-screen">
+            <span class="success-icon">✨</span>
+            <h2>Excelente Trabalho!</h2>
+            <p>Você completou todos os seus flashcards pendentes por hoje. Continue assim!</p>
+            <div class="success-actions">
+              <button class="btn btn-primary" (click)="loadAllData(auth.user()!.id)">Recarregar</button>
+              <button class="btn" (click)="activeTab.set('manage')">Ver Meus Flashcards</button>
+            </div>
+          </div>
+        } @else {
+          @if (getCurrentCard(); as card) {
+            <div class="review-box">
+              <div class="review-progress">
+                <span>Card {{ currentReviewIndex() + 1 }} de {{ dueCards().length }}</span>
+                <div class="progress-bar">
+                  <div class="progress-fill" [style.width.%]="((currentReviewIndex() + 1) / dueCards().length) * 100"></div>
+                </div>
+              </div>
+
+              <div class="flashcard-card" [class.flipped]="showAnswer()" (click)="card.type !== 'MULTIPLE_CHOICE' && !showAnswer() ? revealAnswer() : null">
+                <div class="card-inner">
+                  <!-- Front (Question) -->
+                  <div class="card-front">
+                    <div class="card-header-info">
+                      @if (card.subjectName) {
+                        <span class="card-subject-tag">{{ card.subjectName }}</span>
+                      }
+                      <span class="card-type-badge {{ card.type.toLowerCase() }}">{{ card.type === 'MULTIPLE_CHOICE' ? 'Múltipla Escolha' : card.type === 'CODE' ? 'Código' : 'Texto' }}</span>
+                    </div>
+                    <div class="card-content">
+                      @if (card.type === 'MULTIPLE_CHOICE') {
+                        <p class="card-text question-text">{{ card.question }}</p>
+                        <div class="options-container" (click)="$event.stopPropagation()">
+                          @for (opt of getCardOptions(card); track $index) {
+                            <button 
+                              type="button"
+                              class="option-btn"
+                              [class.selected]="$index === selectedOptionIndex()"
+                              [class.correct]="showAnswer() && $index === card.correctOptionIndex"
+                              [class.incorrect]="showAnswer() && $index === selectedOptionIndex() && $index !== card.correctOptionIndex"
+                              [disabled]="showAnswer()"
+                              (click)="selectOption($index)"
+                            >
+                              <span class="option-letter">{{ ['A', 'B', 'C', 'D'][$index] }}</span>
+                              <span class="option-text">{{ opt }}</span>
+                            </button>
+                          }
+                        </div>
+                      } @else if (card.type === 'CODE') {
+                        <pre class="card-code"><code>{{ card.question }}</code></pre>
+                      } @else {
+                        <p class="card-text">{{ card.question }}</p>
+                      }
+                    </div>
+                    @if (card.type !== 'MULTIPLE_CHOICE' && !showAnswer()) {
+                      <span class="click-hint">Clique no card para revelar a resposta</span>
+                    }
+                  </div>
+
+                  <!-- Back (Answer) -->
+                  <div class="card-back">
+                    <div class="card-header-info">
+                      @if (card.subjectName) {
+                        <span class="card-subject-tag">{{ card.subjectName }}</span>
+                      }
+                      <span class="card-type-badge {{ card.type.toLowerCase() }}">{{ card.type === 'MULTIPLE_CHOICE' ? 'Gabarito' : 'Resposta' }}</span>
+                    </div>
+                    <div class="card-content">
+                      @if (card.type === 'MULTIPLE_CHOICE') {
+                        <div class="feedback-msg {{ isCorrectSelection() ? 'success' : 'fail' }}">
+                          <strong>{{ isCorrectSelection() ? '🎉 Resposta Correta!' : '❌ Ops, Resposta Errada!' }}</strong>
+                          <p>A alternativa correta é a <strong>{{ ['A', 'B', 'C', 'D'][card.correctOptionIndex || 0] }}</strong>.</p>
+                        </div>
+                        @if (card.answer) {
+                          <p class="card-text explanation">{{ card.answer }}</p>
+                        }
+                      } @else if (card.type === 'CODE') {
+                        <pre class="card-code"><code>{{ card.answer }}</code></pre>
+                      } @else {
+                        <p class="card-text">{{ card.answer }}</p>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              @if (!showAnswer()) {
+                <button class="btn btn-primary btn-lg reveal-btn" (click)="revealAnswer()">
+                  Revelar Resposta
+                </button>
+              } @else {
+                <div class="rating-section animate-fade-in">
+                  <p class="rating-label">Como foi o seu recordatório?</p>
+                  <div class="rating-buttons">
+                    <button class="btn btn-danger rating-btn" (click)="submitReview(1)">
+                      <span class="btn-emoji">🔴</span>
+                      <div class="btn-info">
+                        <strong>Errei</strong>
+                        <span>Revisar logo</span>
+                      </div>
+                    </button>
+                    <button class="btn btn-warning rating-btn" (click)="submitReview(3)">
+                      <span class="btn-emoji">🟡</span>
+                      <div class="btn-info">
+                        <strong>Bom</strong>
+                        <span>Lembrei com esforço</span>
+                      </div>
+                    </button>
+                    <button class="btn btn-success rating-btn" (click)="submitReview(5)">
+                      <span class="btn-emoji">🟢</span>
+                      <div class="btn-info">
+                        <strong>Fácil</strong>
+                        <span>Lembrei na hora</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        }
+      </div>
+    }
+
+    <!-- MANAGE TAB -->
+    @if (activeTab() === 'manage') {
+      <div class="manage-tab">
+        <div class="form-card">
+          <h3>{{ editingId() ? 'Editar Flashcard' : 'Novo Flashcard' }}</h3>
+          <form (submit)="saveFlashcard(); $event.preventDefault()">
+            <div class="form-group">
+              <label for="type">Tipo de Flashcard</label>
+              <select id="type" [(ngModel)]="type" name="type">
+                <option value="TEXT">📝 Texto Simples (Q&A)</option>
+                <option value="CODE">💻 Código (Pre-formatado)</option>
+                <option value="MULTIPLE_CHOICE">💡 Múltipla Escolha</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="question">Pergunta / Conceito</label>
+              <textarea
+                id="question"
+                [(ngModel)]="question"
+                name="question"
+                rows="3"
+                [placeholder]="type === 'CODE' ? 'Insira a pergunta ou trecho de código...' : type === 'MULTIPLE_CHOICE' ? 'Insira a pergunta de múltipla escolha...' : 'Ex: O que é o princípio da Responsabilidade Única (SRP)?'"
+                required
+              ></textarea>
+            </div>
+            
+            @if (type === 'MULTIPLE_CHOICE') {
+              <div class="form-group options-editor animate-fade-in">
+                <label>Opções de Múltipla Escolha (Marque a correta no radio-button)</label>
+                <div class="options-list">
+                  @for (opt of optionsList; track $index) {
+                    <div class="option-row-input">
+                      <input 
+                        type="radio" 
+                        name="correctOption" 
+                        [value]="$index" 
+                        [checked]="$index === correctOptionIndex" 
+                        (change)="correctOptionIndex = $index"
+                        aria-label="Marcar como correta"
+                      />
+                      <input 
+                        type="text" 
+                        [(ngModel)]="optionsList[$index]" 
+                        name="option_{{$index}}" 
+                        [placeholder]="'Opção ' + ['A', 'B', 'C', 'D'][$index]" 
+                        required
+                      />
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+
+            <div class="form-group">
+              <label for="answer">{{ type === 'MULTIPLE_CHOICE' ? 'Explicação (Opcional)' : 'Resposta / Definição' }}</label>
+              <textarea
+                id="answer"
+                [(ngModel)]="answer"
+                name="answer"
+                rows="4"
+                [placeholder]="type === 'MULTIPLE_CHOICE' ? 'Escreva uma explicação do gabarito (aparece após responder)...' : 'Ex: É um princípio do SOLID que diz que uma classe/módulo deve ter um, e apenas um, motivo para mudar.'"
+                [required]="type !== 'MULTIPLE_CHOICE'"
+              ></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="subjectId">Matéria Relacionada</label>
+              <select id="subjectId" [(ngModel)]="subjectId" name="subjectId">
+                <option value="">Nenhuma Matéria</option>
+                @for (sub of subjects(); track sub.id) {
+                  <option [value]="sub.id">{{ sub.name }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                {{ saving() ? 'Salvando...' : 'Salvar Flashcard' }}
+              </button>
+              @if (editingId()) {
+                <button type="button" class="btn btn-ghost" (click)="resetForm()">Cancelar Edição</button>
+              }
+            </div>
+          </form>
+        </div>
+
+        <div class="cards-list-section">
+          <h3>Meus Flashcards ({{ flashcards().length }})</h3>
+          <div class="cards-grid">
+            @for (card of flashcards(); track card.id) {
+              <div class="card-list-item">
+                <div class="card-item-header">
+                  @if (card.subjectName) {
+                    <span class="subject-badge">{{ card.subjectName }}</span>
+                  } @else {
+                    <span class="subject-badge empty">Geral</span>
+                  }
+                  <div class="card-actions">
+                    <button class="btn btn-sm btn-edit" (click)="editFlashcard(card)">✏️ Editar</button>
+                    <button class="btn btn-sm btn-delete" (click)="confirmDelete(card.id)">✕ Excluir</button>
+                  </div>
+                </div>
+                <div class="card-item-body">
+                  <p class="question"><strong>Q:</strong> {{ card.question }}</p>
+                  <p class="answer"><strong>A:</strong> {{ card.answer }}</p>
+                </div>
+                <div class="card-item-footer">
+                  <span>Revisões: {{ card.repetitions }}</span>
+                  <span>Próxima: {{ card.nextReview }}</span>
+                </div>
+              </div>
+            } @empty {
+              <app-empty-state>
+                <p>Nenhum flashcard cadastrado. Crie o seu primeiro flashcard no formulário acima!</p>
+              </app-empty-state>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>
+
+@if (showConfirmDelete()) {
+  <app-confirm
+    message="Deseja realmente excluir este flashcard?"
+    [saving]="saving()"
+    (confirmed)="deleteFlashcard()"
+    (cancelled)="showConfirmDelete.set(false)"
+  />
+}
