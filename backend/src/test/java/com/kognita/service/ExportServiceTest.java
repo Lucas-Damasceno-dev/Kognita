@@ -53,7 +53,7 @@ class ExportServiceTest {
     @Test
     void testExportData() {
         UUID userId = UUID.randomUUID();
-        UserResponse mockUser = new UserResponse(userId, "Test User", "test@test.com", "avatar.png", java.time.OffsetDateTime.now());
+        UserResponse mockUser = new UserResponse(userId, "Test User", "test@test.com", "avatar.png", java.time.OffsetDateTime.now(), 0L, null, "Recruta do Código", "border-none", 0, null, 0);
 
         when(userService.findById(userId)).thenReturn(mockUser);
         when(subjectRepository.findByUserId(userId)).thenReturn(Collections.emptyList());

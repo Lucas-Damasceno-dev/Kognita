@@ -98,7 +98,7 @@ class TaskServiceTest {
     void findById_ShouldReturnTask_WhenFound() {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(testTask));
 
-        TaskResponse result = taskService.findById(taskId);
+        TaskResponse result = taskService.findById(taskId, userId);
 
         assertNotNull(result);
         assertEquals(taskId, result.id());
@@ -135,6 +135,7 @@ class TaskServiceTest {
         
         Subject subject = new Subject();
         subject.setId(subjectId);
+        subject.setUser(testUser);
         
         when(userService.findEntityById(userId)).thenReturn(testUser);
         when(subjectService.findEntityById(subjectId)).thenReturn(subject);
@@ -158,7 +159,7 @@ class TaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(testTask));
         when(taskRepository.save(any(Task.class))).thenReturn(testTask);
 
-        TaskResponse result = taskService.update(taskId, request);
+        TaskResponse result = taskService.update(taskId, request, userId);
 
         assertNotNull(result);
         assertEquals("Updated Task", testTask.getTitle());
@@ -174,7 +175,7 @@ class TaskServiceTest {
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(testTask));
         when(taskRepository.save(any(Task.class))).thenReturn(testTask);
 
-        TaskResponse result = taskService.updateStatus(taskId, "in-progress");
+        TaskResponse result = taskService.updateStatus(taskId, "in-progress", userId);
 
         assertNotNull(result);
         assertEquals("in-progress", testTask.getStatus());
@@ -206,7 +207,8 @@ class TaskServiceTest {
 
     @Test
     void delete_ShouldCallRepositoryDelete() {
-        taskService.delete(taskId);
-        verify(taskRepository).deleteById(taskId);
+        when(taskRepository.findById(taskId)).thenReturn(Optional.of(testTask));
+        taskService.delete(taskId, userId);
+        verify(taskRepository).delete(testTask);
     }
 }

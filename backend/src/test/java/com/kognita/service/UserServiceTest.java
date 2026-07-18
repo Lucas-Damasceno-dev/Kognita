@@ -8,6 +8,11 @@ import com.kognita.dto.CreateUserRequest;
 import com.kognita.dto.UserResponse;
 import com.kognita.model.User;
 import com.kognita.repository.UserRepository;
+import com.kognita.repository.ChallengeAttemptRepository;
+import com.kognita.repository.ErrorLogRepository;
+import com.kognita.repository.StudySessionRepository;
+import com.kognita.repository.SubjectRepository;
+import com.kognita.repository.XpTransactionRepository;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,11 +31,34 @@ class UserServiceTest {
     @Mock
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
+    @Mock
+    private ChallengeAttemptRepository challengeAttemptRepository;
+
+    @Mock
+    private ErrorLogRepository errorLogRepository;
+
+    @Mock
+    private StudySessionRepository studySessionRepository;
+
+    @Mock
+    private SubjectRepository subjectRepository;
+
+    @Mock
+    private XpTransactionRepository xpTransactionRepository;
+
     private UserService service;
 
     @BeforeEach
     void setUp() {
-        service = new UserService(repository, passwordEncoder);
+        service = new UserService(
+            repository,
+            passwordEncoder,
+            challengeAttemptRepository,
+            errorLogRepository,
+            studySessionRepository,
+            subjectRepository,
+            xpTransactionRepository
+        );
     }
 
     @Test

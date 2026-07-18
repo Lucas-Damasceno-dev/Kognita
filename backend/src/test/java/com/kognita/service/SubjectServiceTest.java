@@ -67,7 +67,15 @@ class SubjectServiceTest {
     @Test
     void delete_DelegatesToRepository() {
         UUID id = UUID.randomUUID();
-        service.delete(id);
-        verify(repository).deleteById(id);
+        UUID userId = UUID.randomUUID();
+        var user = new User("u", "e", "p");
+        user.setId(userId);
+        var subject = new Subject();
+        subject.setId(id);
+        subject.setUser(user);
+        when(repository.findById(id)).thenReturn(Optional.of(subject));
+
+        service.delete(id, userId);
+        verify(repository).delete(subject);
     }
 }
