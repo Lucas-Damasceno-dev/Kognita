@@ -60,6 +60,8 @@ export class Goals implements OnInit {
   description = '';
   targetHours: number = 100;
   deadline = '';
+  isRecurring = false;
+  recurrencePeriod = 'none';
   showForm = signal(false);
   editingId: string | null = null;
   loading = signal(false);
@@ -136,6 +138,8 @@ export class Goals implements OnInit {
     this.description = item.description || '';
     this.targetHours = item.targetHours;
     this.deadline = item.deadline || '';
+    this.isRecurring = item.isRecurring || false;
+    this.recurrencePeriod = item.recurrencePeriod || 'none';
     this.showForm.set(true);
   }
 
@@ -149,6 +153,8 @@ export class Goals implements OnInit {
     this.description = '';
     this.targetHours = 100;
     this.deadline = '';
+    this.isRecurring = false;
+    this.recurrencePeriod = 'none';
     this.showForm.set(false);
     this.saving.set(false);
   }
@@ -162,6 +168,8 @@ export class Goals implements OnInit {
       description: this.description || undefined,
       targetHours: this.targetHours,
       deadline: this.deadline || undefined,
+      isRecurring: this.isRecurring,
+      recurrencePeriod: this.recurrencePeriod,
     };
     const obs = this.editingId
       ? this.api.updateGoal(this.editingId, req)

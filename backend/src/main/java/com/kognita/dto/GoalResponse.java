@@ -13,7 +13,10 @@ public record GoalResponse(
     Integer currentHours,
     LocalDate deadline,
     UUID userId,
-    OffsetDateTime createdAt
+    OffsetDateTime createdAt,
+    Boolean isRecurring,
+    String recurrencePeriod,
+    Integer streakCount
 ) {
     public static GoalResponse from(StudyGoal goal) {
         return new GoalResponse(
@@ -24,7 +27,10 @@ public record GoalResponse(
             goal.getCurrentHours(),
             goal.getDeadline(),
             goal.getUser().getId(),
-            goal.getCreatedAt()
+            goal.getCreatedAt(),
+            goal.getIsRecurring(),
+            goal.getRecurrencePeriod(),
+            goal.getStreakCount()
         );
     }
 }

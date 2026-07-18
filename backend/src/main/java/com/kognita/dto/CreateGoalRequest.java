@@ -8,5 +8,7 @@ public record CreateGoalRequest(
     @NotBlank String title,
     String description,
     @NotNull Integer targetHours,
-    LocalDate deadline
+    LocalDate deadline,
+    Boolean isRecurring,
+    String recurrencePeriod
 ) {}

@@ -36,6 +36,15 @@ public class StudyGoal {
 
     private LocalDate deadline;
 
+    @Column(name = "is_recurring")
+    private Boolean isRecurring = false;
+
+    @Column(name = "recurrence_period")
+    private String recurrencePeriod = "none";
+
+    @Column(name = "streak_count")
+    private Integer streakCount = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -71,6 +80,12 @@ public class StudyGoal {
     public void setCurrentHours(Integer currentHours) { this.currentHours = currentHours; }
     public LocalDate getDeadline() { return deadline; }
     public void setDeadline(LocalDate deadline) { this.deadline = deadline; }
+    public Boolean getIsRecurring() { return isRecurring; }
+    public void setIsRecurring(Boolean isRecurring) { this.isRecurring = isRecurring; }
+    public String getRecurrencePeriod() { return recurrencePeriod; }
+    public void setRecurrencePeriod(String recurrencePeriod) { this.recurrencePeriod = recurrencePeriod; }
+    public Integer getStreakCount() { return streakCount; }
+    public void setStreakCount(Integer streakCount) { this.streakCount = streakCount; }
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
     public OffsetDateTime getCreatedAt() { return createdAt; }

@@ -7,6 +7,9 @@ export interface StudyGoal {
   deadline?: string;
   userId: string;
   createdAt: string;
+  isRecurring?: boolean;
+  recurrencePeriod?: string;
+  streakCount?: number;
 }
 
 export interface CreateGoalRequest {
@@ -14,4 +17,6 @@ export interface CreateGoalRequest {
   description?: string;
   targetHours: number;
   deadline?: string;
+  isRecurring?: boolean;
+  recurrencePeriod?: string;
 }
