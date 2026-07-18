@@ -23,18 +23,47 @@ public class ImportService {
     public void importRoadmap(String title, String jsonContent, UUID userId) {
         try {
             JsonNode root = objectMapper.readTree(jsonContent);
-            // Assuming structure data -> roadmap -> topics
+            
+            // Tenta obter o nó usando a estrutura padrão data -> roadmap -> topics
             JsonNode roadmapNode = root.path("data").path("roadmap").path("topics");
             
+            // Fallbacks se não encontrar na estrutura padrão
+            if (roadmapNode.isMissingNode() || !roadmapNode.isArray()) {
+                if (root.isArray()) {
+                    roadmapNode = root;
+                } else if (root.has("topics") && root.path("topics").isArray()) {
+                    roadmapNode = root.path("topics");
+                } else if (root.has("children") && root.path("children").isArray()) {
+                    roadmapNode = root.path("children");
+                }
+            }
+
+            if (!roadmapNode.isArray() || roadmapNode.isEmpty()) {
+                throw new IllegalArgumentException("Nenhum tópico ou tarefa válida encontrada no JSON do roadmap.");
+            }
+
             var subject = subjectService.create(new CreateSubjectRequest(title, null, null), userId);
+            int count = 0;
 
             for (JsonNode topicNode : roadmapNode) {
-                // The structure might vary, but assuming there's a 'name' field
-                String topicName = topicNode.path("name").asText("Unknown Topic");
-                taskService.create(new CreateTaskRequest(topicName, null, "pending", "medium", subject.id(), null, title, false), userId);
+                String topicName = null;
+                if (topicNode.has("name")) {
+                    topicName = topicNode.path("name").asText();
+                } else if (topicNode.has("title")) {
+                    topicName = topicNode.path("title").asText();
+                }
+
+                if (topicName != null && !topicName.trim().isEmpty()) {
+                    taskService.create(new CreateTaskRequest(topicName, null, "pending", "medium", subject.id(), null, title, false), userId);
+                    count++;
+                }
+            }
+
+            if (count == 0) {
+                throw new IllegalArgumentException("Nenhum tópico com nome ou título válido encontrado no JSON do roadmap.");
             }
         } catch (Exception e) {
-            throw new RuntimeException("Failed to parse roadmap JSON", e);
+            throw new RuntimeException("Failed to parse roadmap JSON: " + e.getMessage(), e);
         }
     }
 }

@@ -94,33 +94,33 @@ export class Importer {
   }
 
   // Roadmap import
-  roadmapJson = signal('');
+  roadmapJson = '';
   selectedRoadmap = '';
 
   loadRoadmap(): void {
     if (!this.selectedRoadmap) return;
     const url = `/assets/roadmaps/${this.selectedRoadmap}.json`;
     this.http.get(url, { responseType: 'text' }).subscribe({
-      next: (data) => this.roadmapJson.set(data),
+      next: (data) => this.roadmapJson = data,
       error: () => {},
     });
   }
 
   importRoadmap(): void {
-    if (!this.roadmapJson().trim()) {
+    if (!this.roadmapJson.trim()) {
       this.toast.error('Nenhum roadmap para importar');
       return;
     }
     this.api
       .importRoadmap(
-        { title: this.selectedRoadmap, content: this.roadmapJson() },
+        { title: this.selectedRoadmap, content: this.roadmapJson },
         this.auth.user()!.id,
       )
       .subscribe({
         next: () => {
           this.toast.success('Roadmap importado com sucesso!');
           this.selectedRoadmap = '';
-          this.roadmapJson.set('');
+          this.roadmapJson = '';
         },
         error: () => {},
       });

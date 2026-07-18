@@ -12,10 +12,9 @@ public class AiService {
     private final WebClient webClient;
     private final String apiKey;
 
-    public AiService(WebClient.Builder webClientBuilder, 
-                     @Value("${ai.api.url}") String apiUrl,
+    public AiService(@Value("${ai.api.url}") String apiUrl,
                      @Value("${ai.api.key}") String apiKey) {
-        this.webClient = webClientBuilder.baseUrl(apiUrl).build();
+        this.webClient = WebClient.builder().baseUrl(apiUrl).build();
         this.apiKey = apiKey;
     }
 
