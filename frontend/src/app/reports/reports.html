@@ -1,0 +1,71 @@
+<div class="container">
+  <header class="header">
+    <div class="header-info">
+      <h1>📊 Relatório de Conquistas</h1>
+      <p class="subtitle">Acompanhe seu desempenho semanal e gere um relatório em Markdown pronto para compartilhar no LinkedIn ou GitHub.</p>
+    </div>
+  </header>
+
+  @if (loading()) {
+    <div class="skeleton-container">
+      <app-skeleton mode="list"></app-skeleton>
+    </div>
+  } @else {
+    <!-- Stats Cards Grid -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="card-icon">⏱️</span>
+        <div class="card-info">
+          <h3>Horas Dedicadas</h3>
+          <p class="stat-val font-num">{{ studyHours().toFixed(1) }}h</p>
+          <span class="stat-sub font-num">{{ sessionsCount() }} sessões focadas</span>
+        </div>
+      </div>
+
+      <div class="stat-card no-ai">
+        <span class="card-icon">🛡️</span>
+        <div class="card-info">
+          <h3>Capacidade sem IA</h3>
+          <p class="stat-val font-num">{{ challengesNoAi() }}</p>
+          <span class="stat-sub">Desafios resolvidos sozinhos</span>
+        </div>
+      </div>
+
+      <div class="stat-card bugs">
+        <span class="card-icon">🐞</span>
+        <div class="card-info">
+          <h3>Bugs Superados</h3>
+          <p class="stat-val font-num">{{ errorsSolved() }}</p>
+          <span class="stat-sub">Erros documentados</span>
+        </div>
+      </div>
+
+      <div class="stat-card streak-card">
+        <span class="card-icon">🔥</span>
+        <div class="card-info">
+          <h3>Sequência Ativa</h3>
+          <p class="stat-val font-num">{{ streak() }} dias</p>
+          <span class="stat-sub">Mantendo a constância</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Report Generator Section -->
+    <div class="report-box">
+      <div class="box-header">
+        <h2>📝 Relatório Técnico do Período</h2>
+        <button (click)="copyReport()" class="copy-btn">
+          📋 Copiar Markdown
+        </button>
+      </div>
+
+      <div class="box-content">
+        <pre class="markdown-preview">{{ weeklyReportMarkdown() }}</pre>
+      </div>
+
+      <div class="box-footer">
+        <p>💡 <strong>Dica de Carreira:</strong> Postar relatórios semanais de evolução no seu LinkedIn ou GitHub chama a atenção de recrutadores por demonstrar consistência, transparência e autoconfiança real sem dependência de IAs.</p>
+      </div>
+    </div>
+  }
+</div>

@@ -1,0 +1,153 @@
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.current-month {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  min-width: 180px;
+  text-align: center;
+}
+
+.calendar-container {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow: hidden;
+}
+
+.calendar-weekdays-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 0.5rem;
+  text-align: center;
+}
+
+.weekday-header {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.calendar-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  grid-auto-rows: minmax(110px, auto);
+  gap: 4px;
+  background: var(--border);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.calendar-day-cell {
+  background: var(--bg-card);
+  padding: 0.5rem;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  position: relative;
+  transition: background 0.15s ease;
+}
+
+.calendar-day-cell:hover {
+  background: var(--bg-hover);
+}
+
+.calendar-day-cell.other-month {
+  background: var(--bg-hover-subtle, #f9fafb);
+  opacity: 0.6;
+}
+
+.day-number-header {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  align-self: flex-end;
+  margin-bottom: 0.25rem;
+}
+
+.day-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 90px;
+}
+
+/* Pills styling */
+.calendar-pill {
+  font-size: 0.72rem;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.session-pill {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+  border-left: 3px solid #3b82f6;
+}
+
+.task-pill {
+  border-left: 3px solid var(--border);
+}
+
+.task-pill.status-pending {
+  background: rgba(245, 158, 11, 0.09);
+  color: #d97706;
+  border-left-color: #f59e0b;
+}
+
+.task-pill.status-in_progress {
+  background: rgba(99, 102, 241, 0.09);
+  color: #4f46e5;
+  border-left-color: #6366f1;
+}
+
+.task-pill.status-completed {
+  background: rgba(16, 185, 129, 0.09);
+  color: #059669;
+  border-left-color: #10b981;
+}
+
+@media (max-width: 768px) {
+  .calendar-days-grid {
+    grid-auto-rows: minmax(90px, auto);
+  }
+
+  .calendar-day-cell {
+    min-height: 90px;
+    padding: 0.25rem;
+  }
+
+  .calendar-pill {
+    font-size: 0.65rem;
+    padding: 1px 3px;
+  }
+
+  .weekday-header {
+    font-size: 0.7rem;
+  }
+}

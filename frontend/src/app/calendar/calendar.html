@@ -1,0 +1,54 @@
+<div class="calendar-header">
+  <h2>Calendário de Estudos</h2>
+  <div class="calendar-nav">
+    <button class="btn btn-ghost btn-sm" (click)="prevMonth()">◀ Anterior</button>
+    <span class="current-month">{{ getMonthName() }}</span>
+    <button class="btn btn-ghost btn-sm" (click)="nextMonth()">Próximo ▶</button>
+  </div>
+</div>
+
+@if (loading()) {
+  <app-skeleton mode="dashboard" />
+} @else {
+  <div class="calendar-container card card-elevated">
+    <!-- Grid of Weekdays Header -->
+    <div class="calendar-weekdays-grid">
+      @for (dayName of weekDays; track dayName) {
+        <div class="weekday-header">{{ dayName }}</div>
+      }
+    </div>
+
+    <!-- Grid of Days -->
+    <div class="calendar-days-grid">
+      @for (day of daysInMonth; track day.dateStr) {
+        <div 
+          class="calendar-day-cell" 
+          [class.other-month]="!day.isCurrentMonth"
+        >
+          <div class="day-number-header">{{ day.dayNumber }}</div>
+          
+          <div class="day-content">
+            <!-- Sessions -->
+            @for (session of day.sessions; track session.id) {
+              <div class="calendar-pill session-pill" title="{{ session.notes }}">
+                ⏱️ {{ session.durationMinutes }}m • {{ session.subjectName }}
+              </div>
+            }
+
+            <!-- Tasks -->
+            @for (task of day.tasks; track task.id) {
+              <div 
+                class="calendar-pill task-pill status-{{ task.status }}"
+                [routerLink]="['/tasks']"
+                title="Tarefa: {{ task.title }} (Status: {{ task.status }})"
+                style="cursor: pointer;"
+              >
+                📋 {{ task.title }}
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}
