@@ -4,7 +4,7 @@
   <app-skeleton mode="list" />
 } @else {
   <div class="history-grid" role="list">
-    @for (a of attempts(); track a.id) {
+    @for (a of visibleAttempts(); track a.id) {
       <div class="history-card" role="listitem">
         <div class="history-card-header">
           <h3>{{ a.taskTitle }}</h3>
@@ -46,13 +46,15 @@
         }
       </div>
     } @empty {
-      <app-empty-state>
-        <p>
-          Nenhum desafio concluído sem IA ainda. Complete tarefas sem ajuda para aparecerem aqui!
-        </p>
-      </app-empty-state>
+      <app-empty-state icon="history" title="Nenhum desafio solo ainda" description="Complete tarefas sem ajuda da IA para construir seu histórico de habilidades reais." />
     }
   </div>
+
+  @if (hasMore()) {
+    <div #sentinel class="scroll-sentinel" aria-hidden="true">
+      <span class="scroll-loading">Carregando mais...</span>
+    </div>
+  }
 
   @if (showMentorship()) {
     <div class="overlay" (click)="closeMentorship()" role="dialog" aria-modal="true" aria-label="Mentoria de Código">

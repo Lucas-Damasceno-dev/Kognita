@@ -1,0 +1,235 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.paths-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
+.badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.08em;
+}
+
+.paths-header h2 {
+  margin: 0.2rem 0 0;
+  font-size: 1.6rem;
+}
+
+.subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.paths-layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 1.5rem;
+}
+
+.paths-sidebar {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  border-radius: 16px;
+}
+
+.paths-sidebar h3 {
+  margin: 0 0 1rem;
+  font-size: 1.1rem;
+}
+
+.paths-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.path-card-item {
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.path-card-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+
+.path-card-item.active {
+  background: var(--primary-subtle);
+  border-color: var(--primary);
+}
+
+.path-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.path-node-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.25rem 0;
+}
+
+.create-path-form h4 {
+  margin: 0 0 0.75rem;
+  font-size: 0.95rem;
+}
+
+.create-path-form .input-field {
+  width: 100%;
+  margin-bottom: 0.6rem;
+  box-sizing: border-box;
+}
+
+.task-selector-list {
+  max-height: 150px;
+  overflow-y: auto;
+  margin-bottom: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding-right: 0.25rem;
+}
+
+.selector-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.task-select-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.path-view-container {
+  padding: 1.5rem;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.path-view-header h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.path-view-header p {
+  margin: 0.25rem 0 1.25rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.linear-roadmap {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1rem 0;
+}
+
+.roadmap-node-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  border-radius: 14px;
+  background: var(--bg-card);
+  border: 2px solid var(--border);
+  transition: all 0.3s ease;
+}
+
+.roadmap-node-card.completed {
+  border-color: var(--success);
+  background: var(--success-subtle);
+}
+
+.roadmap-node-card.unlocked {
+  border-color: var(--primary);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+}
+
+.roadmap-node-card.locked {
+  opacity: 0.5;
+  background: var(--bg);
+}
+
+.node-badge-order {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  width: 110px;
+}
+
+.node-main-content {
+  flex: 1;
+}
+
+.node-task-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.node-subject-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  background: var(--primary-subtle);
+  color: var(--primary);
+  margin-top: 0.3rem;
+}
+
+.connecting-line {
+  position: absolute;
+  bottom: -1.25rem;
+  left: 50px;
+  width: 3px;
+  height: 1.25rem;
+  background: var(--border);
+  z-index: 1;
+  transition: background 0.3s ease;
+}
+
+.connecting-line.active {
+  background: var(--success);
+}
+
+.empty-path-view {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .paths-layout {
+    grid-template-columns: 1fr;
+  }
+}

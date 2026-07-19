@@ -5,6 +5,7 @@ import { catchError, of } from 'rxjs';
 import { ConfigService } from '../services/config.service';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
+import { ConfettiService } from '../services/confetti.service';
 import { ChallengeStats } from '../models/challenge-attempt';
 import { ChallengeGoal } from '../models/challenge-goal';
 
@@ -19,6 +20,7 @@ export class Checkin implements OnInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   private destroyRef = inject(DestroyRef);
+  private confetti = inject(ConfettiService);
 
   readonly taskName = input.required<string>();
   readonly confirm = output<boolean>();
@@ -54,6 +56,7 @@ export class Checkin implements OnInit {
   }
 
   onNo(): void {
+    this.confetti.fireStreakCelebration();
     this.confirm.emit(false);
   }
 

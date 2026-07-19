@@ -1,0 +1,86 @@
+<div class="vault-page">
+  <header class="vault-header">
+    <div>
+      <span class="badge">🏛️ ARQUIVO PERMANENTE DE ESTUDOS</span>
+      <h2>Cofre do Conhecimento (Knowledge Vault)</h2>
+      <p class="subtitle">Repositório permanente de tudo o que foi estudado, resumos, acertos e notas de estudo.</p>
+    </div>
+
+    <div class="header-actions">
+      <button class="btn btn-primary btn-sm" (click)="exportAsMarkdown()">
+        📝 Exportar Caderno (.md)
+      </button>
+      <button class="btn btn-ghost btn-sm" (click)="exportAsJson()">
+        📄 Backup JSON
+      </button>
+    </div>
+  </header>
+
+  <!-- Filter & Search Row -->
+  <div class="filter-bar card glass-card-mesh">
+    <input
+      type="text"
+      placeholder="Pesquisar por assunto, anotação ou matéria no Cofre..."
+      [(ngModel)]="searchQuery"
+      class="search-input"
+    />
+
+    <div class="tags-filter-list">
+      <button
+        class="tag-filter-btn"
+        [class.active]="selectedTag() === null"
+        (click)="selectedTag.set(null)"
+      >
+        Todas as Tags
+      </button>
+      @for (tag of allTags(); track tag) {
+        <button
+          class="tag-filter-btn"
+          [class.active]="selectedTag() === tag"
+          (click)="selectedTag.set(tag)"
+        >
+          #{{ tag }}
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Timeline Grid of Snapshots -->
+  <div class="vault-timeline scroll-internal">
+    @for (snap of filteredSnapshots(); track snap.id) {
+      <div class="vault-card card glass-card-mesh">
+        <div class="vault-card-header">
+          <span class="subject-badge" [style.background]="snap.subjectColor + '20'" [style.color]="snap.subjectColor">
+            {{ snap.subjectName }}
+          </span>
+          <span class="timestamp">{{ snap.timestamp | date:'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+
+        <h3 class="snap-title">{{ snap.summaryTitle }}</h3>
+
+        @if (snap.notesContent) {
+          <div class="snap-notes">{{ snap.notesContent }}</div>
+        }
+
+        <div class="vault-card-footer">
+          <div class="footer-meta">
+            <span>⏱️ {{ snap.durationMinutes }} min de foco</span>
+            @if (snap.accuracyPercent) {
+              <span class="accuracy-tag">🎯 {{ snap.accuracyPercent }}% retenção</span>
+            }
+          </div>
+
+          <div class="tags-row">
+            @for (t of snap.tags; track t) {
+              <span class="tag">#{{ t }}</span>
+            }
+          </div>
+        </div>
+      </div>
+    } @empty {
+      <div class="empty-vault">
+        <p>Nenhum registro encontrado no Cofre do Conhecimento para esta busca.</p>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,131 @@
+<div class="simulator-page">
+  <header class="simulator-header">
+    <div>
+      <span class="badge">🎓 AVALIAÇÃO & DIAGNÓSTICO DE DESEMPENHO</span>
+      <h2>Simulador de Provas & Exames</h2>
+      <p class="subtitle">Avalie seu conhecimento sob pressão com exames cronometrados por matéria e feedback de nota imediato.</p>
+    </div>
+  </header>
+
+  @if (activeState() === 'config') {
+    <div class="config-card card glass-card-mesh" appTilt3d>
+      <h3>⚙️ Configuração do Simulado</h3>
+
+      <div class="form-group">
+        <label>Selecione a Matéria do Exame:</label>
+        <select [(ngModel)]="selectedSubjectId" class="input-field">
+          <option value="">Todas as Matérias (Simulado Geral)</option>
+          @for (s of subjects(); track s.id) {
+            <option [value]="s.id">{{ s.name }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group-row">
+        <div class="form-group">
+          <label>Número de Questões:</label>
+          <select [(ngModel)]="questionCount" class="input-field">
+            <option [ngValue]="5">5 Questões (Rápido)</option>
+            <option [ngValue]="10">10 Questões (Padrão)</option>
+            <option [ngValue]="15">15 Questões (Completo)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Tempo Limite:</label>
+          <select [(ngModel)]="timeLimitMinutes" class="input-field">
+            <option [ngValue]="5">5 Minutos</option>
+            <option [ngValue]="10">10 Minutos</option>
+            <option [ngValue]="15">15 Minutos</option>
+            <option [ngValue]="30">30 Minutos</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-lg start-btn" (click)="startExam()">
+        🚀 Iniciar Simulado Cronometrado
+      </button>
+    </div>
+  } @else if (activeState() === 'exam') {
+    <div class="exam-arena card glass-card-mesh animate-fade-in">
+      <!-- Top Exam Bar -->
+      <div class="exam-top-bar">
+        <div class="q-progress-info">
+          <span class="q-num">Questão {{ currentQuestionIdx() + 1 }} de {{ questions().length }}</span>
+        </div>
+
+        <div class="timer-box" [class.urgent]="timeLeftSeconds() <= 120">
+          ⏱️ {{ formatTime(timeLeftSeconds()) }}
+        </div>
+      </div>
+
+      <!-- Question Content -->
+      @if (currentQuestion()) {
+        <div class="question-body">
+          <h3 class="q-text">{{ currentQuestion()?.question }}</h3>
+
+          <div class="options-list">
+            @for (opt of currentQuestion()?.options; track $index) {
+              <button
+                class="opt-btn"
+                [class.selected]="userAnswers()[currentQuestionIdx()] === $index"
+                (click)="selectOption($index)"
+              >
+                <span class="opt-letter">{{ ['A', 'B', 'C', 'D'][$index] }}</span>
+                <span class="opt-text">{{ opt }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Bottom Nav Bar -->
+      <div class="exam-footer">
+        <button
+          class="btn btn-ghost btn-sm"
+          [disabled]="currentQuestionIdx() === 0"
+          (click)="prevQuestion()"
+        >
+          ← Anterior
+        </button>
+
+        <div class="footer-center">
+          <button class="btn btn-ghost btn-sm" (click)="exitSimulator()">✕ Cancelar Exame</button>
+        </div>
+
+        @if (currentQuestionIdx() < questions().length - 1) {
+          <button class="btn btn-primary btn-sm" (click)="nextQuestion()">
+            Próxima →
+          </button>
+        } @else {
+          <button class="btn btn-success btn-sm" (click)="finishExam()">
+            ✅ Finalizar & Entregar Prova
+          </button>
+        }
+      </div>
+    </div>
+  } @else if (activeState() === 'result') {
+    <div class="result-card card glass-card-mesh animate-card-pop" appTilt3d>
+      <div class="result-badge {{ isPassed() ? 'pass' : 'fail' }}">
+        {{ isPassed() ? '🎉 APROVADO' : '⚠️ REPROVADO' }}
+      </div>
+
+      <div class="score-gauge-box">
+        <span class="score-val" [style.color]="isPassed() ? 'var(--success)' : 'var(--error)'">
+          {{ finalScore() }}
+        </span>
+        <span class="score-max">/ 10.0</span>
+      </div>
+
+      <h3>{{ isPassed() ? 'Excelente Desempenho!' : 'Precisa de Mais Revisão' }}</h3>
+      <p class="result-summary">
+        Você acertou <strong>{{ correctAnswersCount() }}</strong> de <strong>{{ questions().length }}</strong> questões ({{ (correctAnswersCount() / questions().length * 100).toFixed(0) }}% de precisão).
+      </p>
+
+      <div class="result-actions">
+        <button class="btn btn-primary" (click)="startExam()">🔄 Tentar Novamente</button>
+        <button class="btn btn-ghost" (click)="exitSimulator()">← Voltar à Configuração</button>
+      </div>
+    </div>
+  }
+</div>

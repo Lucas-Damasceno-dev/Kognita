@@ -1,0 +1,124 @@
+<div class="paths-page">
+  <header class="paths-header">
+    <div>
+      <span class="badge">🗺️ ROTAS ENCADEADAS DE ESTUDO</span>
+      <h2>Caminhos de Aprendizado (Learning Paths)</h2>
+      <p class="subtitle">Desafios encadeados em sequência linear: Conclua uma etapa para desbloquear a próxima!</p>
+    </div>
+  </header>
+
+  <div class="paths-layout">
+    <!-- Sidebar: Lista de Trilhas -->
+    <div class="paths-sidebar card">
+      <h3>Sua Lista de Trilhas</h3>
+      <div class="paths-list">
+        @for (path of paths(); track path.id) {
+          <div
+            class="path-card-item"
+            [class.active]="selectedPathId() === path.id"
+            (click)="selectPath(path.id)"
+          >
+            <div class="path-title">{{ path.title }}</div>
+            <div class="path-node-count">{{ path.nodes.length }} módulos encadeados</div>
+          </div>
+        }
+      </div>
+
+      <hr class="divider" />
+
+      <!-- Form para Criar Nova Trilha -->
+      <div class="create-path-form">
+        <h4>+ Criar Trilha Personalizada</h4>
+        <input
+          type="text"
+          placeholder="Nome da Trilha (ex: Trilha Backend Node.js)"
+          [(ngModel)]="newPathTitle"
+          class="input-field"
+        />
+        <input
+          type="text"
+          placeholder="Descrição da Trilha..."
+          [(ngModel)]="newPathDescription"
+          class="input-field"
+        />
+
+        <div class="task-selector-list scroll-internal">
+          <span class="selector-label">Selecione tarefas/desafios na ordem:</span>
+          @for (task of tasks(); track task.id) {
+            <label class="task-select-item">
+              <input
+                type="checkbox"
+                [checked]="selectedTaskIds.includes(task.id)"
+                (change)="toggleTaskSelection(task.id)"
+              />
+              <span>{{ task.title }}</span>
+            </label>
+          }
+        </div>
+
+        <button class="btn btn-primary btn-sm" (click)="createPath()">⚡ Gerar Trilha</button>
+      </div>
+    </div>
+
+    <!-- Main View: Rota Linear Encadeada -->
+    <div class="path-view-container card glass-card-mesh">
+      @if (selectedPath()) {
+        <div class="path-view-header">
+          <div>
+            <h3>{{ selectedPath()?.title }}</h3>
+            <p>{{ selectedPath()?.description }}</p>
+          </div>
+        </div>
+
+        <div class="linear-roadmap scroll-internal">
+          @for (node of selectedPath()?.nodes; track node.id; let idx = $index) {
+            <div
+              class="roadmap-node-card"
+              [class.completed]="node.completed"
+              [class.unlocked]="node.unlocked && !node.completed"
+              [class.locked]="!node.unlocked"
+            >
+              <div class="node-badge-order">
+                @if (node.completed) {
+                  ✅
+                } @else if (node.unlocked) {
+                  🔓 Módulo {{ node.order }}
+                } @else {
+                  🔒 Bloqueado
+                }
+              </div>
+
+              <div class="node-main-content">
+                <div class="node-task-title">{{ node.taskTitle }}</div>
+                @if (node.subjectName) {
+                  <span class="node-subject-tag">{{ node.subjectName }}</span>
+                }
+              </div>
+
+              <div class="node-actions">
+                <button
+                  class="btn btn-sm"
+                  [class.btn-success]="node.completed"
+                  [class.btn-primary]="node.unlocked && !node.completed"
+                  [disabled]="!node.unlocked && !node.completed"
+                  (click)="toggleNodeComplete(node)"
+                >
+                  {{ node.completed ? '✓ Concluído' : (node.unlocked ? '▶ Marcar Concluído' : '🔒 Bloqueado') }}
+                </button>
+              </div>
+
+              <!-- Connecting Line SVG Indicator -->
+              @if (idx < selectedPath()!.nodes.length - 1) {
+                <div class="connecting-line" [class.active]="node.completed"></div>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-path-view">
+          <p>Selecione uma trilha ao lado para visualizar a rota de aprendizado!</p>
+        </div>
+      }
+    </div>
+  </div>
+</div>

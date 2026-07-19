@@ -4,6 +4,7 @@ export interface Toast {
   id: number;
   message: string;
   type: 'success' | 'error' | 'info' | 'warning';
+  action?: { label: string; fn: () => void };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -11,10 +12,15 @@ export class ToastService {
   readonly toasts = signal<Toast[]>([]);
   private nextId = 0;
 
-  show(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success'): void {
-    const toast: Toast = { id: this.nextId++, message, type };
-    this.toasts.update((t) => [...t, toast]);
-    setTimeout(() => this.toasts.update((t) => t.filter((x) => x.id !== toast.id)), 3000);
+  show(message: string, type: 'success' | 'error' | 'info' | 'warning' = 'success', action?: { label: string; fn: () => void }): void {
+    const toast: Toast = { id: this.nextId++, message, type, action };
+    this.toasts.update((t) => {
+      const next = [...t, toast];
+      if (next.length > 4) next.shift();
+      return next;
+    });
+    const duration = action ? 5000 : 3000;
+    setTimeout(() => this.toasts.update((t) => t.filter((x) => x.id !== toast.id)), duration);
   }
 
   success(msg: string) {

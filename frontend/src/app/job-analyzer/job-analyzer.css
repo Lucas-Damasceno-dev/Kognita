@@ -1,4 +1,9 @@
-.analyzer-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; max-width: 600px; }
+:host {
+  display: block;
+  width: 100%;
+}
+
+.analyzer-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; max-width: 600px; overflow-y: auto; flex: 1; min-height: 0; }
 .analyzer-form textarea { width: 100%; min-height: 150px; }
 .analyzer-form .form-group { margin-bottom: 1rem; }
 .analyzer-result { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-top: 1.5rem; }

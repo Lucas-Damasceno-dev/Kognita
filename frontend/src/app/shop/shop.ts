@@ -8,7 +8,7 @@ import { ToastService } from '../services/toast.service';
 
 interface ShopItem {
   id: string;
-  type: 'freeze' | 'title' | 'border';
+  type: 'freeze' | 'title' | 'border' | 'theme';
   name: string;
   description: string;
   cost: number;
@@ -120,6 +120,33 @@ export class Shop implements OnInit {
       cost: 1000,
       value: 'border-rainbow',
       icon: '🌈'
+    },
+    {
+      id: 'theme_cyberpunk',
+      type: 'theme',
+      name: 'Tema: Cyberpunk Neon 🌌',
+      description: 'Fundo ultra escuro (#050811) com detalhes em ciano neon (#00F0FF) e magenta.',
+      cost: 450,
+      value: 'cyberpunk',
+      icon: '🌌'
+    },
+    {
+      id: 'theme_tokyonight',
+      type: 'theme',
+      name: 'Tema: Tokyo Night 🌸',
+      description: 'Estética japonesa noturna com azul índigo (#1A1B26) e acentos em flor de cerejeira.',
+      cost: 450,
+      value: 'tokyonight',
+      icon: '🌸'
+    },
+    {
+      id: 'theme_nordic',
+      type: 'theme',
+      name: 'Tema: Nordic Slate 🧊',
+      description: 'Fundo cinza azulado fosco minimalista com contraste suave e limpo.',
+      cost: 300,
+      value: 'nordic',
+      icon: '🧊'
     }
   ];
 
@@ -136,6 +163,9 @@ export class Shop implements OnInit {
     }
     if (item.type === 'border') {
       return user.avatarBorder === item.value;
+    }
+    if (item.type === 'theme') {
+      return localStorage.getItem('kognita_palette') === item.value;
     }
     return false;
   }
@@ -196,6 +226,11 @@ export class Shop implements OnInit {
             this.toast.error('Erro ao comprar borda.');
           }
         });
+    } else if (item.type === 'theme') {
+      document.documentElement.setAttribute('data-palette', item.value);
+      localStorage.setItem('kognita_palette', item.value);
+      this.loading.set(false);
+      this.toast.success(`Tema "${item.name}" equipado com sucesso! 🎨`);
     }
   }
 }

@@ -11,6 +11,7 @@ export interface User {
   streakCount?: number;
   lastActiveDate?: string;
   streakFreezes?: number;
+  coins?: number;
 }
 
 export interface CreateUserRequest {

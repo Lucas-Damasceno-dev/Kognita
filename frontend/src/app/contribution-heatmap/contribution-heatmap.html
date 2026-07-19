@@ -1,0 +1,174 @@
+<div class="heatmap-card card" [attr.data-theme-palette]="colorTheme()">
+  <div class="heatmap-header">
+    <div class="heatmap-title-wrap">
+      <div class="heatmap-title-icon">🔥</div>
+      <div>
+        <h2 class="heatmap-title">Mapa de Contribuições</h2>
+        <p class="heatmap-subtitle">Sessões de estudo e desafios no último ano</p>
+      </div>
+    </div>
+
+    <div class="heatmap-header-controls">
+      <div
+        class="palette-picker"
+        role="radiogroup"
+        aria-label="Paleta de cores do mapa de contribuições"
+      >
+        <button
+          type="button"
+          class="palette-btn emerald"
+          [class.active]="colorTheme() === 'emerald'"
+          (click)="colorTheme.set('emerald')"
+          title="Esmeralda"
+          aria-label="Paleta Esmeralda"
+        ></button>
+        <button
+          type="button"
+          class="palette-btn cyan"
+          [class.active]="colorTheme() === 'cyan'"
+          (click)="colorTheme.set('cyan')"
+          title="Ciano"
+          aria-label="Paleta Ciano"
+        ></button>
+        <button
+          type="button"
+          class="palette-btn purple"
+          [class.active]="colorTheme() === 'purple'"
+          (click)="colorTheme.set('purple')"
+          title="Roxo"
+          aria-label="Paleta Roxo"
+        ></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="heatmap-stats">
+    <div class="stat-box">
+      <span class="stat-icon">📅</span>
+      <div class="stat-content">
+        <span class="stat-value">{{ totalActiveDays() }}</span>
+        <span class="stat-label">Dias Ativos</span>
+      </div>
+    </div>
+
+    <div class="stat-box">
+      <span class="stat-icon">⚡</span>
+      <div class="stat-content">
+        <span class="stat-value">{{ currentStreak() }} <small>dias</small></span>
+        <span class="stat-label">Sequência Atual</span>
+      </div>
+    </div>
+
+    <div class="stat-box">
+      <span class="stat-icon">🏆</span>
+      <div class="stat-content">
+        <span class="stat-value">{{ longestStreak() }} <small>dias</small></span>
+        <span class="stat-label">Maior Sequência</span>
+      </div>
+    </div>
+
+    <div class="stat-box">
+      <span class="stat-icon">🎯</span>
+      <div class="stat-content">
+        <span class="stat-value">{{ totalChallenges() }}</span>
+        <span class="stat-label">Total Desafios</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="heatmap-calendar-wrap">
+    <div class="month-labels">
+      <div class="day-header-spacer"></div>
+      <div class="months-row">
+        @for (m of monthHeaders(); track $index) {
+          <span
+            class="month-label"
+            [style.grid-column-start]="m.colIndex + 1"
+            [style.grid-column-end]="'span ' + m.colSpan"
+          >
+            {{ m.name }}
+          </span>
+        }
+      </div>
+    </div>
+
+    <div class="grid-body">
+      <div class="day-labels">
+        <span></span>
+        <span>Seg</span>
+        <span></span>
+        <span>Qua</span>
+        <span></span>
+        <span>Sex</span>
+        <span></span>
+      </div>
+
+      <div class="weeks-grid">
+        @for (week of weeks(); track $index) {
+          <div class="week-column">
+            @for (day of week; track day.dateStr) {
+              <div
+                class="day-cell"
+                [class.is-future]="day.isFuture"
+                [class.is-today]="day.isToday"
+                [attr.data-level]="day.level"
+                (mouseenter)="onDayHover(day, $event)"
+                (mouseleave)="onDayLeave()"
+                [attr.aria-label]="day.formattedDate + ': ' + day.totalActivities + ' atividades'"
+                tabindex="0"
+              ></div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="heatmap-legend">
+      <span class="legend-text">Menos</span>
+      <div class="legend-cells">
+        <div class="legend-cell" data-level="0"></div>
+        <div class="legend-cell" data-level="1"></div>
+        <div class="legend-cell" data-level="2"></div>
+        <div class="legend-cell" data-level="3"></div>
+        <div class="legend-cell" data-level="4"></div>
+      </div>
+      <span class="legend-text">Mais</span>
+    </div>
+  </div>
+
+  @if (hoveredDay(); as day) {
+    <div
+      class="heatmap-tooltip glass-tooltip"
+      [style.left.px]="tooltipPos().x"
+      [style.top.px]="tooltipPos().y"
+    >
+      <div class="tooltip-date">{{ day.formattedDate }}</div>
+      <div class="tooltip-activities">
+        @if (day.totalActivities === 0) {
+          <span class="empty-act">Nenhuma atividade registrada</span>
+        } @else {
+          <div class="act-row">
+            <strong>{{ day.totalActivities }}</strong>
+            {{ day.totalActivities === 1 ? 'atividade' : 'atividades' }}
+          </div>
+          <div class="act-sub">
+            ⚡ <strong>{{ day.totalWithoutAi }}</strong> sem IA
+          </div>
+          @if (day.sessionsCount > 0) {
+            <div class="act-sub">
+              ⏱️ {{ day.sessionsCount }} {{ day.sessionsCount === 1 ? 'sessão' : 'sessões' }} ({{
+                day.studyMinutes
+              }}
+              min)
+            </div>
+          }
+          @if (day.attemptsCount > 0) {
+            <div class="act-sub">
+              🎯 {{ day.attemptsCount }} {{ day.attemptsCount === 1 ? 'desafio' : 'desafios' }}
+            </div>
+          }
+        }
+      </div>
+    </div>
+  }
+</div>

@@ -18,6 +18,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.kognita.repository.TaskRepository;
+
 @ExtendWith(MockitoExtension.class)
 class SubjectServiceTest {
 
@@ -25,12 +27,14 @@ class SubjectServiceTest {
     private SubjectRepository repository;
     @Mock
     private UserService userService;
+    @Mock
+    private TaskRepository taskRepository;
 
     private SubjectService service;
 
     @BeforeEach
     void setUp() {
-        service = new SubjectService(repository, userService);
+        service = new SubjectService(repository, userService, taskRepository);
     }
 
     @Test

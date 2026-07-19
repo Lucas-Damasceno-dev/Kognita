@@ -1,21 +1,391 @@
-.timer-container { text-align: center; padding: 2rem; max-width: 400px; margin: 0 auto; }
-.timer-ring { position: relative; width: 200px; height: 200px; margin: 0 auto 1.5rem; }
-.timer-ring svg { transform: rotate(-90deg); }
-.timer-ring .bg { fill: none; stroke: var(--border); stroke-width: 4; }
-.timer-ring .progress { fill: none; stroke: var(--primary); stroke-width: 4; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
-.timer-ring .progress.break { stroke: var(--success); }
+:host {
+  display: block;
+  width: 100%;
+}
+
+.timer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem;
+  max-width: 500px;
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+.timer-ring { position: relative; width: 220px; height: 220px; margin: 0 auto 1.5rem; filter: drop-shadow(0 8px 24px rgba(37, 99, 235, 0.2)); }
+.timer-ring svg { transform: rotate(-90deg); width: 100%; height: 100%; }
+.timer-ring .bg { fill: none; stroke: var(--border); stroke-width: 6; }
+.timer-ring .progress { fill: none; stroke: var(--primary); stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.5s ease-out; filter: drop-shadow(0 0 12px var(--primary)); }
+.timer-ring .progress.break { stroke: var(--success); filter: drop-shadow(0 0 12px var(--success)); }
 .timer-display { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-.timer-display .time { font-size: 2.5rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
-.timer-display .phase { font-size: 0.875rem; color: var(--text-muted); margin-top: 0.25rem; }
+.timer-display .time { font-size: 2.75rem; font-weight: 700; font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; color: var(--text); letter-spacing: -0.02em; }
+.timer-display .phase { font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
 .timer-controls { display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 1.5rem; }
 .timer-info { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 400px; margin: 0 auto; }
 .timer-info .info-item { text-align: center; padding: 0.75rem; background: var(--bg); border-radius: 8px; }
 .timer-info .info-item .info-value { font-size: 1.25rem; font-weight: 700; color: var(--text); }
 .timer-info .info-item .info-label { font-size: 0.75rem; color: var(--text-muted); }
 
+.btn-zen-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  background: rgba(59, 130, 246, 0.08);
+  color: var(--primary, #3b82f6);
+  font-weight: 600;
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-zen-toggle:hover {
+  background: rgba(59, 130, 246, 0.18);
+  transform: translateY(-1px);
+}
+
+/* Zen Overlay Mode */
+.zen-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: radial-gradient(circle at 50% 35%, #0f172a 0%, #090d16 65%, #030712 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  color: #ffffff;
+  padding: 2.5rem 1.5rem 1.5rem;
+  box-sizing: border-box;
+  animation: zenFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+  transition: background 2s ease;
+}
+
+.zen-overlay.is-break {
+  background: radial-gradient(circle at 50% 35%, #064e3b 0%, #042f2e 65%, #021e1b 100%);
+}
+
+@keyframes zenFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Zen Mode Floating Particles */
+.zen-particles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.zen-particle {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  animation: zenParticleFloat 6s infinite ease-in-out;
+}
+
+@keyframes zenParticleFloat {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
+}
+
+.zen-close-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 30px;
+  color: #e5e7eb;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.zen-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.zen-header {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.zen-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #60a5fa;
+  font-weight: 700;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  padding: 0.25rem 0.85rem;
+  border-radius: 999px;
+  margin-bottom: 0.5rem;
+}
+
+.zen-overlay.is-break .zen-badge {
+  color: #34d399;
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.zen-subject-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.zen-task-subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.95rem;
+  color: #9ca3af;
+}
+
+/* Zen Circular Ring and Ambient Glow */
+.zen-timer-ring-wrapper {
+  position: relative;
+  width: 320px;
+  height: 320px;
+  margin: 1.5rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zen-ambient-glow {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.25) 0%, rgba(59, 130, 246, 0) 70%);
+  transition: opacity 0.5s ease;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.zen-overlay.is-break .zen-ambient-glow {
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0) 70%);
+}
+
+.zen-ambient-glow.running {
+  opacity: 1;
+  animation: zenPulse 3s infinite alternate ease-in-out;
+}
+
+@keyframes zenPulse {
+  0% { transform: scale(0.95); opacity: 0.4; }
+  100% { transform: scale(1.08); opacity: 0.85; }
+}
+
+.zen-svg-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.zen-ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 4;
+}
+
+.zen-ring-progress {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+  filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.6));
+}
+
+.zen-ring-progress.break {
+  stroke: #10b981;
+  filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.6));
+}
+
+.zen-ring-progress.paused {
+  transition: none;
+}
+
+.zen-timer-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.zen-time-display {
+  font-size: 4.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  text-shadow: 0 0 25px rgba(255, 255, 255, 0.2);
+}
+
+.zen-phase-pill {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #60a5fa;
+  text-transform: uppercase;
+}
+
+.zen-phase-pill.break {
+  color: #34d399;
+}
+
+/* Zen Buttons */
+.zen-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.zen-btn {
+  border: none;
+  border-radius: 40px;
+  padding: 0.85rem 2.25rem;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.zen-btn-primary {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+.zen-btn-primary:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(59, 130, 246, 0.5);
+}
+
+.zen-btn-pause {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.zen-btn-pause:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.zen-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #d1d5db;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.85rem 1.5rem;
+}
+
+.zen-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+/* Ambient Sound Card */
+.zen-sound-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 0.85rem 1.25rem;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 320px;
+  box-sizing: border-box;
+  backdrop-filter: blur(10px);
+}
+
+.zen-sound-label {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.zen-sound-select {
+  background: rgba(17, 24, 39, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #f3f4f6;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.zen-sound-select:focus {
+  border-color: var(--primary);
+}
+
+/* Zen Shortcuts Hint */
+.zen-shortcuts-hint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.zen-shortcuts-hint .key-tag {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #d1d5db;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+.zen-shortcuts-hint .separator {
+  color: #4b5563;
+}
+
 @media (max-width: 480px) {
   .timer-ring { width: 160px; height: 160px; }
   .timer-info { grid-template-columns: 1fr; }
   .timer-controls { flex-wrap: wrap; }
   .timer-container { padding: 1.25rem; }
+
+  .zen-timer-ring-wrapper { width: 250px; height: 250px; }
+  .zen-time-display { font-size: 3.5rem; }
+  .zen-subject-title { font-size: 1.35rem; }
+  .zen-controls { flex-wrap: wrap; justify-content: center; }
 }
+

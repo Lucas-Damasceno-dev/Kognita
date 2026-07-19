@@ -10,7 +10,9 @@ export class Confirm {
   message = input.required<string>();
   confirmText = input('Excluir');
   cancelText = input('Cancelar');
+  confirmStyle = input<'danger' | 'primary'>('danger');
   saving = input(false);
+  processingText = input('Processando...');
   confirmed = output<void>();
   cancelled = output<void>();
 

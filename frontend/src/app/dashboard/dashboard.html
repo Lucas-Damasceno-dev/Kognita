@@ -1,5 +1,3 @@
-<h1>Dashboard</h1>
-
 @if (loading()) {
   <app-skeleton mode="dashboard" />
 } @else if (isNewUser()) {
@@ -44,275 +42,407 @@
     </div>
   </div>
 } @else {
-  @if (weeklySubject()) {
-    <div class="weekly-subject-banner" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(99, 102, 241, 0.15) 100%); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap;">
-      <div style="display: flex; align-items: center; gap: 1rem;">
-        <span style="font-size: 2.25rem;">🎯</span>
-        <div>
-          <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--primary, #3b82f6);">Desafio da Semana Ativo</span>
-          <h3 style="margin: 0.25rem 0; font-size: 1.25rem; font-weight: 700; color: var(--text);">Matéria da Semana: <span [style.color]="weeklySubject()?.color">{{ weeklySubject()?.name }}</span></h3>
-          <p style="margin: 0; font-size: 0.85rem; color: var(--text-secondary);">Conclua desafios desta matéria para ganhar <strong style="color: #10b981;">1.5x mais XP</strong>!</p>
+  <div class="dashboard-page">
+    <!-- Compact Top Bar (1 linha horizontal) -->
+    <header class="dashboard-topbar">
+      <div class="topbar-left">
+        <h1 class="topbar-title">Dashboard</h1>
+      </div>
+      <div class="topbar-badges">
+        <div class="glass-badge streak-badge" title="Sequência de estudo atual">
+          <span class="badge-icon">🔥</span>
+          <span class="badge-text"><strong><app-animated-number [value]="streak()" [duration]="800" /></strong> dias</span>
         </div>
-      </div>
-      <a [routerLink]="['/tasks']" class="btn btn-primary btn-sm" style="display: inline-flex; align-items: center; gap: 0.25rem; text-decoration: none;">
-        Ver Desafios
-      </a>
-    </div>
-  }
-
-  <div class="trust-section">
-    <div class="trust-card prominent-streak">
-      <span class="trust-label"><span role="img" aria-label="fogo">🔥</span> Sequência atual</span>
-      <span class="trust-value">{{ streak() }} dias</span>
-    </div>
-    <div class="trust-card">
-      <span class="trust-label"><span role="img" aria-label="check">✅</span> Desafios solo</span>
-      <span class="trust-value">{{ totalWithoutAi() }}</span>
-    </div>
-    @for (goal of challengeGoals(); track goal.id) {
-      <div class="trust-card">
-        <span class="trust-label"><span role="img" aria-label="alvo">🎯</span> Meta semanal</span>
-        <span class="trust-value">{{ goal.currentCount }} / {{ goal.targetCount }}</span>
-      </div>
-    }
-  </div>
-
-  <div class="daily-quests-section" style="margin-bottom: 1.5rem; background: var(--bg-card, #ffffff); border: 1px solid var(--border-color, #e5e7eb); border-radius: 12px; padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-      <h2 style="margin: 0; font-size: 1.35rem; font-weight: 800; color: var(--text-main, #111827);">🎯 Missões Diárias</h2>
-      
-      <button 
-        [disabled]="!allQuestsCompleted() || dailyQuestClaimed()" 
-        (click)="claimDailyQuest()"
-        class="btn btn-sm"
-        [style.background]="dailyQuestClaimed() ? 'var(--bg-hover, #f3f4f6)' : allQuestsCompleted() ? 'var(--primary, #3b82f6)' : 'var(--bg-hover, #f3f4f6)'"
-        [style.color]="dailyQuestClaimed() ? 'var(--text-muted, #6b7280)' : allQuestsCompleted() ? 'white' : 'var(--text-muted, #6b7280)'"
-        style="font-weight: 700; border: none; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: all 0.2s ease; cursor: pointer;">
-        @if (dailyQuestClaimed()) {
-          ✅ Recompensa Resgatada
-        } @else if (allQuestsCompleted()) {
-          🎁 Resgatar Recompensa (+50 XP)
-        } @else {
-          🔒 Conclua as missões para ganhar +50 XP
-        }
-      </button>
-    </div>
-    
-    <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-radius: 8px; background: var(--bg-hover, #f9fafb); border: 1px solid var(--border-color, #e5e7eb);">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <span style="font-size: 1.25rem;">🧘</span>
-          <span [style.text-decoration]="questPomodoro() ? 'line-through' : 'none'" [style.color]="questPomodoro() ? 'var(--text-muted, #6b7280)' : 'inherit'">Completar pelo menos 1 Pomodoro de estudo hoje</span>
+        
+        <div class="glass-badge xp-badge" title="XP acumulado">
+          <span class="badge-icon">⚡</span>
+          <span class="badge-text"><strong><app-animated-number [value]="xp()" [duration]="800" /></strong> XP</span>
         </div>
-        <span style="font-weight: 700;" [style.color]="questPomodoro() ? '#10b981' : '#6b7280'">
-          {{ questPomodoro() ? 'Concluído' : '0 / 1' }}
-        </span>
-      </div>
 
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-radius: 8px; background: var(--bg-hover, #f9fafb); border: 1px solid var(--border-color, #e5e7eb);">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <span style="font-size: 1.25rem;">⚔️</span>
-          <span [style.text-decoration]="questNoAi() ? 'line-through' : 'none'" [style.color]="questNoAi() ? 'var(--text-muted, #6b7280)' : 'inherit'">Resolver pelo menos 1 desafio sem usar IA hoje</span>
-        </div>
-        <span style="font-weight: 700;" [style.color]="questNoAi() ? '#10b981' : '#6b7280'">
-          {{ questNoAi() ? 'Concluído' : '0 / 1' }}
-        </span>
-      </div>
-
-      <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; border-radius: 8px; background: var(--bg-hover, #f9fafb); border: 1px solid var(--border-color, #e5e7eb);">
-        <div style="display: flex; align-items: center; gap: 0.75rem;">
-          <span style="font-size: 1.25rem;">🐞</span>
-          <span [style.text-decoration]="questError() ? 'line-through' : 'none'" [style.color]="questError() ? 'var(--text-muted, #6b7280)' : 'inherit'">Registrar 1 erro no seu Diário de Erros hoje</span>
-        </div>
-        <span style="font-weight: 700;" [style.color]="questError() ? '#10b981' : '#6b7280'">
-          {{ questError() ? 'Concluído' : '0 / 1' }}
-        </span>
-      </div>
-    </div>
-  </div>
-
-  @if (confidenceSkills().length > 0) {
-    <section class="card chart-card" role="region" aria-labelledby="confidence-heading">
-      <h2 id="confidence-heading">Confiança por habilidade</h2>
-      <div class="h-bar-chart">
-        @for (skill of confidenceSkills(); track skill.name) {
-          <div class="h-bar-row">
-            <span class="h-bar-label">{{ skill.name }}</span>
-            <div class="h-bar-track">
-              <div class="h-bar-fill confidence-fill" [style.width.%]="skill.confidencePercent">
-                <span class="h-bar-value">{{ skill.confidencePercent }}%</span>
-              </div>
-            </div>
-            <span class="h-bar-sub">{{ skill.withoutAi }}/{{ skill.totalChallenges }}</span>
+        @if (weeklySubject()) {
+          <div class="glass-badge weekly-badge breathing" title="Matéria em Destaque da Semana">
+            <span class="badge-icon">🎯</span>
+            <span class="badge-text">
+              Semana: <strong [style.color]="weeklySubject()?.color">{{ weeklySubject()?.name }}</strong>
+            </span>
+            <span class="xp-multiplier-tag">+50% XP</span>
           </div>
         }
+
+        <button class="glass-badge btn-scheduler-trigger" (click)="toggleAutoScheduler()" title="Abrir Gerador de Cronograma de Estudos">
+          <span class="badge-icon">📅</span>
+          <span class="badge-text"><strong>Auto-Scheduler</strong></span>
+        </button>
       </div>
-    </section>
-  }
+    </header>
 
-  <div class="stats-grid">
-    <div class="card">
-      <span class="stat-value">{{ subjects().length }}</span>
-      <span class="stat-label">Matérias</span>
-    </div>
-    <div class="card">
-      <span class="stat-value">{{ pendingTasks().length }}</span>
-      <span class="stat-label">Desafios pendentes</span>
-    </div>
-    <div class="card">
-      <span class="stat-value">{{ goals().length }}</span>
-      <span class="stat-label">Metas</span>
-    </div>
-  </div>
+    <!-- Previsão Inteligente de Prontidão para Prova (1.4) -->
+    <app-exam-readiness
+      [tasks]="allTasks()"
+      [subjects]="subjects()"
+      [sessions]="sessions()"
+      [errorLogs]="errorLogs()"
+    ></app-exam-readiness>
 
-  <div class="dashboard-grid">
-    @if (hoursPerSubject().length > 0) {
-      <section class="card chart-card" role="region" aria-labelledby="hours-heading">
-        <h2 id="hours-heading">Horas por matéria</h2>
-        <div class="h-bar-chart">
-          @for (item of hoursPerSubject(); track item.name) {
-            <div class="h-bar-row">
-              <span class="h-bar-label">{{ item.name }}</span>
-              <div class="h-bar-track">
-                <div
-                  class="h-bar-fill"
-                  [style.width.%]="(item.hours / maxHours()) * 100"
-                  [style.background]="item.color"
-                >
-                  <span class="h-bar-value">{{ item.hours.toFixed(1) }}h</span>
+    <!-- Árvore de Conhecimento / Skill Tree (1.3) -->
+    <app-skill-tree
+      [subjects]="subjects()"
+      [tasks]="allTasks()"
+    ></app-skill-tree>
+
+    @if (showAutoScheduler()) {
+      <app-auto-scheduler
+        [subjects]="subjects()"
+        (close)="toggleAutoScheduler()"
+        (scheduleApplied)="onScheduleApplied($event)"
+      ></app-auto-scheduler>
+    }
+
+    <!-- Main Content Fit Grid (3 Colunas) -->
+    <div class="dashboard-fit-grid">
+      <!-- Coluna 1 (Foco & Missões) -->
+      <div class="dashboard-col col-1">
+        <!-- Card Missões Diárias (Compacto) -->
+        <section class="glass-card quest-card">
+          <div class="card-header">
+            <h2 class="card-title">🎯 Missões Diárias</h2>
+            @if (dailyQuestClaimed()) {
+              <span class="badge-done">✅ Resgatado</span>
+            } @else if (allQuestsCompleted()) {
+              <button (click)="claimDailyQuest()" class="btn btn-sm btn-success pulse-btn">
+                🎁 Resgatar (+50 XP)
+              </button>
+            } @else {
+              <span class="badge-progress">{{ completedQuestsCount() }}/3</span>
+            }
+          </div>
+
+          <div class="quest-list">
+            <div class="quest-item stagger-item" [class.completed]="questPomodoro()" [style.animation-delay]="'0.05s'">
+              <span class="quest-icon">🧘</span>
+              <div class="quest-info">
+                <span class="quest-desc">1 Pomodoro de estudo</span>
+              </div>
+              <span class="quest-status" [style.color]="questPomodoro() ? '#10b981' : 'var(--text-muted)'">
+                {{ questPomodoro() ? '✓' : '0/1' }}
+              </span>
+            </div>
+
+            <div class="quest-item stagger-item" [class.completed]="questNoAi()" [style.animation-delay]="'0.1s'">
+              <span class="quest-icon">⚔️</span>
+              <div class="quest-info">
+                <span class="quest-desc">1 Desafio sem IA</span>
+              </div>
+              <span class="quest-status" [style.color]="questNoAi() ? '#10b981' : 'var(--text-muted)'">
+                {{ questNoAi() ? '✓' : '0/1' }}
+              </span>
+            </div>
+
+            <div class="quest-item stagger-item" [class.completed]="questError()" [style.animation-delay]="'0.15s'">
+              <span class="quest-icon">🐞</span>
+              <div class="quest-info">
+                <span class="quest-desc">1 Erro no Diário</span>
+              </div>
+              <span class="quest-status" [style.color]="questError() ? '#10b981' : 'var(--text-muted)'">
+                {{ questError() ? '✓' : '0/1' }}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card Notas Recentes (1. Notas de Estudo) -->
+        <section class="glass-card recent-notes-card">
+          <div class="card-header">
+            <h2 class="card-title">📝 Notas Recentes</h2>
+            <a routerLink="/notes" class="btn btn-ghost btn-sm">Ver todas →</a>
+          </div>
+          <div class="recent-notes-list">
+            @for (note of recentNotes(); track note.id) {
+              <a routerLink="/notes" class="recent-note-item">
+                <div class="recent-note-title">{{ note.title }}</div>
+                @if (note.subjectName) {
+                  <span class="recent-note-badge" [style.background]="note.subjectColor + '20'" [style.color]="note.subjectColor">
+                    {{ note.subjectName }}
+                  </span>
+                }
+              </a>
+            }
+          </div>
+        </section>
+
+        <!-- Card Registro Rápido -->
+        <section class="glass-card quick-add-card">
+          <h2 class="card-title">⚡ Registro Rápido</h2>
+          <div class="quick-add-form">
+            <div class="form-row">
+              <label for="quickSubject" class="sr-only">Matéria</label>
+              <select id="quickSubject" [(ngModel)]="quickSubjectId" name="quickSubject" class="glass-select">
+                <option value="">Selecione matéria</option>
+                @for (s of subjects(); track s.id) {
+                  <option [value]="s.id">{{ s.name }}</option>
+                }
+              </select>
+              <div class="input-with-unit">
+                <label for="quickDuration" class="sr-only">Duração em minutos</label>
+                <input
+                  id="quickDuration"
+                  type="number"
+                  [(ngModel)]="quickDuration"
+                  name="quickDuration"
+                  min="1"
+                  placeholder="25"
+                  class="glass-input duration-input"
+                />
+                <span class="unit-label">min</span>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" (click)="quickAddSession()" [disabled]="saving() || !quickSubjectId || !quickDuration || quickDuration < 1">
+              {{ saving() ? 'Salvando...' : '+ Registrar Sessão' }}
+            </button>
+          </div>
+        </section>
+
+        <!-- Quick Summary Stats -->
+        <div class="quick-stats-row">
+          <div class="mini-stat-card">
+            <span class="stat-num"><app-animated-number [value]="subjects().length" [duration]="600" /></span>
+            <span class="stat-lbl">Matérias</span>
+          </div>
+          <div class="mini-stat-card">
+            <span class="stat-num"><app-animated-number [value]="totalWithoutAi()" [duration]="600" /></span>
+            <span class="stat-lbl">Solo</span>
+          </div>
+          <div class="mini-stat-card">
+            <span class="stat-num"><app-animated-number [value]="goals().length" [duration]="600" /></span>
+            <span class="stat-lbl">Metas</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coluna 2 (Atividade & Gráficos) -->
+      <div class="dashboard-col col-2">
+        <!-- Componente ContributionHeatmap -->
+        <div class="heatmap-wrapper glass-card">
+          <app-contribution-heatmap [sessions]="sessions()" [attempts]="history()" />
+        </div>
+
+        <!-- Card com abas/toggle para gráficos -->
+        <section class="glass-card chart-toggle-card">
+          <div class="chart-tabs-header">
+            <button 
+              type="button"
+              class="tab-btn" 
+              [class.active]="activeChartTab() === 'confidence'" 
+              (click)="activeChartTab.set('confidence')">
+              Confiança
+            </button>
+            <button 
+              type="button"
+              class="tab-btn" 
+              [class.active]="activeChartTab() === 'hours'" 
+              (click)="activeChartTab.set('hours')">
+              Horas
+            </button>
+            <button 
+              type="button"
+              class="tab-btn" 
+              [class.active]="activeChartTab() === 'weekly'" 
+              (click)="activeChartTab.set('weekly')">
+              Semanal
+            </button>
+            <button 
+              type="button"
+              class="tab-btn" 
+              [class.active]="activeChartTab() === 'completion'" 
+              (click)="activeChartTab.set('completion')">
+              Conclusão
+            </button>
+          </div>
+
+          <div class="tab-content">
+            @if (activeChartTab() === 'confidence') {
+              <div class="chart-tab-pane">
+                <h3 class="pane-title">Confiança por Habilidade</h3>
+                @if (confidenceSkills().length > 0) {
+                  <div class="h-bar-chart">
+                    @for (skill of confidenceSkills(); track skill.name) {
+                      <div class="h-bar-row">
+                        <span class="h-bar-label" [title]="skill.name">{{ skill.name }}</span>
+                        <div class="h-bar-track">
+                          <div class="h-bar-fill confidence-fill" [style.width.%]="skill.confidencePercent">
+                            <span class="h-bar-value">{{ skill.confidencePercent }}%</span>
+                          </div>
+                        </div>
+                        <span class="h-bar-sub">{{ skill.withoutAi }}/{{ skill.totalChallenges }}</span>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="empty-chart-text">Nenhuma estatística de habilidade registrada ainda.</p>
+                }
+              </div>
+            }
+
+            @if (activeChartTab() === 'hours') {
+              <div class="chart-tab-pane">
+                <h3 class="pane-title">Horas Estudadas por Matéria</h3>
+                @if (hoursPerSubject().length > 0) {
+                  <div class="h-bar-chart">
+                    @for (item of hoursPerSubject(); track item.name) {
+                      <div class="h-bar-row">
+                        <span class="h-bar-label" [title]="item.name">{{ item.name }}</span>
+                        <div class="h-bar-track">
+                          <div
+                            class="h-bar-fill"
+                            [style.width.%]="(item.hours / maxHours()) * 100"
+                            [style.background]="item.color"
+                          >
+                            <span class="h-bar-value">{{ item.hours.toFixed(1) }}h</span>
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="empty-chart-text">Nenhuma hora de estudo registrada ainda.</p>
+                }
+              </div>
+            }
+
+            @if (activeChartTab() === 'weekly') {
+              <div class="chart-tab-pane">
+                <h3 class="pane-title">Progresso nos últimos 7 dias</h3>
+                @if (weeklyProgress().length > 0) {
+                  <div class="v-bar-chart" style="position: relative;">
+                    @if (dailyGoalHours) {
+                      <div class="goal-line" [style.bottom.%]="maxWeekly() > 0 ? (dailyGoalHours / maxWeekly()) * 100 : 0" [title]="'Meta: ' + dailyGoalHours + 'h/dia'">
+                        <span class="goal-line-label">{{ dailyGoalHours }}h</span>
+                      </div>
+                    }
+                    @for (item of weeklyProgress(); track item.day) {
+                      <div class="v-bar-col">
+                        <div class="v-bar-track">
+                          <div
+                            class="v-bar-fill"
+                            [style.height.%]="maxWeekly() > 0 ? (item.hours / maxWeekly()) * 100 : 0"
+                            [title]="item.day + ': ' + item.hours + 'h'"
+                          ></div>
+                        </div>
+                        <span class="v-bar-label">{{ item.day }}</span>
+                        <span class="v-bar-value">{{ item.hours }}h</span>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="empty-chart-text">Sem dados de estudo nesta semana.</p>
+                }
+              </div>
+            }
+
+            @if (activeChartTab() === 'completion') {
+              <div class="chart-tab-pane">
+                <h3 class="pane-title">Taxa de Conclusão de Desafios</h3>
+                <div class="donut-container">
+                  <div class="donut-svg-wrap">
+                    <svg width="130" height="130" viewBox="0 0 130 130">
+                      <circle cx="65" cy="65" r="50" fill="none" stroke="var(--chart-donut-empty)" stroke-width="10"/>
+                      <circle
+                        cx="65" cy="65" r="50"
+                        fill="none"
+                        stroke="var(--success)"
+                        stroke-width="10"
+                        stroke-linecap="round"
+                        [attr.stroke-dasharray]="donutCircumference"
+                        [attr.stroke-dashoffset]="donutCircumference * (1 - taskCompletionRate() / 100)"
+                        transform="rotate(-90 65 65)"
+                        style="transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)"
+                      />
+                      <text x="65" y="56" text-anchor="middle" fill="var(--text)" font-size="28" font-weight="700">{{ taskCompletionRate() }}%</text>
+                      <text x="65" y="76" text-anchor="middle" fill="var(--text-secondary)" font-size="12">concluído</text>
+                    </svg>
+                  </div>
+                  <div class="donut-legend">
+                    <span><span class="legend-dot" style="background: var(--success, #10b981)"></span> Concluído</span>
+                    <span><span class="legend-dot" style="background: var(--chart-donut-empty, #e5e7eb)"></span> Pendente</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          }
-        </div>
-      </section>
-    }
+            }
+          </div>
+        </section>
+      </div>
 
-    @if (weeklyProgress().length > 0) {
-      <section class="card chart-card" role="region" aria-labelledby="weekly-heading">
-        <h2 id="weekly-heading">Progresso semanal</h2>
-        <div class="v-bar-chart">
-          @for (item of weeklyProgress(); track item.day) {
-            <div class="v-bar-col">
-              <div class="v-bar-track">
-                <div
-                  class="v-bar-fill"
-                  [style.height.%]="maxWeekly() > 0 ? (item.hours / maxWeekly()) * 100 : 0"
-                ></div>
+      <!-- Coluna 3 (Desafios & Prazos) -->
+      <div class="dashboard-col col-3">
+        <!-- Próximas Entregas (3 dias) -->
+        @if (upcomingTasks().length > 0) {
+          <section class="glass-card upcoming-card">
+            <h2 class="card-title">📅 Próximas Entregas (3 dias)</h2>
+            <div class="upcoming-list">
+              @for (task of upcomingTasks(); track task.id) {
+                <div class="upcoming-item">
+                  <span class="priority-badge {{ task.priority }}">{{ task.priority }}</span>
+                  <span class="upcoming-title" [title]="task.title">{{ task.title }}</span>
+                  <span class="due-badge">📅 {{ task.dueDate }}</span>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
+        <!-- Desafios Pendentes (Card Principal com scroll interno) -->
+        <section class="glass-card pending-card">
+          <div class="card-header">
+            <h2 class="card-title">⚔️ Desafios Pendentes</h2>
+            <span class="pending-count-badge">{{ pendingTasks().length }}</span>
+          </div>
+
+          <div class="pending-task-scroll-area">
+            @if (pendingTasks().length > 0) {
+              <div class="task-list">
+                @for (
+                  task of displayedPendingTasks();
+                  track task.id
+                ) {
+                  <div class="task-item" [class.overdue]="isTaskOverdue(task)">
+                    <span class="priority-badge {{ task.priority }}">{{
+                      task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Média' : 'Baixa'
+                    }}</span>
+                    <span class="task-title" [title]="task.title">{{ task.title }}</span>
+                    <div class="task-item-actions">
+                      <button class="btn-action-sm" (click)="startPomodoro(task)" title="Pomodoro" aria-label="Iniciar Pomodoro para {{ task.title }}">
+                        ⏱️
+                      </button>
+                      <button
+                        class="btn-action-sm complete-btn"
+                        (click)="quickCompleteTask(task)"
+                        title="Concluir"
+                        [disabled]="completingTaskId() === task.id"
+                        aria-label="Concluir desafio {{ task.title }}"
+                      >
+                        ✅
+                      </button>
+                    </div>
+                  </div>
+                }
               </div>
-              <span class="v-bar-label">{{ item.day }}</span>
-              <span class="v-bar-value">{{ item.hours }}h</span>
+            } @else {
+              <div class="empty-tasks-state">
+                <span class="empty-icon">🎉</span>
+                <p>Nenhum desafio pendente!</p>
+              </div>
+            }
+          </div>
+
+          @if (pendingTasks().length > pendingPageSize) {
+            <div class="card-footer-actions">
+              <button class="btn btn-ghost btn-xs" (click)="pendingShowAll.update((v) => !v)">
+                {{ pendingShowAll() ? 'Mostrar menos' : 'Ver todas (' + pendingTasks().length + ')' }}
+              </button>
             </div>
           }
-        </div>
-      </section>
-    }
-
-    <section class="card chart-card" role="region" aria-labelledby="completion-heading">
-      <h2 id="completion-heading">Conclusão de desafios</h2>
-      <div class="donut-container">
-        <div
-          class="donut"
-          [style.background]="
-            'conic-gradient(var(--success) ' +
-            taskCompletionRate() +
-            '%, var(--chart-donut-empty) ' +
-            taskCompletionRate() +
-            '%)'
-          "
-        >
-          <div class="donut-hole">
-            <span class="donut-value">{{ taskCompletionRate() }}%</span>
-            <span class="donut-label">concluído</span>
-          </div>
-        </div>
-        <div class="donut-legend">
-          <span><span class="legend-dot" style="background: var(--success)"></span> Concluído</span>
-          <span
-            ><span class="legend-dot" style="background: var(--chart-donut-empty)"></span>
-            Pendente</span
-          >
-        </div>
+        </section>
       </div>
-    </section>
-  </div>
-
-  @if (upcomingTasks().length > 0) {
-    <section role="region" aria-labelledby="upcoming-heading">
-      <h2 id="upcoming-heading">Próximas desafios (3 dias)</h2>
-      <div class="task-list">
-        @for (task of upcomingTasks(); track task.id) {
-          <div class="task-item">
-            <span class="priority-badge {{ task.priority }}">{{ task.priority }}</span>
-            <span>{{ task.title }}</span>
-            <span class="due-badge"><span role="img" aria-label="calendário">📅</span> {{ task.dueDate }}</span>
-          </div>
-        }
-      </div>
-    </section>
-  }
-
-  @if (pendingTasks().length > 0) {
-    <section class="dashboard-section" role="region" aria-labelledby="pending-heading">
-      <h2 id="pending-heading">Desafios Pendentes</h2>
-      <div class="task-list">
-        @for (
-          task of pendingShowAll() ? pendingTasks() : pendingTasks().slice(0, pendingPageSize);
-          track task.id
-        ) {
-          <div class="task-item" [class.overdue]="isTaskOverdue(task)">
-            <span class="priority-badge {{ task.priority }}">{{
-              task.priority === 'high' ? 'Alta' : task.priority === 'medium' ? 'Média' : 'Baixa'
-            }}</span>
-            <span class="task-title">{{ task.title }}</span>
-            <div class="task-item-actions">
-              <button class="btn-action-sm" (click)="startPomodoro(task)" title="Pomodoro" aria-label="Iniciar Pomodoro para {{ task.title }}">
-                ⏱️
-              </button>
-              <button
-                class="btn-action-sm complete-btn"
-                (click)="quickCompleteTask(task)"
-                title="Concluir"
-                [disabled]="completingTaskId() === task.id"
-                aria-label="Concluir desafio {{ task.title }}"
-              >
-                ✅
-              </button>
-            </div>
-          </div>
-        }
-      </div>
-      @if (pendingTasks().length > pendingPageSize) {
-        <button class="btn btn-ghost" (click)="pendingShowAll.update((v) => !v)">
-          {{ pendingShowAll() ? 'Mostrar menos' : 'Ver todas (' + pendingTasks().length + ')' }}
-        </button>
-      }
-    </section>
-  }
-
-  <section class="dashboard-section" role="region" aria-labelledby="quick-add-heading">
-    <h2 id="quick-add-heading">Registro Rápido</h2>
-    <div class="quick-add">
-      <label for="quickSubject" class="sr-only">Matéria</label>
-      <select id="quickSubject" [(ngModel)]="quickSubjectId" name="quickSubject">
-        <option value="">Matéria</option>
-        @for (s of subjects(); track s.id) {
-          <option [value]="s.id">{{ s.name }}</option>
-        }
-      </select>
-      <label for="quickDuration" class="sr-only">Duração em minutos</label>
-      <input
-        id="quickDuration"
-        type="number"
-        [(ngModel)]="quickDuration"
-        name="quickDuration"
-        min="1"
-        placeholder="min"
-        class="duration-input"
-      />
-      <button class="btn btn-primary btn-sm" (click)="quickAddSession()" [disabled]="saving()">
-        {{ saving() ? '...' : '+ Sessão' }}
-      </button>
     </div>
-  </section>
+  </div>
 }

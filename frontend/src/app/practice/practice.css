@@ -1,15 +1,385 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.practice-start,
+.practice-active,
+.practice-finished {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+}
+
 .practice-header { text-align: center; margin-bottom: 2rem; }
 .practice-header h2 { color: var(--warning); }
 .practice-header .timer { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 0.5rem; }
 .practice-header .hint { color: var(--text-muted); font-size: 0.8125rem; margin-top: 0.5rem; }
-.practice-question { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+.practice-question { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; overflow-y: auto; flex: 1; min-height: 0; }
 .practice-question .question-title { font-weight: 600; margin-bottom: 0.5rem; }
 .practice-question .question-desc { color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem; }
 .practice-question .question-meta { display: flex; gap: 0.75rem; font-size: 0.75rem; color: var(--text-muted); }
-.practice-checkin { border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem; }
+.practice-checkin { border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 1rem; flex-shrink: 0; }
+
+.btn-zen-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  background: rgba(168, 85, 247, 0.08);
+  color: #a855f7;
+  font-weight: 600;
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  transition: all 0.2s ease;
+}
+
+.btn-zen-toggle:hover {
+  background: rgba(168, 85, 247, 0.18);
+  transform: translateY(-1px);
+}
+
+/* Practice Zen Overlay Mode */
+.zen-practice-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: radial-gradient(circle at 50% 30%, #170f2d 0%, #0c0819 65%, #05030a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  color: #ffffff;
+  padding: 2.5rem 1.5rem 1.5rem;
+  box-sizing: border-box;
+  animation: zenFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow-y: auto;
+}
+
+@keyframes zenFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.zen-close-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 30px;
+  color: #e5e7eb;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+}
+
+.zen-close-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.zen-practice-header {
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.zen-badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c084fc;
+  font-weight: 700;
+  background: rgba(168, 85, 247, 0.15);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  padding: 0.25rem 0.85rem;
+  border-radius: 999px;
+  margin-bottom: 0.5rem;
+}
+
+.zen-subject-title {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #f9fafb;
+}
+
+.zen-counter-pill {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.85rem;
+  color: #a7f3d0;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 0.2rem 0.75rem;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+.zen-practice-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 680px;
+}
+
+/* Practice Focus Timer Ring */
+.zen-practice-timer-ring {
+  position: relative;
+  width: 220px;
+  height: 220px;
+  margin: 1rem 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.zen-ambient-glow {
+  position: absolute;
+  inset: -15px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.25) 0%, rgba(168, 85, 247, 0) 70%);
+  transition: opacity 0.5s ease;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.zen-ambient-glow.running {
+  opacity: 1;
+  animation: zenPulse 3s infinite alternate ease-in-out;
+}
+
+@keyframes zenPulse {
+  0% { transform: scale(0.95); opacity: 0.4; }
+  100% { transform: scale(1.08); opacity: 0.85; }
+}
+
+.zen-svg-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.zen-ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.07);
+  stroke-width: 4;
+}
+
+.zen-ring-progress {
+  fill: none;
+  stroke: #a855f7;
+  stroke-width: 5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+  filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.6));
+}
+
+.zen-timer-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.zen-time-display {
+  font-size: 3rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(168, 85, 247, 0.4);
+}
+
+.zen-phase-pill {
+  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #c084fc;
+  text-transform: uppercase;
+}
+
+.zen-phase-pill.paused {
+  color: #fca5a5;
+}
+
+/* Distraction-Free Question Card */
+.zen-question-card {
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 16px !important;
+  padding: 1.75rem !important;
+  width: 100%;
+  box-sizing: border-box;
+  backdrop-filter: blur(12px);
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.zen-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.zen-question-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.15);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.zen-question-tag.high {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.zen-question-tag.medium {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.zen-question-title {
+  margin: 0 0 0.75rem 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #f9fafb;
+}
+
+.zen-question-desc {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #d1d5db;
+  white-space: pre-wrap;
+}
+
+/* Practice Zen Controls */
+.zen-practice-controls {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.zen-btn {
+  border: none;
+  border-radius: 40px;
+  padding: 0.8rem 1.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.zen-btn-primary {
+  background: #a855f7;
+  color: #ffffff;
+  box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+}
+
+.zen-btn-primary:hover:not(:disabled) {
+  background: #9333ea;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(168, 85, 247, 0.5);
+}
+
+.zen-btn-pause {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(8px);
+}
+
+.zen-btn-pause:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+}
+
+.zen-btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #d1d5db;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.zen-btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.zen-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.zen-practice-start-box, .zen-practice-finished-box {
+  text-align: center;
+  padding: 2.5rem 2rem;
+  max-width: 450px;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+  margin: 2rem 0;
+}
+
+/* Zen Shortcuts Hint */
+.zen-shortcuts-hint {
+  font-size: 0.8rem;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.zen-shortcuts-hint .key-tag {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #d1d5db;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.75rem;
+}
+
+.zen-shortcuts-hint .separator {
+  color: #4b5563;
+}
 
 @media (max-width: 480px) {
   .practice-header h2 { font-size: 1.1rem; }
   .practice-header .timer { font-size: 1.5rem; }
   .practice-question { padding: 1rem; }
+
+  .zen-practice-timer-ring { width: 180px; height: 180px; }
+  .zen-time-display { font-size: 2.35rem; }
+  .zen-subject-title { font-size: 1.35rem; }
+  .zen-question-card { padding: 1.25rem !important; }
 }
+

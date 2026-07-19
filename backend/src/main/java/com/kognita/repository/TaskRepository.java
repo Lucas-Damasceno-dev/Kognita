@@ -31,4 +31,7 @@ public interface TaskRepository extends JpaRepository<Task, UUID> {
 
     @Query("SELECT DISTINCT t.skillCategory FROM Task t WHERE t.user.id = :userId AND t.skillCategory IS NOT NULL")
     List<String> findDistinctSkillCategoriesByUserId(@Param("userId") UUID userId);
+
+    void deleteBySubjectId(UUID subjectId);
+    void deleteByUserIdAndSkillCategoryIgnoreCase(UUID userId, String skillCategory);
 }

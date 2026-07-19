@@ -6,6 +6,7 @@ import { catchError, finalize, forkJoin, of, timeout, tap, EMPTY } from 'rxjs';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
+import { ConfettiService } from '../services/confetti.service';
 import { Skeleton } from '../skeleton/skeleton';
 import { Confirm } from '../confirm/confirm';
 import { Checkin } from '../checkin/checkin';
@@ -27,6 +28,7 @@ export class Tasks implements OnInit {
   private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
+  private confetti = inject(ConfettiService);
 
   tasks = signal<Task[]>([]);
   subjects = signal<Subject[]>([]);
@@ -210,6 +212,7 @@ export class Tasks implements OnInit {
       )
       .subscribe(() => {
         this.toast.success(`${ids.length} tarefa(s) concluída(s)`);
+        this.confetti.fireStreakCelebration();
         this.load();
       });
   }
@@ -317,6 +320,14 @@ export class Tasks implements OnInit {
     this.showForm.set(true);
   }
 
+  toggleForm(): void {
+    this.editingId.set(null);
+    this.showForm.update((v) => !v);
+    if (!this.showForm()) {
+      this.resetForm();
+    }
+  }
+
   cancel(): void {
     this.resetForm();
   }
@@ -411,6 +422,9 @@ export class Tasks implements OnInit {
       .subscribe({
         next: () => {
           this.toast.success('Status atualizado');
+          if (status === 'completed') {
+            this.confetti.fireConfetti();
+          }
           this.load();
         },
         error: () => {},
@@ -438,6 +452,11 @@ export class Tasks implements OnInit {
       .subscribe({
         next: () => {
           this.toast.success(usedAi ? 'Registrado (com IA)' : 'Desafio concluído sem IA!');
+          if (!usedAi) {
+            this.confetti.fireStreakCelebration();
+          } else {
+            this.confetti.fireConfetti();
+          }
           this.updateStatus(task.id, 'completed');
           this.showCheckin.set(false);
           this.pendingCheckinTask.set(null);

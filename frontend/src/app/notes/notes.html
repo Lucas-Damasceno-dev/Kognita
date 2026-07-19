@@ -1,0 +1,91 @@
+<div class="notes-page">
+  <div class="notes-sidebar card">
+    <div class="notes-sidebar-header">
+      <h3>📝 Notas de Estudo</h3>
+      <button class="btn btn-primary btn-sm" (click)="createNewNote()">+ Nova Nota</button>
+    </div>
+
+    <div class="search-wrap">
+      <input
+        type="text"
+        placeholder="Buscar notas por título, tag ou conteúdo..."
+        [(ngModel)]="searchQuery"
+        class="search-input"
+      />
+    </div>
+
+    <div class="notes-list scroll-internal">
+      @for (note of filteredNotes(); track note.id) {
+        <div
+          class="note-item-card"
+          [class.active]="selectedNoteId() === note.id"
+          (click)="selectNote(note)"
+        >
+          <div class="note-item-header">
+            <span class="note-title">{{ note.title || 'Sem título' }}</span>
+            @if (note.subjectName) {
+              <span class="subject-tag" [style.background-color]="note.subjectColor + '20'" [style.color]="note.subjectColor">
+                {{ note.subjectName }}
+              </span>
+            }
+          </div>
+          <div class="note-snippet">{{ note.content.slice(0, 60) }}...</div>
+          <div class="note-date">{{ note.updatedAt | date:'dd/MM HH:mm' }}</div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="notes-editor-container card glass-card-mesh">
+    @if (selectedNoteId()) {
+      <div class="editor-topbar">
+        <input
+          type="text"
+          [(ngModel)]="editingTitle"
+          placeholder="Título da Nota..."
+          class="title-input"
+        />
+
+        <div class="editor-actions">
+          <select [(ngModel)]="editingSubjectId" class="subject-select">
+            <option value="">Sem matéria vinculada</option>
+            @for (s of subjects(); track s.id) {
+              <option [value]="s.id">{{ s.name }}</option>
+            }
+          </select>
+
+          <button class="btn btn-primary btn-sm" (click)="saveCurrent()">💾 Salvar</button>
+          <button class="btn btn-danger btn-sm" (click)="deleteCurrent()">🗑️ Excluir</button>
+        </div>
+      </div>
+
+      <div class="tags-row">
+        @for (tag of editingTags; track $index) {
+          <span class="tag-pill">
+            #{{ tag }}
+            <button class="remove-tag" (click)="removeTag($index)">✕</button>
+          </span>
+        }
+        <input
+          type="text"
+          placeholder="+ Adicionar tag (Enter)"
+          [(ngModel)]="editingTagInput"
+          (keydown.enter)="addTag()"
+          class="tag-input"
+        />
+      </div>
+
+      <div class="editor-body">
+        <textarea
+          [(ngModel)]="editingContent"
+          placeholder="Escreva suas anotações aqui em Markdown (suporta trechos de código e fórmulas)..."
+          class="markdown-textarea scroll-internal"
+        ></textarea>
+      </div>
+    } @else {
+      <div class="empty-editor">
+        <p>Selecione uma nota ao lado ou crie uma nova nota de estudo!</p>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,126 @@
+.ach-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: achFadeIn 0.3s ease;
+}
+
+@keyframes achFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ach-modal {
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem 2rem 1.5rem;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+  overflow: hidden;
+  animation: achScaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes achScaleIn {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.ach-glow {
+  position: absolute;
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(234, 179, 8, 0.3) 0%, transparent 70%);
+  animation: achGlowPulse 2s ease-in-out infinite;
+}
+
+@keyframes achGlowPulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.5; }
+  50% { transform: translateX(-50%) scale(1.15); opacity: 1; }
+}
+
+.ach-icon {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, #f59e0b, #eab308);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 4px 20px rgba(234, 179, 8, 0.4);
+  animation: achIconPop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes achIconPop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.ach-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.25rem;
+}
+
+.ach-name {
+  font-size: 1.35rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f59e0b, #eab308);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.ach-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin: 0 0 1rem;
+  line-height: 1.5;
+}
+
+.ach-xp {
+  display: inline-block;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  margin-bottom: 1.25rem;
+}
+
+.ach-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 2rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background: var(--primary);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ach-btn:hover {
+  background: var(--primary-hover);
+  transform: translateY(-1px);
+}

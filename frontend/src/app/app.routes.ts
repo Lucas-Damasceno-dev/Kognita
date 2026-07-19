@@ -96,6 +96,26 @@ export const routes: Routes = [
         path: 'reports',
         loadComponent: () => import('./reports/reports').then(m => m.Reports),
       },
+      {
+        path: 'notes',
+        loadComponent: () => import('./notes/notes').then(m => m.StudyNotes),
+      },
+      {
+        path: 'learning-paths',
+        loadComponent: () => import('./learning-paths/learning-paths').then(m => m.LearningPaths),
+      },
+      {
+        path: 'study-duels',
+        loadComponent: () => import('./study-duels/study-duels').then(m => m.StudyDuels),
+      },
+      {
+        path: 'vault',
+        loadComponent: () => import('./vault/vault').then(m => m.Vault),
+      },
+      {
+        path: 'exam-simulator',
+        loadComponent: () => import('./exam-simulator/exam-simulator').then(m => m.ExamSimulator),
+      },
       { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
       { path: '**', loadComponent: () => import('./not-found/not-found').then(m => m.NotFound) },
     ],

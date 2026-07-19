@@ -1,4 +1,12 @@
-<h1>Simulador de Prática</h1>
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+  <h1 style="margin: 0;">Simulador de Prática</h1>
+  <button class="btn btn-ghost btn-sm btn-zen-toggle" (click)="toggleZenMode()">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+    </svg>
+    <span>Modo Zen (Foco Imersivo)</span>
+  </button>
+</div>
 
 @if (loading()) {
   <app-skeleton mode="list" />
@@ -25,9 +33,11 @@
     </div>
 
     @if (tasks.length > 0) {
-      <button class="btn btn-primary btn-lg" (click)="start()">
-        ▶ Iniciar Simulação (30 min)
-      </button>
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+        <button class="btn btn-primary btn-lg" (click)="start()">
+          ▶ Iniciar Simulação (30 min)
+        </button>
+      </div>
     } @else {
       <div class="empty-state">
         <p>Nenhuma tarefa encontrada. <a routerLink="/tasks">Crie tarefas primeiro</a>.</p>
@@ -36,7 +46,7 @@
   </div>
 }
 
-@if (started() && totalTasks > 0) {
+@if (started() && totalTasks > 0 && !zenMode()) {
   <div class="practice-active" style="max-width: 600px;">
     <div class="practice-header">
       <h2>Tarefa {{ currentIndex + 1 }} de {{ totalTasks }}</h2>
@@ -55,7 +65,7 @@
     </div>
 
     <div class="practice-checkin">
-      <div style="display: flex; gap: 0.75rem;">
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
         <button class="btn" (click)="previous()" [disabled]="currentIndex === 0">◀ Anterior</button>
         <button class="btn btn-primary" (click)="next()">
           {{ currentIndex === totalTasks - 1 ? '✅ Finalizar' : '➡️ Próxima' }}
@@ -83,6 +93,121 @@
       <button class="btn" (click)="reset()">🔄 Nova Simulação</button>
       <a routerLink="/dashboard" class="btn btn-primary">📊 Dashboard</a>
       <a routerLink="/history" class="btn">📜 Histórico</a>
+    </div>
+  </div>
+}
+
+@if (zenMode()) {
+  <div class="zen-practice-overlay">
+    <button class="zen-close-btn" (click)="toggleZenMode()" title="Sair do Modo Zen (ESC)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+      </svg>
+      <span>Sair Zen</span>
+    </button>
+
+    <div class="zen-practice-header">
+      <span class="zen-badge">🧘 SIMULADO ZEN</span>
+      <h2 class="zen-subject-title">{{ selectedSubjectName }}</h2>
+      @if (started() && totalTasks > 0) {
+        <span class="zen-counter-pill">Questão {{ currentIndex + 1 }} de {{ totalTasks }}</span>
+      }
+    </div>
+
+    @if (!started() && !finished()) {
+      <div class="zen-practice-start-box card">
+        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🎯</div>
+        <h3>Simulado de Prática Imersivo</h3>
+        <p style="color: #9ca3af; font-size: 0.95rem; margin-bottom: 1.5rem;">
+          Resolva {{ tasks.length }} tarefa{{ tasks.length !== 1 ? 's' : '' }} sem distrações no tempo limite de 30 minutos.
+        </p>
+        @if (tasks.length > 0) {
+          <button class="zen-btn zen-btn-primary" (click)="start()">
+            ▶ Iniciar Simulação Agora
+          </button>
+        } @else {
+          <p style="color: #ef4444;">Nenhuma tarefa encontrada para a matéria selecionada.</p>
+        }
+      </div>
+    } @else if (started() && totalTasks > 0) {
+      <div class="zen-practice-body">
+        <!-- Focus-mode Timer Ring -->
+        <div class="zen-practice-timer-ring">
+          <div class="zen-ambient-glow" [class.running]="!paused()"></div>
+          <svg class="zen-svg-ring" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="54" class="zen-ring-bg" />
+            <circle
+              cx="60"
+              cy="60"
+              r="54"
+              class="zen-ring-progress"
+              [style.stroke-dashoffset]="(1 - progress / 100) * 339.292"
+            />
+          </svg>
+          <div class="zen-timer-center">
+            <div class="zen-time-display">{{ formattedTime }}</div>
+            <div class="zen-phase-pill" [class.paused]="paused()">
+              {{ paused() ? '⏸ PAUSADO' : '⚡ EM ANDAMENTO' }}
+            </div>
+          </div>
+        </div>
+
+        <!-- Clean Question Card View -->
+        <div class="zen-question-card card">
+          <div class="zen-question-header">
+            <span class="zen-question-tag" [class.high]="currentTask?.priority === 'high'" [class.medium]="currentTask?.priority === 'medium'">
+              Prioridade {{ currentTask?.priority === 'high' ? 'Alta' : currentTask?.priority === 'medium' ? 'Média' : 'Baixa' }}
+            </span>
+          </div>
+
+          <h3 class="zen-question-title">{{ currentTask?.title }}</h3>
+
+          @if (currentTask?.description) {
+            <p class="zen-question-desc">{{ currentTask?.description }}</p>
+          }
+        </div>
+
+        <!-- enlarged Control Action Row -->
+        <div class="zen-practice-controls">
+          <button class="zen-btn zen-btn-secondary" (click)="previous()" [disabled]="currentIndex === 0">
+            ◀ Anterior
+          </button>
+          
+          @if (!paused()) {
+            <button class="zen-btn zen-btn-pause" (click)="pause()">
+              ⏸ Pausar
+            </button>
+          } @else {
+            <button class="zen-btn zen-btn-primary" (click)="resume()">
+              ▶ Continuar
+            </button>
+          }
+
+          <button class="zen-btn zen-btn-primary" (click)="next()">
+            {{ currentIndex === totalTasks - 1 ? '✅ Finalizar' : '➡️ Próxima' }}
+          </button>
+        </div>
+      </div>
+    } @else if (finished()) {
+      <div class="zen-practice-finished-box card">
+        <div style="font-size: 3.5rem; margin-bottom: 0.5rem;">🎉</div>
+        <h2>Simulação Concluída!</h2>
+        <p style="color: #9ca3af; margin-bottom: 1.5rem;">
+          Você concluiu <strong>{{ totalTasks }} tarefas</strong> sem ajuda de IA no Modo Zen.
+        </p>
+        <button class="zen-btn zen-btn-primary" (click)="reset()">
+          🔄 Nova Simulação
+        </button>
+      </div>
+    }
+
+    <!-- Shortcuts Footer -->
+    <div class="zen-shortcuts-hint">
+      <span class="key-tag">Espaço</span> Pausar/Continuar
+      <span class="separator">•</span>
+      <span class="key-tag">← / →</span> Navegar
+      <span class="separator">•</span>
+      <span class="key-tag">ESC</span> Sair
     </div>
   </div>
 }

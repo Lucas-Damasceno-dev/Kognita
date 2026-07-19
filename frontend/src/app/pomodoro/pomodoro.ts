@@ -7,6 +7,7 @@ import { finalize } from 'rxjs/operators';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
+import { ConfettiService } from '../services/confetti.service';
 import { Checkin } from '../checkin/checkin';
 import { Confirm } from '../confirm/confirm';
 import { Subject } from '../models/subject';
@@ -24,6 +25,7 @@ export class Pomodoro implements OnInit {
   private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
   private route = inject(ActivatedRoute);
+  private confetti = inject(ConfettiService);
 
   subjects: Subject[] = [];
   tasks: Task[] = [];
@@ -45,6 +47,11 @@ export class Pomodoro implements OnInit {
   // Zen Mode
   zenMode = signal(false);
   selectedAmbientSound = 'none';
+  zenParticles = Array.from({ length: 20 }, () => ({
+    left: Math.random() * 100,
+    delay: Math.random() * 6,
+    size: 1 + Math.random() * 2,
+  }));
   private audioContext: AudioContext | null = null;
   private whiteNoiseNode: AudioBufferSourceNode | null = null;
   private noiseFilterNode: BiquadFilterNode | null = null;
@@ -187,6 +194,37 @@ export class Pomodoro implements OnInit {
     }
   }
 
+  get selectedSubjectName(): string {
+    const sub = this.subjects.find((s) => s.id === this.selectedSubjectId);
+    return sub ? sub.name : 'Sessão Livre';
+  }
+
+  get selectedTaskTitle(): string | null {
+    const task = this.tasks.find((t) => t.id === this.selectedTaskId);
+    return task ? task.title : null;
+  }
+
+  private triggerHaptic(type: 'start' | 'pause' | 'reset' | 'complete'): void {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        if (type === 'start') {
+          navigator.vibrate(40);
+        } else if (type === 'pause') {
+          navigator.vibrate([30, 50, 30]);
+        } else if (type === 'reset') {
+          navigator.vibrate([50, 30, 50]);
+        } else if (type === 'complete') {
+          navigator.vibrate([100, 50, 100, 50, 200]);
+        }
+      } catch {
+        // Haptics not supported or blocked
+      }
+    }
+  }
+
+  private targetEndTime: number | null = null;
+  private originalDocumentTitle = typeof document !== 'undefined' ? document.title : 'Kognita';
+
   start(): void {
     if (!this.selectedSubjectId) {
       this.toast.error('Selecione uma matéria');
@@ -195,32 +233,50 @@ export class Pomodoro implements OnInit {
     if (this.isRunning()) return;
 
     if (this.timeLeft <= 0) {
-      this.timeLeft = this.workDuration * 60;
-      this.isBreak.set(false);
+      this.timeLeft = (this.isBreak() ? this.breakDuration : this.workDuration) * 60;
     }
 
+    this.targetEndTime = Date.now() + this.timeLeft * 1000;
+    this.triggerHaptic('start');
     this.isRunning.set(true);
+
     this.intervalId = setInterval(() => {
-      this.timeLeft--;
+      if (!this.targetEndTime) return;
+      const remaining = Math.max(0, Math.ceil((this.targetEndTime - Date.now()) / 1000));
+      this.timeLeft = remaining;
+      this.updateDocumentTitle();
+
       if (this.timeLeft <= 0) {
         this.stop();
         this.onTimerComplete();
       }
-    }, 1000);
+    }, 500);
   }
 
-  pause(): void {
-    this.isRunning.set(false);
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.intervalId = null;
+  private updateDocumentTitle(): void {
+    if (typeof document === 'undefined') return;
+    if (this.isRunning()) {
+      const emoji = this.isBreak() ? '☕' : '🎯';
+      document.title = `(${this.displayTime}) ${emoji} Kognita - ${this.isBreak() ? 'Pausa' : 'Foco'}`;
+    } else {
+      document.title = this.originalDocumentTitle;
     }
   }
 
+  pause(): void {
+    if (this.isRunning()) {
+      this.triggerHaptic('pause');
+    }
+    this.stop();
+  }
+
   reset(): void {
-    this.pause();
+    this.triggerHaptic('reset');
+    this.stop();
     this.timeLeft = this.workDuration * 60;
     this.isBreak.set(false);
+    this.targetEndTime = null;
+    this.updateDocumentTitle();
   }
 
   @HostListener('document:keydown.space', ['$event'])
@@ -243,15 +299,33 @@ export class Pomodoro implements OnInit {
     this.reset();
   }
 
+  @HostListener('document:keydown.escape', ['$event'])
+  handleEscape(event: Event): void {
+    if (this.zenMode()) {
+      event.preventDefault();
+      this.toggleZenMode();
+    }
+  }
+
+  @HostListener('document:fullscreenchange')
+  onFullscreenChange(): void {
+    if (typeof document !== 'undefined' && !document.fullscreenElement && this.zenMode()) {
+      this.zenMode.set(false);
+    }
+  }
+
   private stop(): void {
     this.isRunning.set(false);
+    this.targetEndTime = null;
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
+    this.updateDocumentTitle();
   }
 
   private onTimerComplete(): void {
+    this.triggerHaptic('complete');
     this.playBeep();
 
     const user = this.auth.user();
@@ -290,6 +364,7 @@ export class Pomodoro implements OnInit {
           if (res) {
             this.sessionCount++;
             this.toast.success(`Sessão salva! (${duration} min)`);
+            this.confetti.fireConfetti();
             this.sendNotification(
               'Kognita — Foco concluído! 🎯',
               `${duration} min de estudo registrados. Hora da pausa!`,

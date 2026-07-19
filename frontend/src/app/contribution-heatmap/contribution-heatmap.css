@@ -1,0 +1,509 @@
+.heatmap-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  padding: 1.35rem 1.5rem;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 1.5rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+[data-theme='dark'] .heatmap-card {
+  background: rgba(30, 41, 59, 0.45);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+}
+
+.heatmap-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+[data-theme='dark'] .heatmap-card:hover {
+  box-shadow: 0 14px 35px -5px rgba(0, 0, 0, 0.4);
+}
+
+.heatmap-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.heatmap-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.heatmap-title-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(6, 182, 212, 0.15));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.heatmap-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.heatmap-subtitle {
+  margin: 0.15rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.palette-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-hover);
+  padding: 0.3rem 0.6rem;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+}
+
+.palette-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+  padding: 0;
+}
+
+.palette-btn:hover {
+  transform: scale(1.25);
+}
+
+.palette-btn.active {
+  border-color: var(--text);
+  transform: scale(1.2);
+}
+
+.palette-btn.emerald {
+  background: #10b981;
+}
+
+.palette-btn.cyan {
+  background: #06b6d4;
+}
+
+.palette-btn.purple {
+  background: #a855f7;
+}
+
+/* STATS GRID */
+.heatmap-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .heatmap-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.stat-box {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(8px);
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+[data-theme='dark'] .stat-box {
+  background: rgba(15, 23, 42, 0.4);
+}
+
+.stat-box:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+}
+
+.stat-icon {
+  font-size: 1.25rem;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.stat-value small {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+}
+
+/* CALENDAR GRID */
+.heatmap-calendar-wrap {
+  overflow-x: auto;
+  padding-bottom: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+
+.heatmap-calendar-wrap::-webkit-scrollbar {
+  height: 6px;
+}
+.heatmap-calendar-wrap::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+.grid-body {
+  display: flex;
+  gap: 0.5rem;
+  min-width: 720px;
+}
+
+.month-labels {
+  display: flex;
+  gap: 0.5rem;
+  min-width: 720px;
+  margin-bottom: 0.35rem;
+}
+
+.day-header-spacer {
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.months-row {
+  display: grid;
+  grid-template-columns: repeat(52, 11px);
+  column-gap: 3px;
+  flex: 1;
+}
+
+.month-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: left;
+}
+
+.day-labels {
+  display: grid;
+  grid-template-rows: repeat(7, 11px);
+  row-gap: 3px;
+  width: 28px;
+  flex-shrink: 0;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: right;
+  padding-right: 4px;
+}
+
+.day-labels span {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  line-height: 1;
+}
+
+.weeks-grid {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+}
+
+.week-column {
+  display: grid;
+  grid-template-rows: repeat(7, 11px);
+  row-gap: 3px;
+}
+
+.day-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2.5px;
+  outline: none;
+  cursor: pointer;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease,
+    filter 0.15s ease;
+  position: relative;
+}
+
+.day-cell:hover,
+.day-cell:focus-visible {
+  transform: scale(1.45);
+  z-index: 10;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.35);
+}
+
+.day-cell.is-future {
+  opacity: 0.2;
+  cursor: default;
+  pointer-events: none;
+}
+
+.day-cell.is-today {
+  box-shadow: 0 0 0 1.5px var(--primary);
+}
+
+/* LEGEND */
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.4rem;
+  margin-top: 0.75rem;
+}
+
+.legend-text {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.legend-cells {
+  display: flex;
+  gap: 3px;
+}
+
+.legend-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2.5px;
+}
+
+/* LEVEL 0 - EMPTY */
+.heatmap-card .day-cell[data-level='0'],
+.heatmap-card .legend-cell[data-level='0'] {
+  background: var(--bg-hover);
+  border: 1px solid var(--border);
+}
+[data-theme='dark'] .heatmap-card .day-cell[data-level='0'],
+[data-theme='dark'] .heatmap-card .legend-cell[data-level='0'] {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* EMERALD PALETTE */
+.heatmap-card[data-theme-palette='emerald'] .day-cell[data-level='1'],
+.heatmap-card[data-theme-palette='emerald'] .legend-cell[data-level='1'] {
+  background: #a7f3d0;
+}
+.heatmap-card[data-theme-palette='emerald'] .day-cell[data-level='2'],
+.heatmap-card[data-theme-palette='emerald'] .legend-cell[data-level='2'] {
+  background: #34d399;
+}
+.heatmap-card[data-theme-palette='emerald'] .day-cell[data-level='3'],
+.heatmap-card[data-theme-palette='emerald'] .legend-cell[data-level='3'] {
+  background: #10b981;
+}
+.heatmap-card[data-theme-palette='emerald'] .day-cell[data-level='4'],
+.heatmap-card[data-theme-palette='emerald'] .legend-cell[data-level='4'] {
+  background: #047857;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+[data-theme='dark'] .heatmap-card[data-theme-palette='emerald'] .day-cell[data-level='1'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='emerald'] .legend-cell[data-level='1'] {
+  background: #064e3b;
+}
+[data-theme='dark'] .heatmap-card[data-theme-palette='emerald'] .day-cell[data-level='2'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='emerald'] .legend-cell[data-level='2'] {
+  background: #047857;
+}
+[data-theme='dark'] .heatmap-card[data-theme-palette='emerald'] .day-cell[data-level='3'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='emerald'] .legend-cell[data-level='3'] {
+  background: #10b981;
+}
+[data-theme='dark'] .heatmap-card[data-theme-palette='emerald'] .day-cell[data-level='4'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='emerald'] .legend-cell[data-level='4'] {
+  background: #34d399;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+}
+
+/* CYAN PALETTE */
+.heatmap-card[data-theme-palette='cyan'] .day-cell[data-level='1'],
+.heatmap-card[data-theme-palette='cyan'] .legend-cell[data-level='1'] {
+  background: #bae6fd;
+}
+.heatmap-card[data-theme-palette='cyan'] .day-cell[data-level='2'],
+.heatmap-card[data-theme-palette='cyan'] .legend-cell[data-level='2'] {
+  background: #38bdf8;
+}
+.heatmap-card[data-theme-palette='cyan'] .day-cell[data-level='3'],
+.heatmap-card[data-theme-palette='cyan'] .legend-cell[data-level='3'] {
+  background: #06b6d4;
+}
+.heatmap-card[data-theme-palette='cyan'] .day-cell[data-level='4'],
+.heatmap-card[data-theme-palette='cyan'] .legend-cell[data-level='4'] {
+  background: #0e7490;
+  box-shadow: 0 0 6px rgba(6, 182, 212, 0.5);
+}
+
+[data-theme='dark'] .heatmap-card[data-theme-palette='cyan'] .day-cell[data-level='1'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='cyan'] .legend-cell[data-level='1'] {
+  background: #164e63;
+}
+[data-theme='dark'] .heatmap-card[data-theme-palette='cyan'] .day-cell[data-level='2'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='cyan'] .legend-cell[data-level='2'] {
+  background: #0e7490;
+}
+[data-theme='dark'] .heatmap-card[data-theme-palette='cyan'] .day-cell[data-level='3'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='cyan'] .legend-cell[data-level='3'] {
+  background: #06b6d4;
+}
+[data-theme='dark'] .heatmap-card[data-theme-palette='cyan'] .day-cell[data-level='4'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='cyan'] .legend-cell[data-level='4'] {
+  background: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+}
+
+/* PURPLE PALETTE */
+.heatmap-card[data-theme-palette='purple'] .day-cell[data-level='1'],
+.heatmap-card[data-theme-palette='purple'] .legend-cell[data-level='1'] {
+  background: #e9d5ff;
+}
+.heatmap-card[data-theme-palette='purple'] .day-cell[data-level='2'],
+.heatmap-card[data-theme-palette='purple'] .legend-cell[data-level='2'] {
+  background: #c084fc;
+}
+.heatmap-card[data-theme-palette='purple'] .day-cell[data-level='3'],
+.heatmap-card[data-theme-palette='purple'] .legend-cell[data-level='3'] {
+  background: #a855f7;
+}
+.heatmap-card[data-theme-palette='purple'] .day-cell[data-level='4'],
+.heatmap-card[data-theme-palette='purple'] .legend-cell[data-level='4'] {
+  background: #7e22ce;
+  box-shadow: 0 0 6px rgba(168, 85, 247, 0.5);
+}
+
+[data-theme='dark'] .heatmap-card[data-theme-palette='purple'] .day-cell[data-level='1'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='purple'] .legend-cell[data-level='1'] {
+  background: #3b0764;
+}
+[data-theme='dark'] .heatmap-card[data-theme-palette='purple'] .day-cell[data-level='2'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='purple'] .legend-cell[data-level='2'] {
+  background: #6b21a8;
+}
+[data-theme='dark'] .heatmap-card[data-theme-palette='purple'] .day-cell[data-level='3'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='purple'] .legend-cell[data-level='3'] {
+  background: #a855f7;
+}
+[data-theme='dark'] .heatmap-card[data-theme-palette='purple'] .day-cell[data-level='4'],
+[data-theme='dark'] .heatmap-card[data-theme-palette='purple'] .legend-cell[data-level='4'] {
+  background: #c084fc;
+  box-shadow: 0 0 8px rgba(192, 132, 252, 0.6);
+}
+
+/* FLOATING TOOLTIP */
+.heatmap-tooltip {
+  position: fixed;
+  z-index: 1000;
+  pointer-events: none;
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  padding: 0.65rem 0.85rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+  animation: fadeIn 0.15s ease-out;
+  min-width: 190px;
+}
+
+[data-theme='light'] .heatmap-tooltip {
+  background: rgba(255, 255, 255, 0.95);
+  color: #0f172a;
+  border-color: rgba(0, 0, 0, 0.12);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.tooltip-date {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 0.25rem;
+}
+
+[data-theme='light'] .tooltip-date {
+  border-bottom-color: rgba(0, 0, 0, 0.1);
+}
+
+.tooltip-activities {
+  font-size: 0.725rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.empty-act {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.act-row {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.act-sub {
+  color: #cbd5e1;
+  font-size: 0.7rem;
+}
+
+[data-theme='light'] .act-sub {
+  color: #475569;
+}

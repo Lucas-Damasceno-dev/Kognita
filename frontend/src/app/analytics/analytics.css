@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .summary-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -144,7 +149,7 @@
 }
 
 .v-bar div.retention-fill {
-  background: linear-gradient(to top, var(--primary), #a78bfa);
+  background: linear-gradient(to top, var(--primary), var(--accent));
 }
 
 @media print {

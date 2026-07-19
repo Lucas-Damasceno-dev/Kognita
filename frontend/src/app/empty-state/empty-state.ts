@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   standalone: true,
@@ -7,4 +7,8 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
   styleUrl: './empty-state.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class EmptyState {}
+export class EmptyState {
+  icon = input<'default' | 'tasks' | 'history' | 'analytics' | 'goals'>('default');
+  title = input<string>('');
+  description = input<string>('');
+}

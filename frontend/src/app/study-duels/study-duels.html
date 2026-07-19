@@ -1,0 +1,109 @@
+<div class="duels-page">
+  <!-- Top Banner -->
+  <header class="duels-header">
+    <div>
+      <span class="badge">⚔️ GAMIFICAÇÃO MULTIPLAYER SÍNCRONA / IA</span>
+      <h2>Modo Duelo / Desafio X1 de Estudos</h2>
+      <p class="subtitle">Batalhas de velocidade em 5 questões contra bots ou outros estudantes em tempo real!</p>
+    </div>
+  </header>
+
+  @if (activeTab() === 'lobby') {
+    <div class="lobby-grid">
+      <!-- Card Duelo IA Rival -->
+      <div class="duel-card card glass-card-mesh" appTilt3d>
+        <div class="duel-badge">🤖 IA BOT RIVAL</div>
+        <div class="duel-icon">⚔️</div>
+        <h3>Duelo Rápido vs IA Bot</h3>
+        <p>Enfrante o Foco Bot em uma bateria de 5 perguntas de alta velocidade. Ganhe bônus por combo e tempo!</p>
+        <button class="btn btn-primary btn-lg start-btn" (click)="startBattle()">
+          ⚡ Iniciar Duelo X1
+        </button>
+      </div>
+
+      <!-- Card Duelo Multiplayer (Em breve) -->
+      <div class="duel-card card glass-card-mesh locked" appTilt3d>
+        <div class="duel-badge gold">👥 MULTIPLAYER AO VIVO</div>
+        <div class="duel-icon">🏆</div>
+        <h3>Desafio Multiplayer Online</h3>
+        <p>Batalha 1v1 contra um jogador aleatório do Ranking Global em tempo real valendo moedas da Loja.</p>
+        <button class="btn btn-ghost" disabled>🔒 Desbloqueia no Nível 5</button>
+      </div>
+    </div>
+  } @else if (activeTab() === 'battle') {
+    <div class="battle-arena card glass-card-mesh animate-fade-in">
+      <!-- Scoreboard Top Header -->
+      <div class="scoreboard-row">
+        <div class="player-score-box">
+          <div class="player-avatar">👤</div>
+          <div class="player-name">{{ auth.user()?.name || 'Você' }}</div>
+          <div class="score-num">{{ playerScore() }} pts</div>
+          <div class="combo-tag" [class.active]="comboMultiplier() > 1">Combo x{{ comboMultiplier() }}</div>
+        </div>
+
+        <div class="vs-center">
+          <div class="timer-circle" [class.urgent]="roundTimeLeft() <= 3">
+            {{ roundTimeLeft() }}s
+          </div>
+          <span class="vs-text">VS</span>
+        </div>
+
+        <div class="player-score-box rival">
+          <div class="player-avatar">{{ botRivalAvatar() }}</div>
+          <div class="player-name">{{ botRivalName() }}</div>
+          <div class="score-num">{{ rivalScore() }} pts</div>
+        </div>
+      </div>
+
+      <!-- Question Box -->
+      @if (currentQuestion()) {
+        <div class="question-container">
+          <div class="question-counter">Pergunta {{ currentQuestionIndex() + 1 }} de {{ questions().length }}</div>
+          <h3 class="question-text">{{ currentQuestion()?.question }}</h3>
+
+          <div class="options-grid">
+            @for (opt of currentQuestion()?.options; track $index) {
+              <button
+                class="option-btn"
+                (click)="answerQuestion($index)"
+              >
+                <span class="opt-letter">{{ ['A', 'B', 'C', 'D'][$index] }}</span>
+                <span class="opt-text">{{ opt }}</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+
+      <div class="battle-footer">
+        <button class="btn btn-ghost btn-sm" (click)="exitBattle()">✕ Sair do Duelo</button>
+      </div>
+    </div>
+  } @else if (activeTab() === 'result') {
+    <div class="result-card card glass-card-mesh animate-card-pop" appTilt3d>
+      <div class="result-icon">
+        {{ playerScore() > rivalScore() ? '🏆' : '⚔️' }}
+      </div>
+      <h2>{{ playerScore() > rivalScore() ? 'VITÓRIA ÉPICA!' : 'BOM COMBATE!' }}</h2>
+      <p class="result-desc">
+        {{ playerScore() > rivalScore() ? 'Você superou seu rival em velocidade e precisão!' : 'Foi por pouco! Tente novamente para acumular mais XP.' }}
+      </p>
+
+      <div class="final-score-row">
+        <div class="final-box">
+          <span class="box-label">Seu Score</span>
+          <span class="box-val">{{ playerScore() }} pts</span>
+        </div>
+        <div class="final-box rival">
+          <span class="box-label">Rival Score</span>
+          <span class="box-val">{{ rivalScore() }} pts</span>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn btn-primary" (click)="startBattle()">🔄 Jogar Novamente</button>
+        <button class="btn btn-ghost" (click)="activeTab.set('lobby')">← Voltar ao Lobby</button>
+      </div>
+    </div>
+  }
+</div>

@@ -11,16 +11,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.kognita.repository.TaskRepository;
+
 @Service
 @Transactional(readOnly = true)
 public class SubjectService {
 
     private final SubjectRepository repository;
     private final UserService userService;
+    private final TaskRepository taskRepository;
 
-    public SubjectService(SubjectRepository repository, UserService userService) {
+    public SubjectService(SubjectRepository repository, UserService userService, TaskRepository taskRepository) {
         this.repository = repository;
         this.userService = userService;
+        this.taskRepository = taskRepository;
     }
 
     public List<SubjectResponse> findAllByUser(UUID userId) {
@@ -83,6 +87,10 @@ public class SubjectService {
         var subject = repository.findById(id).orElseThrow();
         if (!subject.getUser().getId().equals(userId)) {
             throw new RuntimeException("Not authorized");
+        }
+        taskRepository.deleteBySubjectId(id);
+        if (subject.getName() != null) {
+            taskRepository.deleteByUserIdAndSkillCategoryIgnoreCase(userId, subject.getName());
         }
         repository.delete(subject);
     }

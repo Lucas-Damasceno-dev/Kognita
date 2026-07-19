@@ -9,8 +9,40 @@
   min-height: 200px;
 }
 
+.empty-illustration {
+  margin-bottom: 1rem;
+  opacity: 0.7;
+}
+
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.empty-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.empty-desc {
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 280px;
+  line-height: 1.4;
+}
+
 @media (max-width: 600px) {
   .empty-state {
     padding: 2rem 1rem;
+  }
+
+  .empty-illustration svg {
+    width: 60px;
+    height: 60px;
   }
 }

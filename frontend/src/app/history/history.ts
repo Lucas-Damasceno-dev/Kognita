@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, AfterViewInit, inject, signal, ElementRef, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
@@ -12,7 +12,7 @@ import { EmptyState } from '../empty-state/empty-state';
   templateUrl: './history.html',
   styleUrl: './history.css',
 })
-export class History implements OnInit {
+export class History implements OnInit, AfterViewInit {
   private api = inject(ApiService);
   private auth = inject(AuthService);
   attempts = signal<ChallengeAttempt[]>([]);
@@ -24,6 +24,18 @@ export class History implements OnInit {
   pendingMentorshipAttempt: ChallengeAttempt | null = null;
   mentorshipReflection = signal('');
   savingMentorship = signal(false);
+
+  readonly PAGE_SIZE = 20;
+  visibleCount = signal(this.PAGE_SIZE);
+  sentinelEl = viewChild<ElementRef<HTMLElement>>('sentinel');
+  private observer: IntersectionObserver | null = null;
+
+  visibleAttempts(): ChallengeAttempt[] {
+    return this.attempts().slice(0, this.visibleCount());
+  }
+  hasMore(): boolean {
+    return this.visibleCount() < this.attempts().length;
+  }
 
   ngOnInit() {
     const user = this.auth.user();
@@ -38,6 +50,22 @@ export class History implements OnInit {
         },
       });
     }
+  }
+
+  ngAfterViewInit(): void {
+    setTimeout(() => this.setupObserver(), 100);
+  }
+
+  private setupObserver(): void {
+    if (this.observer) this.observer.disconnect();
+    const el = this.sentinelEl()?.nativeElement;
+    if (!el) return;
+    this.observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && this.hasMore()) {
+        this.visibleCount.update((c) => Math.min(c + this.PAGE_SIZE, this.attempts().length));
+      }
+    }, { rootMargin: '200px' });
+    this.observer.observe(el);
   }
 
   edit(attempt: ChallengeAttempt) {

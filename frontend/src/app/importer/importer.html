@@ -1,83 +1,245 @@
-<div class="page-header">
-  <h1>Importar</h1>
-</div>
+<div class="importer-page">
+  <header class="importer-header">
+    <div>
+      <span class="badge">⚡ GERADOR & IMPORTADOR AUTOMÁTICO</span>
+      <h2>Catálogo Completo: 92 Roadmaps & Cursos W3Schools</h2>
+      <p class="subtitle">Todos os 92 roadmaps oficiais do roadmap.sh (incluindo Ruby, Ruby on Rails, ASP.NET Core) + Cursos W3Schools (incluindo How TO Guides).</p>
+    </div>
+  </header>
 
-<section class="card" style="margin-bottom: 1.5rem;">
-  <h2>📂 Importar Estrutura de Estudos</h2>
-  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">Crie categorias (matérias) e adicione as tarefas que deseja importar.</p>
-
-  <div class="list" style="gap: 1rem; margin-bottom: 1rem;">
-    @for (cat of categories(); track trackByIndex($index); let ci = $index) {
-      <div class="card" style="background: var(--bg); padding: 1rem;">
-        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
-          <input
-            type="text"
-            [(ngModel)]="cat.name"
-            name="catName{{ ci }}"
-            placeholder="Nome da matéria (ex: React, Docker, SQL)"
-            style="flex: 1; font-weight: 600;"
-          />
-          <button class="btn btn-ghost btn-sm" (click)="removeCategory(ci)" title="Remover categoria">✕</button>
-        </div>
-        <div class="list" style="gap: 0.4rem; margin-bottom: 0.5rem;">
-          @for (task of cat.tasks; track trackByIndex($index); let ti = $index) {
-            <div class="list-item" style="padding: 0.25rem 0; gap: 0.4rem; border: none;">
-              <input
-                type="text"
-                [(ngModel)]="cat.tasks[ti]"
-                name="taskName{{ ci }}_{{ ti }}"
-                placeholder="Nome da tarefa"
-                style="flex: 1;"
-              />
-              <button class="btn btn-ghost btn-sm" (click)="removeTask(ci, ti)" title="Remover tarefa">✕</button>
-            </div>
-          }
-        </div>
-        <button class="btn btn-ghost btn-sm" (click)="addTask(ci)">+ Adicionar tarefa</button>
-      </div>
-    }
+  <!-- Nav Tabs -->
+  <div class="importer-tabs card glass-card-mesh">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'roadmaps'"
+      (click)="activeTab.set('roadmaps')"
+    >
+      🗺️ Catálogo de Cursos & Roadmaps (92+ Presets)
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'paste'"
+      (click)="activeTab.set('paste')"
+    >
+      📋 Importador por Texto / Ementa
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'manual'"
+      (click)="activeTab.set('manual')"
+    >
+      ✍️ Preenchimento por Presets
+    </button>
   </div>
 
-  @if (categories().length === 0) {
-    <div class="empty">
-      <p>Nenhuma categoria adicionada ainda.</p>
+  <!-- TAB 1: ROADMAPS VISUAIS 1-CLIQUE (92+ CURSOS E SEÇÕES) -->
+  @if (activeTab() === 'roadmaps') {
+    <!-- Search & Category Filters Bar -->
+    <div class="roadmap-filter-bar card glass-card-mesh">
+      <input
+        type="text"
+        placeholder="Pesquisar em todos os cursos (ex: Ruby, Ruby on Rails, W3Schools How TO, React, SQL, Docker, ASP.NET)..."
+        [(ngModel)]="roadmapSearch"
+        class="input-field search-roadmap-input"
+      />
+
+      <div class="category-filter-chips">
+        <button
+          class="cat-chip"
+          [class.active]="selectedRoadmapSection() === 'all'"
+          (click)="selectedRoadmapSection.set('all')"
+        >
+          Todos os Cursos ({{ roadmaps().length }})
+        </button>
+        <button
+          class="cat-chip"
+          [class.active]="selectedRoadmapSection() === 'role'"
+          (click)="selectedRoadmapSection.set('role')"
+        >
+          💼 Role-based Roadmaps
+        </button>
+        <button
+          class="cat-chip"
+          [class.active]="selectedRoadmapSection() === 'skill'"
+          (click)="selectedRoadmapSection.set('skill')"
+        >
+          💻 Skill-based Roadmaps
+        </button>
+        <button
+          class="cat-chip"
+          [class.active]="selectedRoadmapSection() === 'project'"
+          (click)="selectedRoadmapSection.set('project')"
+        >
+          💡 Project Ideas
+        </button>
+        <button
+          class="cat-chip"
+          [class.active]="selectedRoadmapSection() === 'best_practice'"
+          (click)="selectedRoadmapSection.set('best_practice')"
+        >
+          🛡️ Best Practices
+        </button>
+        <button
+          class="cat-chip gold"
+          [class.active]="selectedRoadmapSection() === 'w3schools'"
+          (click)="selectedRoadmapSection.set('w3schools')"
+        >
+          📚 W3Schools Tutoriais
+        </button>
+      </div>
+    </div>
+
+    <div class="roadmaps-grid">
+      @for (rm of filteredRoadmaps(); track rm.id) {
+        <div class="roadmap-preset-card card glass-card-mesh">
+          <div class="card-top">
+            <span class="rm-icon">{{ rm.icon }}</span>
+            <span class="rm-badge">{{ rm.topics.length }} tópicos</span>
+          </div>
+
+          <h3 class="rm-title">{{ rm.title }}</h3>
+          <p class="rm-desc">{{ rm.description }}</p>
+
+          <div class="topics-preview">
+            @for (t of rm.topics.slice(0, 4); track t) {
+              <span class="topic-chip">• {{ t }}</span>
+            }
+            @if (rm.topics.length > 4) {
+              <span class="topic-chip count">+{{ rm.topics.length - 4 }} mais...</span>
+            }
+          </div>
+
+          <button
+            class="btn btn-primary import-btn"
+            [disabled]="saving()"
+            (click)="importRoadmapPreset(rm)"
+          >
+            {{ saving() ? '⏳ Importando...' : '⚡ Importar este Conteúdo' }}
+          </button>
+        </div>
+      } @empty {
+        <div class="empty-roadmaps">
+          <p>Nenhum curso encontrado para "{{ roadmapSearch() }}". Tente buscar por outro termo.</p>
+        </div>
+      }
     </div>
   }
 
-  <div class="form-actions">
-    <button class="btn btn-primary" (click)="addCategory()">+ Adicionar Categoria</button>
-    @if (validPayload.length > 0) {
-      <button
-        class="btn btn-success"
-        (click)="importStudies()"
-        [disabled]="saving() || hasEmptyFields"
-      >
-        {{ saving() ? 'Importando...' : '📥 Importar ' + validPayload.length + ' categorias' }}
-      </button>
-    }
-  </div>
-</section>
+  <!-- TAB 2: BULK TEXT PARSER AUTOMÁTICO (SEM IA) -->
+  @if (activeTab() === 'paste') {
+    <div class="paste-container card glass-card-mesh">
+      <h3>📋 Cole seu Cronograma, Edital ou Ementa</h3>
+      <p class="paste-hint">
+        Cole qualquer lista formatada. O parser reconhece nomes de matérias e itens iniciados por hífen (-), asterisco (*) ou números (1., 2.).
+      </p>
 
-<section class="card" style="margin-bottom: 1.5rem;">
-  <h2>🗺️ Importar Roadmap do roadmap.sh</h2>
-  <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">Selecione um roadmap para importar como matérias e tarefas.</p>
+      <textarea
+        rows="8"
+        class="input-field paste-area"
+        placeholder="Exemplo de texto:
 
-  <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-    <select [(ngModel)]="selectedRoadmap" (change)="loadRoadmap()">
-      <option value="">Selecione um Roadmap</option>
-      <option value="backend">Backend</option>
-      <option value="frontend">Frontend</option>
-      <option value="devops">DevOps</option>
-    </select>
+SQL e Banco de Dados
+- Queries SELECT e JOIN
+- Indexação e Tuning
+- Transações ACID
 
-    <textarea
-      [(ngModel)]="roadmapJson"
-      placeholder="Conteúdo do roadmap (JSON)"
-      rows="8"
-    ></textarea>
+DevOps Básicos
+- Comandos Docker
+- Pipelines de CI/CD"
+        [(ngModel)]="rawPasteText"
+        (ngModelChange)="parseTextAutomatically()"
+      ></textarea>
 
-    <button class="btn btn-primary" (click)="importRoadmap()" [disabled]="!roadmapJson.trim()">
-      📥 Importar Roadmap
-    </button>
-  </div>
-</section>
+      <!-- Live Preview of Parsed Output -->
+      @if (parsedCategories().length > 0) {
+        <div class="parsed-preview-box">
+          <h4 class="preview-title">✨ Pré-visualização Automática ({{ parsedCategories().length }} Matérias Detectadas):</h4>
+
+          <div class="parsed-list">
+            @for (cat of parsedCategories(); track cat.name) {
+              <div class="parsed-cat-item">
+                <div class="cat-name">📚 {{ cat.name }}</div>
+                <div class="tasks-flex">
+                  @for (t of cat.tasks; track t) {
+                    <span class="task-pill">✓ {{ t }}</span>
+                  } @empty {
+                    <span class="empty-pill">Sem tarefas associadas</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+
+          <button
+            class="btn btn-success btn-lg confirm-parse-btn"
+            [disabled]="saving()"
+            (click)="importParsedText()"
+          >
+            {{ saving() ? '⏳ Criando...' : '🚀 Criar Tudo em 1-Clique' }}
+          </button>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- TAB 3: MODELOS RÁPIDOS & FORMULÁRIO COM PRESETS -->
+  @if (activeTab() === 'manual') {
+    <div class="manual-container card glass-card-mesh">
+      <div class="preset-buttons-bar">
+        <span class="bar-label">Preencher em 1-Clique:</span>
+        @for (qp of quickPresets; track qp.name) {
+          <button class="btn btn-ghost btn-sm" (click)="applyQuickPreset(qp)">
+            + {{ qp.name }}
+          </button>
+        }
+      </div>
+
+      <hr class="divider" />
+
+      <div class="category-list">
+        @for (cat of categories(); track $index; let ci = $index) {
+          <div class="cat-box card">
+            <div class="cat-header">
+              <input
+                type="text"
+                [(ngModel)]="cat.name"
+                placeholder="Nome da matéria (ex: React, SQL, Docker)"
+                class="input-field cat-input"
+              />
+              <button class="btn btn-ghost btn-sm" (click)="removeCategory(ci)" title="Remover matéria">✕</button>
+            </div>
+
+            <div class="tasks-inputs-list">
+              @for (task of cat.tasks; track $index; let ti = $index) {
+                <div class="task-input-row">
+                  <input
+                    type="text"
+                    [(ngModel)]="cat.tasks[ti]"
+                    placeholder="Nome da tarefa / tópico"
+                    class="input-field task-input"
+                  />
+                  <button class="btn btn-ghost btn-sm" (click)="removeTask(ci, ti)" title="Remover tarefa">✕</button>
+                </div>
+              }
+            </div>
+
+            <button class="btn btn-ghost btn-sm add-task-btn" (click)="addTask(ci)">+ Adicionar tarefa</button>
+          </div>
+        }
+      </div>
+
+      <div class="manual-actions">
+        <button class="btn btn-primary" (click)="addCategory()">+ Adicionar Nova Matéria</button>
+        @if (validPayload.length > 0) {
+          <button
+            class="btn btn-success"
+            (click)="importStudies()"
+            [disabled]="saving()"
+          >
+            {{ saving() ? 'Importando...' : '📥 Importar ' + validPayload.length + ' Matérias' }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+</div>

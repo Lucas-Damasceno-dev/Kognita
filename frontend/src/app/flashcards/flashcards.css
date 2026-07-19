@@ -1,7 +1,15 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .flashcards-container {
+  display: flex;
+  flex-direction: column;
   max-width: 1000px;
+  width: 100%;
   margin: 0 auto;
-  padding: 1.5rem;
+  box-sizing: border-box;
 }
 
 .header-section {
@@ -13,6 +21,7 @@
   margin-bottom: 2rem;
   border-bottom: 1px solid var(--border, #e5e7eb);
   padding-bottom: 1rem;
+  flex-shrink: 0;
 }
 
 .header-section h1 {
@@ -70,10 +79,14 @@
 
 /* Review Tab Styles */
 .review-tab {
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 .review-box {
@@ -83,6 +96,9 @@
   flex-direction: column;
   gap: 1.5rem;
   align-items: center;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .review-progress {
@@ -317,15 +333,27 @@
 
 /* Manage Tab Styles */
 .manage-tab {
+  height: 100%;
   display: grid;
   grid-template-columns: 1fr;
   gap: 2rem;
+  overflow: hidden;
+  flex: 1;
+  min-height: 0;
 }
 
 @media (min-width: 768px) {
   .manage-tab {
     grid-template-columns: 350px 1fr;
   }
+}
+
+.cards-list-section {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 .form-card {

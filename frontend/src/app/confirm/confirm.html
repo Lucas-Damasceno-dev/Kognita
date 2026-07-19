@@ -5,8 +5,8 @@
     }
     <p>{{ message() }}</p>
     <div class="confirm-actions">
-      <button class="btn btn-danger" (click)="onConfirm()" [disabled]="saving()">
-        {{ saving() ? 'Excluindo...' : confirmText() }}
+      <button class="btn" [class.btn-danger]="confirmStyle() === 'danger'" [class.btn-primary]="confirmStyle() === 'primary'" (click)="onConfirm()" [disabled]="saving()">
+        {{ saving() ? processingText() : confirmText() }}
       </button>
       <button class="btn" (click)="onCancel()">{{ cancelText() }}</button>
     </div>

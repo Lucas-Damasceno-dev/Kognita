@@ -1,0 +1,243 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
+.simulator-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.08em;
+}
+
+.simulator-header h2 {
+  margin: 0.2rem 0 0;
+  font-size: 1.6rem;
+}
+
+.subtitle {
+  margin: 0.2rem 0 0;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.config-card {
+  max-width: 550px;
+  margin: 1rem auto;
+  padding: 2rem;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.config-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.form-group label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+.form-group-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.start-btn {
+  width: 100%;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+
+/* Exam Arena */
+.exam-arena {
+  max-width: 750px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 2rem;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  box-sizing: border-box;
+}
+
+.exam-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.q-num {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.timer-box {
+  font-family: monospace;
+  font-size: 1.25rem;
+  font-weight: 800;
+  padding: 0.35rem 0.85rem;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--primary);
+}
+
+.timer-box.urgent {
+  color: var(--error);
+  border-color: var(--error);
+  animation: pulseTimer 0.6s infinite alternate;
+}
+
+@keyframes pulseTimer {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+
+.question-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.q-text {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.opt-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1.15rem;
+  border-radius: 12px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  color: var(--text);
+  font-size: 0.92rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.opt-btn:hover {
+  border-color: var(--primary);
+  background: var(--primary-subtle);
+}
+
+.opt-btn.selected {
+  border-color: var(--primary);
+  background: var(--primary-subtle);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+}
+
+.opt-letter {
+  font-weight: 800;
+  color: var(--primary);
+  background: var(--bg-card);
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+}
+
+.exam-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+/* Result Card */
+.result-card {
+  max-width: 480px;
+  margin: 1.5rem auto;
+  padding: 2.5rem 2rem;
+  border-radius: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.25rem;
+}
+
+.result-badge {
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+}
+
+.result-badge.pass {
+  background: var(--success-subtle);
+  color: var(--success);
+}
+
+.result-badge.fail {
+  background: var(--error-subtle);
+  color: var(--error);
+}
+
+.score-gauge-box {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+}
+
+.score-val {
+  font-size: 3.5rem;
+  font-weight: 900;
+}
+
+.score-max {
+  font-size: 1.25rem;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.result-card h3 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.result-summary {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.result-actions {
+  display: flex;
+  gap: 0.75rem;
+}

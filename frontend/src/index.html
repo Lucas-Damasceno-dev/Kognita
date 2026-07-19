@@ -7,12 +7,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <link rel="manifest" href="manifest.webmanifest" />
+    <meta name="theme-color" content="#F8FAFC" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0B1120" media="(prefers-color-scheme: dark)">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      .splash-screen {
+        position: fixed; inset: 0; z-index: 999999;
+        background: #0F172A;
+        display: flex; align-items: center; justify-content: center;
+        font-family: 'Inter', sans-serif;
+      }
+      .splash-content { text-align: center; }
+      .splash-logo {
+        font-size: 3rem; font-weight: 800;
+        color: #2563EB;
+        width: 64px; height: 64px;
+        background: rgba(37, 99, 235, 0.15);
+        border-radius: 16px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1rem;
+        animation: splashPop 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .splash-loader {
+        width: 120px; height: 3px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 999px;
+        overflow: hidden;
+        margin: 0 auto;
+      }
+      .splash-bar {
+        height: 100%; width: 30%;
+        background: linear-gradient(90deg, #2563EB, #7C3AED);
+        border-radius: 999px;
+        animation: splashSlide 0.8s ease-in-out infinite;
+      }
+      @keyframes splashPop {
+        0% { transform: scale(0.5) rotate(-10deg); opacity: 0; }
+        100% { transform: scale(1) rotate(0deg); opacity: 1; }
+      }
+      @keyframes splashSlide {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(400%); }
+      }
+    </style>
   </head>
   <body>
+    <div id="splash" class="splash-screen">
+      <div class="splash-content">
+        <div class="splash-logo">K</div>
+        <div class="splash-loader">
+          <div class="splash-bar"></div>
+        </div>
+      </div>
+    </div>
     <app-root></app-root>
-    <noscript>Please enable JavaScript to continue using this application.</noscript>
+    <noscript>Habilite o JavaScript para continuar usando esta aplicação.</noscript>
+    <script>
+      window.addEventListener('load', () => {
+        window.__angularReady = true;
+      });
+    </script>
   </body>
 </html>

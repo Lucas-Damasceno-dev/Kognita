@@ -15,21 +15,54 @@ import { StudySession } from '../models/study-session';
 import { ChallengeStats, ChallengeAttempt } from '../models/challenge-attempt';
 import { ChallengeGoal } from '../models/challenge-goal';
 import { ErrorLog } from '../models/error-log';
+import { ContributionHeatmap } from '../contribution-heatmap/contribution-heatmap';
+import { ConfettiService } from '../services/confetti.service';
+import { AchievementService } from '../services/achievement.service';
+import { AnimatedNumber } from '../animated-number/animated-number';
+import { SkillTreeComponent } from '../components/skill-tree/skill-tree';
+import { ExamReadinessComponent } from '../components/exam-readiness/exam-readiness';
+import { AutoSchedulerComponent, ScheduleSlot } from '../components/auto-scheduler/auto-scheduler';
+
+import { NotesService } from '../services/notes.service';
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, Skeleton, FormsModule],
+  imports: [
+    RouterLink,
+    Skeleton,
+    FormsModule,
+    ContributionHeatmap,
+    AnimatedNumber,
+    SkillTreeComponent,
+    ExamReadinessComponent,
+    AutoSchedulerComponent,
+  ],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Dashboard implements OnInit {
+  notesSvc = inject(NotesService);
+  recentNotes = computed(() => this.notesSvc.recentlyEdited());
+
+  showAutoScheduler = signal(false);
+
+  toggleAutoScheduler(): void {
+    this.showAutoScheduler.update(v => !v);
+  }
+
+  onScheduleApplied(slots: ScheduleSlot[]): void {
+    this.toast.success('Cronograma otimizado aplicado com sucesso!');
+    this.confetti.fireConfetti();
+  }
   private auth = inject(AuthService);
   protected config = inject(ConfigService);
   private api = inject(ApiService);
   private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
   private router = inject(Router);
+  private confetti = inject(ConfettiService);
+  private achievementSvc = inject(AchievementService);
 
   subjects = signal<Subject[]>([]);
   allTasks = signal<Task[]>([]);
@@ -40,6 +73,8 @@ export class Dashboard implements OnInit {
   history = signal<ChallengeAttempt[]>([]);
   dailyQuestClaimed = signal<boolean>(false);
 
+  donutCircumference = 2 * Math.PI * 50;
+  dailyGoalHours = 2;
   hoursPerSubject = signal<{ name: string; hours: number; color: string }[]>([]);
   weeklyProgress = signal<{ day: string; hours: number }[]>([]);
   taskCompletionRate = signal(0);
@@ -49,6 +84,8 @@ export class Dashboard implements OnInit {
   challengeGoals = signal<ChallengeGoal[]>([]);
   pendingPageSize = 5;
   pendingShowAll = signal(false);
+  displayedPendingTasks = computed(() => this.pendingShowAll() ? this.pendingTasks() : this.pendingTasks().slice(0, this.pendingPageSize));
+  activeChartTab = signal<'confidence' | 'hours' | 'weekly' | 'completion'>('confidence');
 
   todayStr = computed(() => {
     const d = new Date();
@@ -68,6 +105,8 @@ export class Dashboard implements OnInit {
   }));
 
   allQuestsCompleted = computed(() => this.questPomodoro() && this.questError() && this.questNoAi());
+  completedQuestsCount = computed(() => (this.questPomodoro() ? 1 : 0) + (this.questNoAi() ? 1 : 0) + (this.questError() ? 1 : 0));
+  xp = computed(() => this.auth.user()?.totalExperience ?? 0);
 
   maxHours = computed(() => Math.max(...this.hoursPerSubject().map((s) => s.hours), 1));
   maxWeekly = computed(() => Math.max(...this.weeklyProgress().map((w) => w.hours), 1));
@@ -119,6 +158,7 @@ export class Dashboard implements OnInit {
             return;
           }
           this.loadDashboard(user);
+          this.checkAchievements();
         }),
       )
       .subscribe();
@@ -158,9 +198,38 @@ export class Dashboard implements OnInit {
 
           this.computeCharts();
           this.checkGoalReminders();
+          this.checkAchievements();
         },
         error: () => {},
       });
+  }
+
+  private shownAchievements = new Set<string>();
+
+  private checkAchievements(): void {
+    const streak = this.streak();
+    if (streak >= 7 && !this.shownAchievements.has('streak7')) {
+      this.shownAchievements.add('streak7');
+      this.achievementSvc.show('Guardião do Foco', 'Mantenha 7 dias de estudo consecutivos!', 50);
+    }
+    if (streak >= 30 && !this.shownAchievements.has('streak30')) {
+      this.shownAchievements.add('streak30');
+      this.achievementSvc.show('Mestre da Disciplina', '30 dias consecutivos de estudo!', 200);
+    }
+    const totalTasks = this.allTasks().length;
+    if (totalTasks >= 10 && !this.shownAchievements.has('tasks10')) {
+      this.shownAchievements.add('tasks10');
+      this.achievementSvc.show('Os 10 Desafios', 'Criou 10 desafios para si mesmo.', 30);
+    }
+    if (totalTasks >= 50 && !this.shownAchievements.has('tasks50')) {
+      this.shownAchievements.add('tasks50');
+      this.achievementSvc.show('Mestre dos Desafios', 'Criou 50 desafios!', 100);
+    }
+    const totalSessions = this.sessions().length;
+    if (totalSessions >= 20 && !this.shownAchievements.has('session20')) {
+      this.shownAchievements.add('session20');
+      this.achievementSvc.show('20 Sessões', 'Completou 20 sessões de estudo.', 50);
+    }
   }
 
   private computeCharts(): void {
@@ -247,7 +316,17 @@ export class Dashboard implements OnInit {
       )
       .subscribe({
         next: () => {
-          this.toast.success('Tarefa concluída!');
+          this.toast.show('Tarefa concluída!', 'success', {
+            label: 'Desfazer',
+            fn: () => {
+              this.api.updateTaskStatus(task.id, 'pending').pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+                this.toast.success('Tarefa restaurada');
+                const user = this.auth.user();
+                if (user) this.refreshAfterTask(user.id);
+              });
+            },
+          });
+          this.confetti.fireConfetti({ count: 30 });
           const user = this.auth.user();
           if (user) this.refreshAfterTask(user.id);
         },
@@ -329,6 +408,8 @@ export class Dashboard implements OnInit {
           localStorage.setItem(`claimed_daily_quest_${userId}_${today}`, 'true');
           this.dailyQuestClaimed.set(true);
           this.toast.success('Parabéns! Você resgatou +50 XP da missão diária de hoje! 🏆');
+          this.confetti.fireConfetti({ count: 60 });
+          this.checkAchievements();
         },
         error: () => {
           this.toast.error('Erro ao resgatar recompensa diária.');

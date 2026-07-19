@@ -247,7 +247,7 @@
 }
 
 .leaderboard-table tr.is-current {
-  background: rgba(59, 130, 246, 0.03);
+  background: var(--primary-subtle);
 }
 
 .col-rank {
@@ -316,7 +316,7 @@
 .level-tag {
   display: inline-block;
   padding: 0.25rem 0.625rem;
-  background: rgba(59, 130, 246, 0.1);
+  background: var(--primary-subtle);
   color: var(--primary, #3b82f6);
   border-radius: 0.5rem;
   font-weight: 700;

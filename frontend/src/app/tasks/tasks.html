@@ -6,7 +6,7 @@
     </button>
     <button
       class="btn"
-      (click)="editingId.set(null); showForm.update((v) => !v); showForm() ? null : resetForm()"
+      (click)="toggleForm()"
     >
       {{ showForm() ? 'Cancelar' : '+ Desafio' }}
     </button>
@@ -236,7 +236,7 @@
             }
           </div>
         } @empty {
-          <app-empty-state>Nenhuma desafio pendente</app-empty-state>
+          <app-empty-state icon="tasks" title="Nenhum desafio pendente" description="Crie seu primeiro desafio para começar a evoluir." />
         }
       </div>
     </div>
@@ -344,7 +344,7 @@
             }
           </div>
         } @empty {
-          <app-empty-state>Nenhuma desafio em andamento</app-empty-state>
+          <app-empty-state icon="tasks" title="Nenhum em andamento" description="Mova desafios pendentes para 'Em andamento' quando começar a trabalhar neles." />
         }
       </div>
     </div>
@@ -442,7 +442,7 @@
             }
           </div>
         } @empty {
-          <app-empty-state>Nenhuma desafio concluída</app-empty-state>
+          <app-empty-state icon="tasks" title="Nenhum concluído" description="Desafios concluídos aparecerão aqui. Complete seu primeiro desafio para começar!" />
         }
       </div>
     </div>
@@ -474,15 +474,17 @@
       </div>
     </div>
   }
-  <div style="display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1rem;font-size:0.875rem;color:var(--text-secondary)">
-    <button class="btn btn-sm" [disabled]="currentPage() === 0 || batchProcessing()" (click)="prevPage()">
-      Anterior
-    </button>
-    <span>Página {{ currentPage() + 1 }} de {{ totalPages() }}</span>
-    <button class="btn btn-sm" [disabled]="currentPage() >= totalPages() - 1 || batchProcessing()" (click)="nextPage()">
-      Próximo
-    </button>
-  </div>
+  @if (totalPages() > 0) {
+    <div style="display:flex;align-items:center;justify-content:center;gap:1rem;margin-top:1rem;font-size:0.875rem;color:var(--text-secondary)">
+      <button class="btn btn-sm" [disabled]="currentPage() === 0 || batchProcessing()" (click)="prevPage()">
+        Anterior
+      </button>
+      <span>Página {{ currentPage() + 1 }} de {{ totalPages() }}</span>
+      <button class="btn btn-sm" [disabled]="currentPage() >= totalPages() - 1 || batchProcessing()" (click)="nextPage()">
+        Próximo
+      </button>
+    </div>
+  }
 }
 
 @if (showConfirm()) {

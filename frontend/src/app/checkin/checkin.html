@@ -26,7 +26,7 @@
       </div>
     }
 
-    @for (goal of goals(); track goal.id) {
+    @for (goal of (goals() ?? []); track goal.id) {
       @if (goal.currentCount < goal.targetCount) {
         <div class="goal-progress">
           <span class="goal-label"

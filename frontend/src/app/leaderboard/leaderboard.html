@@ -23,7 +23,7 @@
 
   @if (loading()) {
     <div class="skeleton-container">
-      <app-skeleton mode="list"></app-skeleton>
+      <app-skeleton mode="table"></app-skeleton>
     </div>
   } @else {
     <!-- Podium for Top 3 -->
@@ -35,7 +35,7 @@
             <div class="place-badge">2</div>
             <div class="avatar-container">
               @if (getTopThree()[1].avatarUrl) {
-                <img [src]="getTopThree()[1].avatarUrl" alt="" class="podium-avatar {{ getTopThree()[1].avatarBorder }}" />
+                <img [src]="getTopThree()[1].avatarUrl" alt="" class="podium-avatar {{ getTopThree()[1].avatarBorder }}" loading="lazy" />
               } @else {
                 <div class="podium-avatar-placeholder {{ getTopThree()[1].avatarBorder }}">{{ getTopThree()[1].name.charAt(0) }}</div>
               }
@@ -59,7 +59,7 @@
             <div class="place-badge">1</div>
             <div class="avatar-container">
               @if (getTopThree()[0].avatarUrl) {
-                <img [src]="getTopThree()[0].avatarUrl" alt="" class="podium-avatar {{ getTopThree()[0].avatarBorder }}" />
+                <img [src]="getTopThree()[0].avatarUrl" alt="" class="podium-avatar {{ getTopThree()[0].avatarBorder }}" loading="lazy" />
               } @else {
                 <div class="podium-avatar-placeholder {{ getTopThree()[0].avatarBorder }}">{{ getTopThree()[0].name.charAt(0) }}</div>
               }
@@ -82,7 +82,7 @@
             <div class="place-badge">3</div>
             <div class="avatar-container">
               @if (getTopThree()[2].avatarUrl) {
-                <img [src]="getTopThree()[2].avatarUrl" alt="" class="podium-avatar {{ getTopThree()[2].avatarBorder }}" />
+                <img [src]="getTopThree()[2].avatarUrl" alt="" class="podium-avatar {{ getTopThree()[2].avatarBorder }}" loading="lazy" />
               } @else {
                 <div class="podium-avatar-placeholder {{ getTopThree()[2].avatarBorder }}">{{ getTopThree()[2].name.charAt(0) }}</div>
               }
@@ -121,7 +121,7 @@
               <td>
                 <div class="user-info">
                   @if (user.avatarUrl) {
-                    <img [src]="user.avatarUrl" alt="" class="user-avatar {{ user.avatarBorder }}" />
+                    <img [src]="user.avatarUrl" alt="" class="user-avatar {{ user.avatarBorder }}" loading="lazy" />
                   } @else {
                     <div class="user-avatar-placeholder {{ user.avatarBorder }}">{{ user.name.charAt(0) }}</div>
                   }

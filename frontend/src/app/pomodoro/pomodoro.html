@@ -13,9 +13,9 @@
         }
       </select>
     </label>
-    @if (tasks.length > 0) {
+    @if (tasks?.length > 0) {
       <label style="margin-top: 0.75rem;">
-        desafio (opcional)
+        Desafio (opcional)
         <select [(ngModel)]="selectedTaskId" name="taskId" style="width: 100%; margin-top: 0.25rem;">
           <option value="">Foco geral</option>
           @for (t of tasks; track t.id) {
@@ -39,7 +39,7 @@
       />
     </svg>
     <div class="timer-display">
-      <span class="time" role="timer" aria-live="polite" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">{{ displayTime }}</span>
+      <span class="time" role="timer" aria-live="polite" [attr.aria-valuenow]="progress" aria-valuemin="0" aria-valuemax="100">{{ displayTime }}</span>
       <span class="phase" aria-live="polite">{{ isBreak() ? 'Pausa' : 'Foco' }}</span>
     </div>
   </div>
@@ -57,8 +57,12 @@
         <button class="btn btn-ghost" (click)="pause()" aria-label="Pausar">⏸ Pausar</button>
       }
     </div>
-    <button class="btn btn-ghost btn-sm" (click)="toggleZenMode()" style="width: 100%; max-width: 200px; display: inline-flex; align-items: center; justify-content: center; gap: 0.25rem;">
-      🧘 Modo Zen (Foco Imersivo)
+
+    <button class="btn btn-ghost btn-sm btn-zen-toggle" (click)="toggleZenMode()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+      </svg>
+      <span>Modo Zen (Foco Imersivo)</span>
     </button>
   </div>
 
@@ -75,55 +79,100 @@
 </div>
 
 @if (zenMode()) {
-  <div class="zen-overlay" style="position: fixed; inset: 0; background: #0b0f19; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ffffff; padding: 2rem; box-sizing: border-box; font-family: system-ui, sans-serif;">
-    <button (click)="toggleZenMode()" style="position: absolute; top: 1.5rem; right: 1.5rem; background: rgba(255,255,255,0.1); border: none; border-radius: 50%; color: white; width: 40px; height: 40px; font-size: 1.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s;" title="Sair do Modo Zen">✕</button>
+  <div class="zen-overlay" [class.is-break]="isBreak()">
+    <div class="zen-particles" aria-hidden="true">
+      @for (p of zenParticles; track $index) {
+        <div
+          class="zen-particle"
+          [style.left.%]="p.left"
+          [style.animation-delay.s]="p.delay"
+          [style.width.px]="p.size"
+          [style.height.px]="p.size"
+        ></div>
+      }
+    </div>
+    <button class="zen-close-btn" (click)="toggleZenMode()" title="Sair do Modo Zen (ESC)">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/>
+      </svg>
+      <span>Sair Zen</span>
+    </button>
 
-    <div style="text-align: center; margin-bottom: 2rem;">
-      <span style="font-size: 0.9rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--primary, #3b82f6); font-weight: 600;">Modo Foco Zen</span>
-      <h2 style="margin: 0.5rem 0 0 0; font-size: 1.75rem; font-weight: 500;">Estudando</h2>
+    <div class="zen-header">
+      <span class="zen-badge">🧘 MODO ZEN</span>
+      <h2 class="zen-subject-title">{{ selectedSubjectName }}</h2>
+      @if (selectedTaskTitle) {
+        <p class="zen-task-subtitle">📌 {{ selectedTaskTitle }}</p>
+      }
     </div>
 
-    <!-- Central Timer Display -->
-    <div style="font-size: 8rem; font-weight: 300; font-family: monospace; line-height: 1; letter-spacing: -0.05em; margin: 1rem 0; color: #ffffff; text-shadow: 0 0 20px rgba(59, 130, 246, 0.3);">
-      {{ displayTime }}
+    <!-- Central Timer Circle with Glowing Progress -->
+    <div class="zen-timer-ring-wrapper">
+      <div class="zen-ambient-glow" [class.running]="isRunning()"></div>
+      <svg class="zen-svg-ring" viewBox="0 0 120 120">
+        <circle cx="60" cy="60" r="54" class="zen-ring-bg" />
+        <circle
+          cx="60"
+          cy="60"
+          r="54"
+          class="zen-ring-progress"
+          [class.break]="isBreak()"
+          [style.stroke-dashoffset]="(1 - progress / 100) * 339.292"
+        />
+      </svg>
+
+      <div class="zen-timer-center">
+        <div class="zen-time-display">{{ displayTime }}</div>
+        <div class="zen-phase-pill" [class.break]="isBreak()">
+          {{ isBreak() ? '☕ PAUSA DA SESSÃO' : '🔥 TEMPO DE FOCO' }}
+        </div>
+      </div>
     </div>
 
-    <!-- Active Session/Break Phase badge -->
-    <div style="background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; padding: 0.35rem 1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 3rem;">
-      {{ isBreak() ? 'Pausa' : 'Sessão de Foco' }}
-    </div>
-
-    <!-- Control Buttons -->
-    <div style="display: flex; gap: 1rem; margin-bottom: 4rem; align-items: center;">
+    <!-- Enlarged Controls -->
+    <div class="zen-controls">
       @if (!isRunning()) {
-        <button (click)="start()" style="background: #3b82f6; border: none; color: white; padding: 0.75rem 2rem; border-radius: 30px; font-size: 1rem; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4); display: flex; align-items: center; gap: 0.5rem;">
-          ▶ Iniciar
+        <button class="zen-btn zen-btn-primary" (click)="start()">
+          ▶ {{ timeLeft === 0 || isBreak() ? 'Iniciar' : 'Continuar' }}
         </button>
         @if (timeLeft > 0 && !isBreak()) {
-          <button (click)="reset()" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 0.75rem 1.5rem; border-radius: 30px; font-size: 0.95rem; cursor: pointer;">
-            ↺ Reset
+          <button class="zen-btn zen-btn-secondary" (click)="reset()">
+            ↺ Reiniciar
           </button>
         }
       } @else {
-        <button (click)="pause()" style="background: rgba(255,255,255,0.15); border: none; color: white; padding: 0.75rem 2rem; border-radius: 30px; font-size: 1rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+        <button class="zen-btn zen-btn-pause" (click)="pause()">
           ⏸ Pausar
         </button>
       }
     </div>
 
-    <!-- Sound Control Selector -->
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; background: rgba(255, 255, 255, 0.05); padding: 1rem 1.5rem; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1); min-width: 250px;">
-      <span style="font-size: 0.8rem; color: #9ca3af; font-weight: 500;">🎧 Sons Ambientes de Foco</span>
-      <select [(ngModel)]="selectedAmbientSound" (change)="onAmbientSoundChange()" style="background: #111827; border: 1px solid #374151; color: white; padding: 0.5rem; border-radius: 6px; width: 100%; cursor: pointer; outline: none;">
+    <!-- Sound Selector -->
+    <div class="zen-sound-card">
+      <label for="zenSoundSelect" class="zen-sound-label">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 18V5l12-2v13M9 9l12-2M6 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm12 0a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+        </svg>
+        Sons Ambientes de Foco
+      </label>
+      <select id="zenSoundSelect" [(ngModel)]="selectedAmbientSound" (change)="onAmbientSoundChange()" class="zen-sound-select">
         <option value="none">Nenhum som (Silencioso)</option>
         <option value="white">Ruído Branco (Estático Suave)</option>
         <option value="pink">Ruído Rosa (Som de Chuva)</option>
-        <option value="brown">Ruído Marrom (Cachoeira/Oceano)</option>
+        <option value="brown">Ruído Marrom (Cachoeira / Oceano)</option>
       </select>
+    </div>
+
+    <!-- Shortcuts Footer -->
+    <div class="zen-shortcuts-hint">
+      <span class="key-tag">Espaço</span> Iniciar/Pausar
+      <span class="separator">•</span>
+      <span class="key-tag">R</span> Reiniciar
+      <span class="separator">•</span>
+      <span class="key-tag">ESC</span> Sair
     </div>
   </div>
 }
-
 
 @if (showConfirmTaskComplete()) {
   <app-confirm
@@ -134,7 +183,7 @@
     confirmStyle="primary"
     (confirm)="handleTaskCompleteConfirm()"
     (cancel)="handleTaskCompleteCancel()"
-  />
+  ></app-confirm>
 }
 
 @if (showCheckin()) {
@@ -142,5 +191,5 @@
     [taskName]="'Desafio'"
     (confirm)="handleCheckin($event)"
     (cancel)="handleCheckinCancel()"
-  />
+  ></app-checkin>
 }

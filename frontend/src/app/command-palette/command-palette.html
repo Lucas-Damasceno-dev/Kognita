@@ -1,0 +1,137 @@
+@if (paletteService.isOpen()) {
+  <div class="cmd-backdrop" (click)="close()">
+    <div class="cmd-dialog" (click)="$event.stopPropagation()" role="dialog" aria-modal="true" aria-label="Command Palette">
+      
+      <!-- Search Input Header -->
+      <div class="cmd-header">
+        <svg class="cmd-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input
+          #searchInput
+          type="text"
+          class="cmd-input"
+          placeholder="Digite um comando ou busque uma página..."
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          aria-label="Buscar comandos e páginas"
+        />
+        <div class="cmd-kbd-badge" title="Pressione ESC para fechar">ESC</div>
+      </div>
+
+      <!-- Results Body -->
+      <div #resultsList class="cmd-body">
+        @if (filteredItems().length === 0) {
+          <div class="cmd-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              <line x1="8" y1="11" x2="14" y2="11"></line>
+            </svg>
+            <p>Nenhum resultado encontrado para "<strong>{{ searchQuery() }}</strong>"</p>
+            <span>Tente buscar por termos como "tarefas", "pomodoro", "analytics" ou "tema".</span>
+          </div>
+        } @else {
+          <div class="cmd-list">
+            @for (item of filteredItems(); track item.id; let i = $index) {
+              
+              @if (i === 0 || item.category !== filteredItems()[i - 1].category) {
+                <div class="cmd-category-header">{{ item.category }}</div>
+              }
+
+              <div
+                class="cmd-item"
+                [class.selected]="i === selectedIndex()"
+                [class.cat-action]="item.category === 'Ações'"
+                [class.cat-nav]="item.category === 'Navegação'"
+                (mouseenter)="setSelectedIndex(i)"
+                (click)="selectItem(item)"
+                role="option"
+                [attr.aria-selected]="i === selectedIndex()"
+              >
+                <div class="cmd-item-icon" [class.icon-primary]="item.category === 'Ações'" [class.icon-accent]="item.category === 'Navegação'">
+                  @switch (item.icon) {
+                    @case ('grid') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    }
+                    @case ('check-square') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                    }
+                    @case ('clock') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    }
+                    @case ('layers') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                    }
+                    @case ('target') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                    }
+                    @case ('alert-triangle') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    }
+                    @case ('book-open') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                    }
+                    @case ('bar-chart-2') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    }
+                    @case ('trophy') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.45 1-1 1H4v2h16v-2h-5c-.55 0-1-.45-1-1v-2.34"/><path d="M12 2a5 5 0 0 0-5 5v2h10V7a5 5 0 0 0-5-5z"/></svg>
+                    }
+                    @case ('history') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    }
+                    @case ('calendar') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    }
+                    @case ('briefcase') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    }
+                    @case ('user') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    }
+                    @case ('download') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    }
+                    @case ('sun-moon') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+                    }
+                    @case ('zap') {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    }
+                    @default {
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/></svg>
+                    }
+                  }
+                </div>
+
+                <div class="cmd-item-info">
+                  <div class="cmd-item-title" [innerHTML]="highlightMatch(item.title)"></div>
+                  @if (item.description) {
+                    <div class="cmd-item-desc" [innerHTML]="highlightMatch(item.description)"></div>
+                  }
+                </div>
+
+                <div class="cmd-item-meta">
+                  @if (item.shortcut) {
+                    <span class="cmd-item-shortcut">{{ item.shortcut }}</span>
+                  }
+                  <span class="cmd-nav-hint" [class.visible]="!!item.route">→</span>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Footer navigation tips -->
+      <div class="cmd-footer">
+        <span class="cmd-tip"><kbd>↑</kbd> <kbd>↓</kbd> Navegar</span>
+        <span class="cmd-tip"><kbd>↵</kbd> Selecionar</span>
+        <span class="cmd-tip"><kbd>ESC</kbd> Fechar</span>
+      </div>
+
+    </div>
+  </div>
+}

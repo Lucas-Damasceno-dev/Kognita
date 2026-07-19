@@ -5,11 +5,13 @@ import { catchError, finalize, forkJoin, of, timeout } from 'rxjs';
 import { ApiService } from '../services/api.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
+import { ConfettiService } from '../services/confetti.service';
 import { Skeleton } from '../skeleton/skeleton';
 import { Confirm } from '../confirm/confirm';
 import { EmptyState } from '../empty-state/empty-state';
 import { Flashcard } from '../models/flashcard';
 import { Subject } from '../models/subject';
+import { calculateSM2 } from '../utils/supermemo2';
 
 @Component({
   selector: 'app-flashcards',
@@ -22,6 +24,7 @@ export class Flashcards implements OnInit {
   protected auth = inject(AuthService);
   private toast = inject(ToastService);
   private destroyRef = inject(DestroyRef);
+  private confetti = inject(ConfettiService);
 
   flashcards = signal<Flashcard[]>([]);
   dueCards = signal<Flashcard[]>([]);
@@ -128,10 +131,18 @@ export class Flashcards implements OnInit {
     const currentCard = this.getCurrentCard();
     if (!currentCard) return;
 
+    const sm2 = calculateSM2(
+      rating,
+      currentCard.repetitions || 0,
+      currentCard.intervalDays || 1,
+      currentCard.easeFactor || 2.5
+    );
+
     this.api.reviewFlashcard(currentCard.id, rating)
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: () => {
+          this.toast.info(`Revisado! Próxima revisão em ${sm2.intervalDays} dia(s) (Fator EF: ${sm2.easeFactor})`);
           const nextIndex = this.currentReviewIndex() + 1;
           this.showAnswer.set(false);
           this.selectedOptionIndex.set(null);
@@ -139,7 +150,7 @@ export class Flashcards implements OnInit {
           
           if (nextIndex >= this.dueCards().length) {
             this.reviewCompleted.set(true);
-            // Refresh due cards and all cards list in background
+            this.confetti.fireStreakCelebration();
             const user = this.auth.user();
             if (user) {
               this.api.getFlashcards().subscribe(cards => this.flashcards.set(cards));

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, DestroyRef, signal } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, signal, HostListener } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -31,6 +31,7 @@ export class Practice implements OnInit {
   started = signal(false);
   finished = signal(false);
   paused = signal(false);
+  zenMode = signal(false);
 
   loading = signal(false);
   selectedSubjectId = '';
@@ -41,6 +42,29 @@ export class Practice implements OnInit {
 
   get totalTasks(): number {
     return this.tasks.length;
+  }
+
+  get selectedSubjectName(): string {
+    const sub = this.subjects.find((s) => s.id === this.selectedSubjectId);
+    return sub ? sub.name : 'Todas as matérias';
+  }
+
+  private triggerHaptic(type: 'start' | 'pause' | 'reset' | 'complete'): void {
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        if (type === 'start') {
+          navigator.vibrate(40);
+        } else if (type === 'pause') {
+          navigator.vibrate([30, 50, 30]);
+        } else if (type === 'reset') {
+          navigator.vibrate([50, 30, 50]);
+        } else if (type === 'complete') {
+          navigator.vibrate([100, 50, 100, 50, 200]);
+        }
+      } catch {
+        // Haptics not supported or blocked
+      }
+    }
   }
 
   ngOnInit(): void {
@@ -125,6 +149,7 @@ export class Practice implements OnInit {
       this.toast.error('Nenhuma tarefa disponível para praticar');
       return;
     }
+    this.triggerHaptic('start');
     this.started.set(true);
     this.paused.set(false);
     this.resumeTimer();
@@ -140,6 +165,7 @@ export class Practice implements OnInit {
   }
 
   pause(): void {
+    this.triggerHaptic('pause');
     if (this.timer) {
       clearInterval(this.timer);
       this.timer = null;
@@ -148,6 +174,7 @@ export class Practice implements OnInit {
   }
 
   resume(): void {
+    this.triggerHaptic('start');
     this.paused.set(false);
     this.resumeTimer();
   }
@@ -167,6 +194,7 @@ export class Practice implements OnInit {
   }
 
   finish(): void {
+    this.triggerHaptic('complete');
     clearInterval(this.timer);
     this.timer = null;
     this.started.set(false);
@@ -185,10 +213,73 @@ export class Practice implements OnInit {
   }
 
   reset(): void {
+    this.triggerHaptic('reset');
     this.started.set(false);
     this.finished.set(false);
     this.currentIndex = 0;
     this.timeLeft = 30 * 60;
     this.filterTasks();
+  }
+
+  toggleZenMode(): void {
+    const nextState = !this.zenMode();
+    this.zenMode.set(nextState);
+    if (nextState) {
+      this.triggerHaptic('start');
+      if (typeof document !== 'undefined' && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    } else {
+      this.triggerHaptic('pause');
+      if (typeof document !== 'undefined' && document.fullscreenElement && document.exitFullscreen) {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+  }
+
+  @HostListener('document:keydown.space', ['$event'])
+  handleSpace(event: Event): void {
+    if (!this.started() || this.finished()) return;
+    const tag = (event.target as HTMLElement)?.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    event.preventDefault();
+    if (this.paused()) {
+      this.resume();
+    } else {
+      this.pause();
+    }
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  handleEscape(event: Event): void {
+    if (this.zenMode()) {
+      event.preventDefault();
+      this.toggleZenMode();
+    }
+  }
+
+  @HostListener('document:keydown.arrowleft', ['$event'])
+  handleArrowLeft(event: Event): void {
+    if (!this.started() || this.finished() || !this.zenMode()) return;
+    const tag = (event.target as HTMLElement)?.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    event.preventDefault();
+    this.previous();
+  }
+
+  @HostListener('document:keydown.arrowright', ['$event'])
+  handleArrowRight(event: Event): void {
+    if (!this.started() || this.finished() || !this.zenMode()) return;
+    const tag = (event.target as HTMLElement)?.tagName;
+    if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') return;
+    event.preventDefault();
+    this.next();
+  }
+
+  @HostListener('document:fullscreenchange')
+  onFullscreenChange(): void {
+    if (typeof document !== 'undefined' && !document.fullscreenElement && this.zenMode()) {
+      this.zenMode.set(false);
+    }
   }
 }

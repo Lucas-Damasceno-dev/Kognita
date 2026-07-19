@@ -47,6 +47,33 @@ import { Component, input } from '@angular/core';
           }
         </div>
       }
+      @case ('pomodoro') {
+        <div class="sk-pomodoro">
+          <div class="sk-circle"></div>
+          <div class="sk-row sk-controls">
+            <div class="sk-btn"></div>
+            <div class="sk-btn"></div>
+          </div>
+        </div>
+      }
+      @case ('table') {
+        <div class="sk-table">
+          <div class="sk-table-header">
+            <div class="sk-line w-20"></div>
+            <div class="sk-line w-40"></div>
+            <div class="sk-line w-20"></div>
+            <div class="sk-line w-20"></div>
+          </div>
+          @for (_ of [1, 2, 3, 4, 5]; track $index) {
+            <div class="sk-table-row">
+              <div class="sk-line w-20"></div>
+              <div class="sk-line w-40"></div>
+              <div class="sk-line w-20"></div>
+              <div class="sk-line w-20"></div>
+            </div>
+          }
+        </div>
+      }
       @default {
         <div class="sk-text"><div class="sk-line" [style.width.%]="width()"></div></div>
       }
@@ -170,6 +197,75 @@ import { Component, input } from '@angular/core';
       .sk-text .sk-line {
         width: 100%;
       }
+      .sk-pomodoro {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2rem;
+        padding: 3rem 0;
+      }
+      .sk-circle {
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: linear-gradient(
+          90deg,
+          var(--chart-bar-bg) 25%,
+          var(--bg-card) 50%,
+          var(--chart-bar-bg) 75%
+        );
+        background-size: 800px 100%;
+        animation: shimmer 1.5s infinite;
+      }
+      .sk-controls {
+        justify-content: center;
+      }
+      .sk-btn {
+        width: 120px;
+        height: 40px;
+        border-radius: 8px;
+        background: linear-gradient(
+          90deg,
+          var(--chart-bar-bg) 25%,
+          var(--bg-card) 50%,
+          var(--chart-bar-bg) 75%
+        );
+        background-size: 800px 100%;
+        animation: shimmer 1.5s infinite;
+      }
+      .sk-table {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 1rem 0;
+      }
+      .sk-table-header,
+      .sk-table-row {
+        display: flex;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        align-items: center;
+      }
+      .sk-table-header {
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 0.25rem;
+      }
+      .sk-table-header .sk-line {
+        height: 12px;
+      }
+      .sk-table-row {
+        background: var(--bg-card);
+        border-radius: 8px;
+      }
+      .sk-table-row .sk-line {
+        height: 14px;
+      }
+      .sk-table-row .sk-line.w-20 {
+        width: 20%;
+      }
+      .sk-table-row .sk-line.w-40 {
+        width: 40%;
+      }
       @media (max-width: 900px) {
         .sk-kanban {
           flex-direction: column;
@@ -179,6 +275,6 @@ import { Component, input } from '@angular/core';
   ],
 })
 export class Skeleton {
-  mode = input<'dashboard' | 'kanban' | 'list' | 'text'>('text');
+  mode = input<'dashboard' | 'kanban' | 'list' | 'text' | 'pomodoro' | 'table'>('text');
   width = input(100);
 }

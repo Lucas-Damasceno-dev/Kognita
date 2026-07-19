@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .goal-progress { display: flex; align-items: center; gap: 0.75rem; }
 .progress-bar { flex: 1; height: 8px; background: var(--border); border-radius: 999px; overflow: hidden; }
 .progress-fill { height: 100%; background: var(--primary); border-radius: 999px; transition: width 0.5s ease; }
