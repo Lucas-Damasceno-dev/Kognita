@@ -94,6 +94,15 @@ Registro de tempo estudado por matéria.
 - Paginação (20 por página)
 - Guard de alterações não salvas
 
+### Calendário / Calendar (`/calendar`)
+Visão mensal dos estudos em formato de calendário.
+- Grid mensal com dias do mês e cabeçalho de dias da semana
+- Sessões de estudo exibidas como pills com duração e nome da matéria
+- Tarefas clicáveis com link direto para `/tasks`
+- Navegação entre meses (anterior/próximo)
+- Destaque visual para dias com atividade
+- Suporte a skeleton loading
+
 ### Metas de Horas / Goals (`/goals`)
 Metas de horas de estudo por matéria.
 - CRUD completo
@@ -103,6 +112,7 @@ Metas de horas de estudo por matéria.
 - Ordenação por título/horas/prazo
 - Paginação (20 por página)
 - Guard de alterações não salvas
+- **Metas Recorrentes:** suporte a recorrência semanal ou mensal com rollover automático e streak count
 
 ### Perfil / Profile (`/profile`)
 Gerenciamento de perfil do usuário.
@@ -112,6 +122,23 @@ Gerenciamento de perfil do usuário.
 - Envio apenas de campos alterados (diff contra dados salvos)
 - Preview de avatar com tratamento de erro de carga
 - Guard de alterações não salvas
+
+### Leaderboard (`/leaderboard`)
+Ranking global de usuários gamificado.
+- Filtros: **XP** (total de experiência) e **Streak** (dias consecutivos)
+- Pódio para top 3 com cards dourado/prata/bronze, coroas e avatares
+- Lista tabular para ranks 4+ com avatar, nome, título, badge de nível
+- Cálculo de nível: `floor(xp / 100) + 1`
+- Destaque visual para o usuário atual na tabela
+- Skeleton loading durante carregamento
+
+### Loja / Shop (`/shop`)
+Loja de recompensas por XP.
+- **Streak Freeze:** congela a sequência se perder um dia (200 XP)
+- **Títulos:** "Sobrevivente do Código", "Destruidor de Bugs", "Codificador de Elite", "Mestre da Resiliência", "Lendário Sem IA"
+- **Bordas de Avatar:** Bronze, Prata, Ouro, Rainbow Neon
+- **Temas:** Cyberpunk Neon, Tokyo Night, Nordic Slate
+- Saldo de XP exibido no cabeçalho, badge "Equipado" em itens ativos
 
 ### Pomodoro (`/pomodoro`)
 Timer Pomodoro com logging automático de sessões.
@@ -138,6 +165,24 @@ Simulado cronometrado de resolução de tarefas sem IA.
 - Estado de warning (<5min, timer vermelho)
 - Atalho para criar tarefas se não houver nenhuma
 
+### Simulador de Prova / Exam Simulator (`/exam-simulator`)
+Simulado de prova técnica com perguntas de múltipla escolha.
+- Configuração: matéria, número de questões (5/10/15), tempo limite (5–30 min)
+- Banco de questões técnicas: SQL, OOP, redes, Angular, git, Docker, algoritmos
+- Timer regressivo com alerta visual em menos de 2min
+- Navegação entre questões e seleção de alternativas (A/B/C/D)
+- Resultado com nota (/10), badge de aprovação (corte 7.0), confete ao passar
+- Precisão percentual e gauge visual
+
+### Duelos de Estudo / Study Duels (`/study-duels`)
+Modo batalha de quiz 1v1 contra bot IA.
+- **Lobby:** "Duelo Rápido vs IA Bot" e "Multiplayer Online" (travado até level 5)
+- **Batalha:** 5 perguntas com timer de 10s cada, placar jogador vs bot
+- **Combo:** multiplicador aumenta 0.5 por acerto consecutivo (máx 3x), reseta ao errar
+- **Pontuação:** 100 pontos base + bônus de tempo (10/s restante) × combo
+- **Resultado:** tela de vitória/derrota com confete, replay
+- Perguntas de SQL, OOP, estruturas de dados, HTTP, Angular
+
 ### Histórico / History (`/history`)
 Histórico de desafios concluídos sem IA.
 - Cartões com título, data, skill category, anotações
@@ -153,6 +198,14 @@ Metas semanais de desafios sem IA.
 - Dias restantes calculados; metas expiradas destacadas
 - Guard de alterações não salvas
 
+### Flashcards (`/flashcards`)
+Sistema de flashcards com repetição espaçada (algoritmo SM-2).
+- **Gerenciar:** criar, editar e excluir flashcards com tipo TEXT, CODE ou MULTIPLE_CHOICE
+- **Revisar:** flashcards devidos para revisão com autoavaliação (Errei/Bom/Fácil)
+- **SM-2:** cálculo automático de intervalo, fator de facilidade e próxima data de revisão
+- **Associação:** vínculo opcional com matéria
+- **Progresso:** contador de repetições e evolução ao longo do tempo
+
 ### Analytics (`/analytics`)
 Estatísticas e gráficos de atividade.
 - Cartões de resumo: total de horas, sessões, média
@@ -160,11 +213,29 @@ Estatísticas e gráficos de atividade.
 - Gráfico de desafios nos últimos 7 dias
 - CSS puro (sem biblioteca de gráficos)
 
+### Relatórios / Reports (`/reports`)
+Gerador de relatório semanal de competência técnica.
+- Carrega dados da semana atual: horas estudadas, desafios sem IA, bugs documentados, streak ativo
+- Cartões de resumo com estatísticas da semana
+- Geração de relatório em **Markdown** com nome, nível, horas, matérias, desafios autônomos, erros resolvidos
+- Botão "Copiar Markdown" para compartilhar no LinkedIn/GitHub
+- Skeleton loading durante carregamento dos dados
+
 ### Diário de Erros / Error Diary (`/error-diary`)
 Registro de erros, falhas e soluções.
 - CRUD completo (título, descrição, solução)
 - Cartões com timestamp
 - Guard de alterações não salvas
+
+### Notas de Estudo / Study Notes (`/notes`)
+Editor de anotações de estudo com suporte a Markdown.
+- Painel duplo: sidebar com lista de notas + editor
+- Criação com template Markdown padrão
+- Edição de título, conteúdo (Markdown), tags e matéria associada
+- Sistema de tags: adicionar/remover tags inline
+- Busca por título, conteúdo ou nome da matéria
+- Persistência em localStorage
+- Formatação de data (dd/MM HH:mm)
 
 ### Analisador de Vagas / Job Analyzer (`/job-analyzer`)
 Análise de gap técnico contra vagas de emprego.
@@ -177,12 +248,36 @@ Importação em massa de matérias e tarefas.
 - **Estrutura de Arquivos:** criação dinâmica de categorias com tarefas, validação, importação em lote
 - **Roadmap.sh:** seleção de roadmap (Backend, Frontend, DevOps), carrega JSON, editor manual, importa para backend
 
+### Exportação de Dados (`/api/export`)
+Exporta todos os dados do usuário em formato JSON para portabilidade e backup.
+- Perfil, matérias, tarefas, sessões de estudo, metas, challenge attempts, error logs
+- Útil para migração ou backup dos dados
+
+### Cofre de Conhecimento / Vault (`/vault`)
+Arquivo permanente de snapshots de estudo ("Knowledge Vault").
+- Cada snapshot registra: matéria, duração, tipo (pomodoro/note), título, conteúdo, accuracy, tags
+- Busca por palavra-chave em título, conteúdo e matéria
+- Filtragem por tags (clicar em chips)
+- Linha do tempo com cards de snapshot
+- Exportação como Markdown (`.md`) ou JSON (`.json`)
+- Persistência em localStorage
+
 ### Autenticação
 - Login e registro com JWT
 - Token e usuário persistidos em `localStorage`
 - Interceptor HTTP adiciona Bearer token automaticamente
 - Guard de rota redireciona para `/login` quando não autenticado
 - Timeout de 30s em requisições com mensagens de erro amigáveis
+
+### Trilhas de Aprendizado / Learning Paths (`/learning-paths`)
+Roadmaps lineares sequenciais com desafios interligados.
+- Dois painéis: sidebar com lista de trilhas + visão principal do roadmap
+- Trilha demo padrão: "Rota de Engenharia de Software & Banco de Dados"
+- Criação de trilhas personalizadas selecionando tarefas existentes
+- Cada nó mostra: ordem, título, tag da matéria, status (trancado/disponível/concluído)
+- Desbloqueio sequencial: só libera o próximo nó ao concluir o anterior
+- Alternar conclusão com confete e toast de sucesso
+- Persistência em localStorage
 
 ### Tema / Tema Escuro
 - Alternância claro/escuro no sidebar
@@ -213,12 +308,31 @@ Importação em massa de matérias e tarefas.
 ### Paginação Servidor-Side
 Matérias (20/página), Tarefas (10/página), Sessões (20/página), Metas (20/página).
 
+### Paleta de Comandos / Command Palette
+Paleta de comandos estilo Spotlight/Alfred, ativada por **Ctrl+K** (ou Cmd+K).
+- Busca por ações e navegação
+- **Ações:** criar tarefa, iniciar pomodoro, revisar flashcards, alternar tema, etc.
+- **Navegação:** todas as rotas principais do sistema
+- Navegação por teclado (setas + Enter), fechar com Escape
+- Destaque do termo buscado nos resultados
+- Feedback tátil (haptic) ao navegar/selecionar
+- Badges de atalhos e ícones nos comandos
+
+### Sistema de Conquistas / Achievements
+Sistema de conquistas que recompensa marcos do usuário.
+- Overlay full-screen com confete ao desbloquear uma conquista
+- Ícone de troféu, nome da conquista, descrição e recompensa em XP
+- Integrado com AchievementService para notificar em qualquer página
+
 ### Componentes Reutilizáveis
 - `<app-checkin>` — modal de check-in de honestidade com stats
 - `<app-confirm>` — modal de confirmação genérico
 - `<app-toast>` — container de notificações flutuantes
 - `<app-loading>` — spinner inline
 - `<app-skeleton>` — shimmer placeholder (modos: dashboard, kanban, list, text)
+- `<app-empty-state>` — placeholder vazio com ilustrações SVG temáticas
+- `<app-animated-number>` — animação de contagem numérica com cubic ease-out
+- `<app-contribution-heatmap>` — grid de contribuição estilo GitHub (52 semanas, tooltip, temas de cor)
 
 ## API Endpoints
 
@@ -294,6 +408,16 @@ Matérias (20/página), Tarefas (10/página), Sessões (20/página), Metas (20/p
 | PUT | `/{id}` | Atualizar attempt |
 | DELETE | `/{id}` | Excluir attempt |
 
+### Flashcards (`/api/flashcards`)
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/` | Listar flashcards do usuário |
+| GET | `/due` | Flashcards devidos para revisão |
+| POST | `/` | Criar flashcard |
+| PUT | `/{id}` | Atualizar flashcard |
+| DELETE | `/{id}` | Excluir flashcard |
+| POST | `/{id}/review` | Revisar flashcard (rating 1–5, algoritmo SM-2) |
+
 ### Error Logs (`/api/error-logs`)
 | Método | Rota | Descrição |
 |--------|------|-----------|
@@ -313,6 +437,16 @@ Matérias (20/página), Tarefas (10/página), Sessões (20/página), Metas (20/p
 |--------|------|-----------|
 | POST | `/file-structure` | Importar categorias com tarefas |
 | POST | `/roadmap` | Importar roadmap JSON |
+
+### Export (`/api/export`)
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/` | Exportar todos os dados do usuário (JSON) |
+
+### Webhooks (`/api/webhooks`)
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| POST | `/github` | Webhook GitHub: auto-completa tarefas via commit messages |
 
 ## Roadmap (Fases de Desenvolvimento)
 
@@ -361,7 +495,7 @@ Matérias (20/página), Tarefas (10/página), Sessões (20/página), Metas (20/p
 Kognita/
 ├── backend/                 # Spring Boot REST API
 │   ├── src/main/java/.../
-│   │   ├── controller/      # 10 controllers (REST endpoints)
+│   │   ├── controller/      # 15 controllers (REST endpoints)
 │   │   ├── service/         # Business logic
 │   │   ├── repository/      # JPA repositories
 │   │   ├── model/           # JPA entities
@@ -373,31 +507,46 @@ Kognita/
 │       └── db/migration/    # Flyway migrations
 ├── frontend/                # Angular application
 │   └── src/app/
+│       ├── achievement/     # Sistema de conquistas (overlay)
+│       ├── analytics/       # Estatísticas e gráficos
+│       ├── animated-number/ # Animação de contagem numérica
+│       ├── calendar/        # Visão mensal de estudos
+│       ├── challenge-goals/ # Metas de desafio
+│       ├── checkin/         # Modal check-in
+│       ├── command-palette/ # Paleta Ctrl+K
 │       ├── components/      # Login, Register
-│       ├── services/        # ApiService, AuthService, ToastService, ConfigService
-│       ├── guards/          # authGuard, canDeactivateGuard
-│       ├── interceptors/    # authInterceptor
-│       ├── models/          # TypeScript interfaces
+│       ├── confirm/         # Modal confirmação
+│       ├── contribution-heatmap/ # Grid estilo GitHub
 │       ├── dashboard/       # Dashboard page
-│       ├── subjects/        # CRUD matérias
-│       ├── tasks/           # Kanban com drag-and-drop
-│       ├── sessions/        # CRUD sessões
+│       ├── empty-state/     # Placeholder vazio
+│       ├── error-diary/     # Diário de erros
+│       ├── exam-simulator/  # Simulador de prova
+│       ├── flashcards/      # Flashcards SM-2
 │       ├── goals/           # CRUD metas
-│       ├── profile/         # Perfil do usuário
+│       ├── guards/          # authGuard, canDeactivateGuard
+│       ├── history/         # Histórico de desafios
+│       ├── importer/        # Importador
+│       ├── interceptors/    # authInterceptor
+│       ├── job-analyzer/    # Análise de vagas
+│       ├── layout/          # Sidebar + main outlet
+│       ├── leaderboard/     # Ranking global
+│       ├── learning-paths/  # Trilhas de aprendizado
+│       ├── loading/         # Spinner loading
+│       ├── models/          # TypeScript interfaces
+│       ├── notes/           # Notas de estudo Markdown
 │       ├── pomodoro/        # Timer Pomodoro
 │       ├── practice/        # Simulado cronometrado
-│       ├── history/         # Histórico de desafios
-│       ├── challenge-goals/ # Metas de desafio
-│       ├── analytics/       # Estatísticas e gráficos
-│       ├── error-diary/     # Diário de erros
-│       ├── job-analyzer/    # Análise de vagas
-│       ├── importer/        # Importador
-│       ├── checkin/         # Modal check-in
-│       ├── confirm/         # Modal confirmação
-│       ├── toast/           # Notificações flutuantes
-│       ├── loading/         # Spinner loading
+│       ├── profile/         # Perfil do usuário
+│       ├── reports/         # Relatório semanal
+│       ├── services/        # ApiService, AuthService, ToastService, ConfigService
+│       ├── sessions/        # CRUD sessões
+│       ├── shop/            # Loja de recompensas XP
 │       ├── skeleton/        # Skeleton shimmer
-│       └── layout/          # Sidebar + main outlet
+│       ├── study-duels/     # Duelos 1v1
+│       ├── subjects/        # CRUD matérias
+│       ├── tasks/           # Kanban com drag-and-drop
+│       ├── toast/           # Notificações flutuantes
+│       └── vault/           # Cofre de conhecimento
 ├── docker/
 │   ├── backend/             # Backend Dockerfile
 │   ├── frontend/            # Frontend Dockerfile

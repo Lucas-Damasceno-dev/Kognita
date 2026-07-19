@@ -1,59 +1,79 @@
-# KognitaFrontend
+# Kognita — Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.0.1.
+Frontend Angular 22 do Kognita, seu diário de competência técnica.
+
+## Stack
+
+- **Angular 22** (standalone components, Signals, OnPush, new control flow)
+- **TypeScript 6.0**
+- **Vitest 4.0** (testes unitários)
+- **ESLint + Prettier** (lint e formatação)
+- **Angular Service Worker** (PWA)
 
 ## Development server
-
-To start a local development server, run:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Navegue para `http://localhost:4200/`. O aplicativo recarrega automaticamente ao modificar arquivos. Requisições para `/api` são proxyadas para `http://localhost:8080` via `proxy.conf.json`.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+## Build
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Os artefatos de build são gerados em `dist/`.
 
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## Testes
 
 ```bash
-ng test
+ng test        # Vitest
 ```
 
-## Running end-to-end tests
+## Estrutura
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
 ```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+src/app/
+├── achievement/          # Sistema de conquistas
+├── analytics/            # Estatísticas e gráficos
+├── animated-number/      # Animação de contagem
+├── calendar/             # Calendário de estudos
+├── challenge-goals/      # Metas de desafio
+├── checkin/              # Modal de check-in de honestidade
+├── command-palette/      # Paleta de comandos (Ctrl+K)
+├── components/           # Login, Register
+├── confirm/              # Modal de confirmação
+├── contribution-heatmap/ # Grid de contribuição
+├── dashboard/            # Dashboard principal
+├── empty-state/          # Placeholder vazio
+├── error-diary/          # Diário de erros
+├── exam-simulator/       # Simulador de prova
+├── flashcards/           # Flashcards SM-2
+├── goals/                # Metas de horas
+├── guards/               # Guards de navegação
+├── history/              # Histórico de desafios
+├── importer/             # Importador de dados
+├── interceptors/         # Interceptores HTTP
+├── job-analyzer/         # Analisador de vagas
+├── layout/               # Sidebar + main outlet
+├── leaderboard/          # Ranking global
+├── learning-paths/       # Trilhas de aprendizado
+├── loading/              # Spinner de carregamento
+├── models/               # Interfaces TypeScript
+├── notes/                # Notas de estudo Markdown
+├── pomodoro/             # Timer Pomodoro
+├── practice/             # Simulado cronometrado
+├── profile/              # Perfil do usuário
+├── reports/              # Relatório semanal
+├── services/             # Serviços (Api, Auth, Toast, Config)
+├── sessions/             # Sessões de estudo
+├── shop/                 # Loja de recompensas XP
+├── skeleton/             # Skeleton shimmer
+├── study-duels/          # Duelos de estudo 1v1
+├── subjects/             # CRUD matérias
+├── tasks/                # Kanban drag-and-drop
+├── toast/                # Notificações flutuantes
+└── vault/                # Cofre de conhecimento
+```
