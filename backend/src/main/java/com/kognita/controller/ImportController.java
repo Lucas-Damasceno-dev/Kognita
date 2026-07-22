@@ -46,7 +46,7 @@ public class ImportController {
                     .orElseGet(() -> subjectService.create(new CreateSubjectRequest(item.category(), null, null), finalUserId));
 
             for (String taskTitle : item.tasks()) {
-                taskService.create(new CreateTaskRequest(taskTitle, null, "pending", "medium", subject.id(), null, item.category(), false), finalUserId);
+                taskService.create(new CreateTaskRequest(taskTitle, null, "pending", "medium", subject.id(), null, item.category(), false, "easy"), finalUserId);
             }
         }
         return ResponseEntity.ok().build();

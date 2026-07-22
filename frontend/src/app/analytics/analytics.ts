@@ -46,23 +46,32 @@ export class Analytics implements OnInit {
       .subscribe();
   }
 
+  totalAttemptsCount = 0;
+  aiFreeAttemptsCount = 0;
+  aiUsedAttemptsCount = 0;
+  autonomyRatioPercent = 0;
+  weeklyAutonomy: { label: string; aiFree: number; aiUsed: number }[] = [];
+
   private loadData(userId: string): void {
     this.loading.set(true);
     forkJoin({
       sessions: this.api.getSessions().pipe(catchError(() => of([] as StudySession[]))),
       history: this.api.getHistory().pipe(catchError(() => of([] as ChallengeAttempt[]))),
       flashcards: this.api.getFlashcards().pipe(catchError(() => of([] as Flashcard[]))),
+      allAttempts: this.api.getChallengeAttempts().pipe(catchError(() => of([] as ChallengeAttempt[]))),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((r) => {
         const sessions = Array.isArray(r.sessions) ? r.sessions : [];
         const history = Array.isArray(r.history) ? r.history : [];
         const flashcards = Array.isArray(r.flashcards) ? r.flashcards : [];
+        const allAttempts = Array.isArray(r.allAttempts) ? r.allAttempts : [];
         this.computeWeekly(sessions, history);
         this.computeMonthly(sessions, history);
         this.computeHeatmap(sessions, history);
         this.computeForgettingCurve(flashcards);
         this.computeSkillDistribution(sessions);
+        this.computeAutonomy(allAttempts);
         this.totalSessions = sessions.length;
         this.totalHours =
           Math.round((sessions.reduce((a, s) => a + s.durationMinutes, 0) / 60) * 10) / 10;
@@ -72,6 +81,46 @@ export class Analytics implements OnInit {
              : 0;
         this.loading.set(false);
       });
+  }
+
+  private computeAutonomy(attempts: ChallengeAttempt[]): void {
+    const all = Array.isArray(attempts) ? attempts : [];
+    this.totalAttemptsCount = all.length;
+    this.aiFreeAttemptsCount = all.filter(a => !a.usedAi).length;
+    this.aiUsedAttemptsCount = all.filter(a => a.usedAi).length;
+    this.autonomyRatioPercent = this.totalAttemptsCount > 0 
+      ? Math.round((this.aiFreeAttemptsCount * 100) / this.totalAttemptsCount) 
+      : 0;
+
+    const dayNames = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+    const now = new Date();
+    const weekMap = new Map<string, { aiFree: number; aiUsed: number }>();
+    
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(d.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      weekMap.set(key, { aiFree: 0, aiUsed: 0 });
+    }
+
+    for (const a of all) {
+      if (!a.createdAt) continue;
+      const key = a.createdAt.substring(0, 10);
+      if (weekMap.has(key)) {
+        if (a.usedAi) {
+          weekMap.get(key)!.aiUsed++;
+        } else {
+          weekMap.get(key)!.aiFree++;
+        }
+      }
+    }
+
+    this.weeklyAutonomy = [];
+    for (const [dateStr, val] of weekMap) {
+      const d = new Date(dateStr + 'T00:00:00');
+      const label = dayNames[d.getDay()];
+      this.weeklyAutonomy.push({ label, aiFree: val.aiFree, aiUsed: val.aiUsed });
+    }
   }
 
   private computeHeatmap(sessions: StudySession[], history: ChallengeAttempt[]): void {

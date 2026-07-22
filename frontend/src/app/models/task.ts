@@ -13,6 +13,9 @@ export interface Task {
   verifiedByGit: boolean;
   createdAt: string;
   updatedAt: string;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  nextReviewDate?: string;
+  reviewIntervalDays?: number;
 }
 
 export interface CreateTaskRequest {
@@ -24,4 +27,5 @@ export interface CreateTaskRequest {
   dueDate?: string;
   skillCategory?: string;
   requiresProof?: boolean;
+  difficulty?: 'easy' | 'medium' | 'hard';
 }

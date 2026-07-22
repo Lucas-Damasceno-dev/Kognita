@@ -86,6 +86,49 @@
     </div>
   </div>
 
+  <div class="chart-card" role="region" aria-label="Razão de Autonomia Sem IA">
+    <div class="chart-header">
+      <h3>Taxa de Autonomia (Sem IA)</h3>
+      <span class="badge-ratio" style="background: var(--success, #10b981)20; color: var(--success, #10b981); padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: bold; font-size: 0.9rem;">
+        {{ autonomyRatioPercent }}% Autônomo
+      </span>
+    </div>
+    
+    <div style="display: flex; gap: 2rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+      <div style="flex: 1; min-width: 200px;">
+        <p style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-muted, #6b7280);">
+          Esta métrica representa o seu progresso na construção de conexões neurais reais. O ideal é manter a autonomia acima de 80%.
+        </p>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.25rem;">
+          <span>Solo (Sem IA)</span>
+          <strong style="color: #10b981;">{{ aiFreeAttemptsCount }} tentativas</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 0.75rem;">
+          <span>Assistido (Com IA)</span>
+          <strong style="color: #ef4444;">{{ aiUsedAttemptsCount }} tentativas</strong>
+        </div>
+        <div style="width: 100%; height: 10px; background: var(--bg-hover, #f3f4f6); border-radius: 5px; overflow: hidden; display: flex;">
+          <div [style.width.%]="autonomyRatioPercent" style="height: 100%; background: #10b981;"></div>
+          <div [style.width.%]="100 - autonomyRatioPercent" style="height: 100%; background: #ef4444;"></div>
+        </div>
+      </div>
+    </div>
+
+    <h4 style="font-size: 0.9rem; font-weight: 600; margin-bottom: 1rem;">Distribuição Diária (Últimos 7 dias)</h4>
+    <div style="height: 140px; display: flex; align-items: flex-end; justify-content: space-around; border-bottom: 1px solid var(--border-neutral, #e2e8f0); padding-bottom: 8px;">
+      @for (item of weeklyAutonomy; track item.label) {
+        <div style="display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; width: 45px;">
+          <div style="width: 14px; height: 100px; background: var(--bg-hover, #f3f4f6); border-radius: 6px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 1px;">
+            <div [style.height.%]="(item.aiUsed + item.aiFree) > 0 ? (item.aiUsed * 100 / (item.aiUsed + item.aiFree)) : 0" style="background: #ef4444; width: 100%;"></div>
+            <div [style.height.%]="(item.aiUsed + item.aiFree) > 0 ? (item.aiFree * 100 / (item.aiUsed + item.aiFree)) : 0" style="background: #10b981; width: 100%;"></div>
+          </div>
+          <span style="font-size: 0.75rem; margin-top: 4px; color: var(--text-muted);">{{ item.label }}</span>
+          <span style="font-size: 0.7rem; font-weight: bold; color: var(--text-main);">{{ item.aiFree }}/{{ item.aiFree + item.aiUsed }}</span>
+        </div>
+      }
+    </div>
+  </div>
+
   <div class="chart-card skill-distribution-card" role="region" aria-label="Distribuição de Tempo por Matéria">
     <div class="chart-header">
       <h3>Tempo de Foco por Matéria (Distribuição)</h3>

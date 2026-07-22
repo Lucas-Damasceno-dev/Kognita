@@ -282,4 +282,29 @@ export class Practice implements OnInit {
       this.zenMode.set(false);
     }
   }
+
+  @HostListener('document:visibilitychange', [])
+  onVisibilityChange(): void {
+    if (typeof document !== 'undefined' && document.hidden && this.started() && !this.paused() && !this.finished()) {
+      this.pause();
+      this.toast.warning('Prática pausada! Mantenha o foco nesta aba.');
+      this.playBuzzer();
+    }
+  }
+
+  private playBuzzer(): void {
+    try {
+      const ctx = new AudioContext();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = 150;
+      osc.type = 'sawtooth';
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + 0.6);
+    } catch {}
+  }
 }

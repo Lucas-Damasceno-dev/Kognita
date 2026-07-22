@@ -38,7 +38,7 @@ public class ErrorLogService {
         if (request.taskId() != null) {
             var task = taskService.findEntityById(request.taskId());
             if (!task.getUser().getId().equals(userId)) {
-                throw new RuntimeException("Not authorized");
+                throw new com.kognita.exception.NotAuthorizedException("Not authorized");
             }
             errorLog.setTask(task);
         }
@@ -49,7 +49,7 @@ public class ErrorLogService {
     public ErrorLogResponse update(UUID id, CreateErrorLogRequest request, UUID userId) {
         var errorLog = repository.findById(id).orElseThrow();
         if (!errorLog.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         errorLog.setTitle(request.title());
         errorLog.setDescription(request.description());
@@ -57,7 +57,7 @@ public class ErrorLogService {
         if (request.taskId() != null) {
             var task = taskService.findEntityById(request.taskId());
             if (!task.getUser().getId().equals(userId)) {
-                throw new RuntimeException("Not authorized");
+                throw new com.kognita.exception.NotAuthorizedException("Not authorized");
             }
             errorLog.setTask(task);
         }
@@ -68,7 +68,7 @@ public class ErrorLogService {
     public void delete(UUID id, UUID userId) {
         var errorLog = repository.findById(id).orElseThrow();
         if (!errorLog.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         repository.delete(errorLog);
     }
@@ -81,7 +81,7 @@ public class ErrorLogService {
     public com.kognita.dto.TaskResponse scheduleRechallenge(UUID id, UUID userId) {
         var errorLog = repository.findById(id).orElseThrow();
         if (!errorLog.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
 
         var title = "Reimplementar Solução: " + errorLog.getTitle();
@@ -105,7 +105,8 @@ public class ErrorLogService {
                 subjectId,
                 java.time.LocalDate.now().plusDays(3),
                 skillCategory,
-                false
+                false,
+                "medium"
         );
 
         return taskService.create(rechallengeRequest, userId);

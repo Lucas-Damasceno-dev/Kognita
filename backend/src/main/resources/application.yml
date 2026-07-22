@@ -33,3 +33,7 @@ ai:
   api:
     url: ${AI_API_URL:https://api.openai.com/v1}
     key: ${AI_API_KEY:your-key-here}
+
+github:
+  webhook:
+    secret: ${GITHUB_WEBHOOK_SECRET:}

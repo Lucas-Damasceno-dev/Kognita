@@ -107,7 +107,7 @@ class TaskServiceTest {
 
     @Test
     void create_ShouldSaveAndReturnTask() {
-        CreateTaskRequest request = new CreateTaskRequest("New Task", "Desc", "pending", "low", null, LocalDate.now(), "Frontend", null);
+        CreateTaskRequest request = new CreateTaskRequest("New Task", "Desc", "pending", "low", null, LocalDate.now(), "Frontend", null, "easy");
         
         when(userService.findEntityById(userId)).thenReturn(testUser);
         when(taskRepository.save(any(Task.class))).thenAnswer(invocation -> {
@@ -131,7 +131,7 @@ class TaskServiceTest {
     @Test
     void create_WithSubject_ShouldSaveAndReturnTask() {
         UUID subjectId = UUID.randomUUID();
-        CreateTaskRequest request = new CreateTaskRequest("New Task", "Desc", "pending", "low", subjectId, LocalDate.now(), "Frontend", null);
+        CreateTaskRequest request = new CreateTaskRequest("New Task", "Desc", "pending", "low", subjectId, LocalDate.now(), "Frontend", null, "easy");
         
         Subject subject = new Subject();
         subject.setId(subjectId);
@@ -154,7 +154,7 @@ class TaskServiceTest {
 
     @Test
     void update_ShouldModifyAndReturnTask() {
-        CreateTaskRequest request = new CreateTaskRequest("Updated Task", "Updated Desc", "completed", "medium", null, LocalDate.now(), "Backend", true);
+        CreateTaskRequest request = new CreateTaskRequest("Updated Task", "Updated Desc", "completed", "medium", null, LocalDate.now(), "Backend", true, "medium");
         
         when(taskRepository.findById(taskId)).thenReturn(Optional.of(testTask));
         when(taskRepository.save(any(Task.class))).thenReturn(testTask);

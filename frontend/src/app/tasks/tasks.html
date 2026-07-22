@@ -79,6 +79,14 @@
       </select>
     </label>
     <label>
+      Dificuldade
+      <select [(ngModel)]="difficulty" name="difficulty">
+        <option value="easy">Fácil (10 XP)</option>
+        <option value="medium">Média (30 XP)</option>
+        <option value="hard">Difícil (50 XP)</option>
+      </select>
+    </label>
+    <label>
       Matéria
       <select [(ngModel)]="subjectId" name="subjectId">
         <option value="">Nenhuma</option>
@@ -167,7 +175,10 @@
                 />
               }
               <strong class="task-title">{{ item.title }}</strong>
-              <span class="priority-badge {{ item.priority }}">{{ item.priority }}</span>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <span class="priority-badge {{ item.priority }}">{{ item.priority === 'high' ? 'Alta' : item.priority === 'medium' ? 'Média' : 'Baixa' }}</span>
+                <span class="difficulty-badge {{ item.difficulty || 'easy' }}">{{ item.difficulty === 'hard' ? 'Difícil' : item.difficulty === 'medium' ? 'Média' : 'Fácil' }}</span>
+              </div>
             </div>
             <div class="kanban-item-meta">
               @if (item.dueDate) {
@@ -285,7 +296,10 @@
                 />
               }
               <strong class="task-title">{{ item.title }}</strong>
-              <span class="priority-badge {{ item.priority }}">{{ item.priority }}</span>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <span class="priority-badge {{ item.priority }}">{{ item.priority === 'high' ? 'Alta' : item.priority === 'medium' ? 'Média' : 'Baixa' }}</span>
+                <span class="difficulty-badge {{ item.difficulty || 'easy' }}">{{ item.difficulty === 'hard' ? 'Difícil' : item.difficulty === 'medium' ? 'Média' : 'Fácil' }}</span>
+              </div>
             </div>
             <div class="kanban-item-meta">
               @if (item.dueDate) {
@@ -393,7 +407,10 @@
                 />
               }
               <strong class="task-title">{{ item.title }}</strong>
-              <span class="priority-badge {{ item.priority }}">{{ item.priority }}</span>
+              <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+                <span class="priority-badge {{ item.priority }}">{{ item.priority === 'high' ? 'Alta' : item.priority === 'medium' ? 'Média' : 'Baixa' }}</span>
+                <span class="difficulty-badge {{ item.difficulty || 'easy' }}">{{ item.difficulty === 'hard' ? 'Difícil' : item.difficulty === 'medium' ? 'Média' : 'Fácil' }}</span>
+              </div>
             </div>
             <div class="kanban-item-meta">
               @if (item.dueDate) {

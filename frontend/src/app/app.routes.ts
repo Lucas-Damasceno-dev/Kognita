@@ -32,6 +32,10 @@ export const routes: Routes = [
         loadComponent: () => import('./practice/practice').then(m => m.Practice),
       },
       {
+        path: 'rubber-duck',
+        loadComponent: () => import('./rubber-duck/rubber-duck').then(m => m.RubberDuck),
+      },
+      {
         path: 'sessions',
         loadComponent: () => import('./sessions/sessions').then(m => m.Sessions),
         canDeactivate: [canDeactivateGuard],

@@ -60,7 +60,7 @@ public class StudyGoalService {
     public GoalResponse update(UUID id, CreateGoalRequest request, UUID userId) {
         var goal = repository.findById(id).orElseThrow();
         if (!goal.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         goal.setTitle(request.title());
         goal.setDescription(request.description());
@@ -75,7 +75,7 @@ public class StudyGoalService {
     public GoalResponse updateProgress(UUID id, Integer hours, UUID userId) {
         var goal = repository.findById(id).orElseThrow();
         if (!goal.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         goal.setCurrentHours(goal.getCurrentHours() + hours);
         return GoalResponse.from(repository.save(goal));
@@ -85,7 +85,7 @@ public class StudyGoalService {
     public void delete(UUID id, UUID userId) {
         var goal = repository.findById(id).orElseThrow();
         if (!goal.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         repository.delete(goal);
     }
@@ -93,8 +93,12 @@ public class StudyGoalService {
     private void checkAndRolloverGoal(StudyGoal goal) {
         if (goal.getIsRecurring() != null && goal.getIsRecurring() && goal.getDeadline() != null) {
             java.time.LocalDate today = java.time.LocalDate.now();
-            if (goal.getDeadline().isBefore(today)) {
-                // Determine if achieved
+            java.time.LocalDate deadline = goal.getDeadline();
+            String period = goal.getRecurrencePeriod() != null ? goal.getRecurrencePeriod() : "weekly";
+            boolean changed = false;
+
+            while (deadline.isBefore(today)) {
+                changed = true;
                 boolean achieved = goal.getCurrentHours() >= goal.getTargetHours();
                 if (achieved) {
                     goal.setStreakCount((goal.getStreakCount() != null ? goal.getStreakCount() : 0) + 1);
@@ -102,23 +106,20 @@ public class StudyGoalService {
                     goal.setStreakCount(0);
                 }
 
-                // Roll over deadline and current hours
+                // Roll over current hours
                 goal.setCurrentHours(0);
 
-                // Keep advancing the deadline until it is today or in the future
-                java.time.LocalDate deadline = goal.getDeadline();
-                String period = goal.getRecurrencePeriod() != null ? goal.getRecurrencePeriod() : "weekly";
-
-                while (deadline.isBefore(today)) {
-                    if ("weekly".equals(period)) {
-                        deadline = deadline.plusWeeks(1);
-                    } else if ("monthly".equals(period)) {
-                        deadline = deadline.plusMonths(1);
-                    } else {
-                        deadline = deadline.plusWeeks(1);
-                        break;
-                    }
+                if ("weekly".equals(period)) {
+                    deadline = deadline.plusWeeks(1);
+                } else if ("monthly".equals(period)) {
+                    deadline = deadline.plusMonths(1);
+                } else {
+                    deadline = deadline.plusWeeks(1);
+                    break;
                 }
+            }
+
+            if (changed) {
                 goal.setDeadline(deadline);
                 repository.save(goal);
             }

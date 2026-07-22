@@ -47,7 +47,7 @@ public class StudySessionService {
         var user = userService.findEntityById(userId);
         var subject = subjectService.findEntityById(request.subjectId());
         if (!subject.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         var session = new StudySession();
         session.setSubject(subject);
@@ -56,6 +56,11 @@ public class StudySessionService {
         session.setNotes(request.notes());
         session.setDate(request.date() != null ? request.date() : LocalDate.now());
         var saved = repository.save(session);
+        int xp = request.durationMinutes();
+        if (subjectService.isWeeklySubject(subject.getId(), userId)) {
+            xp = (int) (xp * 1.5);
+        }
+        userService.awardXp(userId, xp, "STUDY_SESSION", "Sessão de foco de " + request.durationMinutes() + "m: " + subject.getName());
         userService.registerActivity(userId);
         return StudySessionResponse.from(saved);
     }
@@ -64,11 +69,11 @@ public class StudySessionService {
     public StudySessionResponse update(UUID id, CreateStudySessionRequest request, UUID userId) {
         var session = repository.findById(id).orElseThrow();
         if (!session.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         var subject = subjectService.findEntityById(request.subjectId());
         if (!subject.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         session.setSubject(subject);
         session.setDurationMinutes(request.durationMinutes());
@@ -81,7 +86,7 @@ public class StudySessionService {
     public void delete(UUID id, UUID userId) {
         var session = repository.findById(id).orElseThrow();
         if (!session.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         repository.delete(session);
     }

@@ -51,7 +51,7 @@ public class FlashcardService {
         if (request.subjectId() != null) {
             var subject = subjectService.findEntityById(request.subjectId());
             if (!subject.getUser().getId().equals(userId)) {
-                throw new RuntimeException("Not authorized");
+                throw new com.kognita.exception.NotAuthorizedException("Not authorized");
             }
             flashcard.setSubject(subject);
         }
@@ -63,7 +63,7 @@ public class FlashcardService {
     public FlashcardResponse update(UUID id, CreateFlashcardRequest request, UUID userId) {
         var flashcard = repository.findById(id).orElseThrow();
         if (!flashcard.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
 
         flashcard.setQuestion(request.question());
@@ -75,7 +75,7 @@ public class FlashcardService {
         if (request.subjectId() != null) {
             var subject = subjectService.findEntityById(request.subjectId());
             if (!subject.getUser().getId().equals(userId)) {
-                throw new RuntimeException("Not authorized");
+                throw new com.kognita.exception.NotAuthorizedException("Not authorized");
             }
             flashcard.setSubject(subject);
         } else {
@@ -89,7 +89,7 @@ public class FlashcardService {
     public void delete(UUID id, UUID userId) {
         var flashcard = repository.findById(id).orElseThrow();
         if (!flashcard.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         repository.delete(flashcard);
     }
@@ -98,7 +98,7 @@ public class FlashcardService {
     public FlashcardResponse review(UUID id, int rating, UUID userId) {
         var flashcard = repository.findById(id).orElseThrow();
         if (!flashcard.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
 
         // SM-2 Spaced Repetition Algorithm
@@ -132,6 +132,13 @@ public class FlashcardService {
         flashcard.setNextReview(LocalDate.now().plusDays(intervalDays));
 
         var saved = repository.save(flashcard);
+        if (rating >= 3) {
+            int xp = 5;
+            if (flashcard.getSubject() != null && subjectService.isWeeklySubject(flashcard.getSubject().getId(), userId)) {
+                xp = (int) (xp * 1.5);
+            }
+            userService.awardXp(userId, xp, "FLASHCARD", "Revisão bem-sucedida de flashcard");
+        }
         userService.registerActivity(userId);
         return FlashcardResponse.from(saved);
     }

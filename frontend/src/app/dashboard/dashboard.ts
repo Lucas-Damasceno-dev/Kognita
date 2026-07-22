@@ -46,6 +46,7 @@ export class Dashboard implements OnInit {
   recentNotes = computed(() => this.notesSvc.recentlyEdited());
 
   showAutoScheduler = signal(false);
+  activeTab = signal<'foco' | 'evolucao'>('foco');
 
   toggleAutoScheduler(): void {
     this.showAutoScheduler.update(v => !v);
@@ -141,6 +142,27 @@ export class Dashboard implements OnInit {
       })
       .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime());
   });
+
+  reviewTasks = computed(() => {
+    const today = this.todayStr();
+    return this.allTasks().filter((t) => {
+      return t.status === 'completed' && t.nextReviewDate && t.nextReviewDate <= today;
+    });
+  });
+
+  reopenForReview(taskId: string): void {
+    this.api.updateTaskStatus(taskId, 'in_progress').subscribe({
+      next: () => {
+        this.toast.success('Tarefa reaberta para revisão no Kanban!');
+        // Recarregar os dados do dashboard
+        const user = this.auth.user();
+        if (user) this.loadDashboard(user);
+      },
+      error: () => {
+        this.toast.error('Erro ao reabrir tarefa para revisão.');
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.auth

@@ -39,7 +39,7 @@ public class ChallengeGoalService {
     public void delete(UUID id, UUID userId) {
         var goal = repository.findById(id).orElseThrow();
         if (!goal.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         repository.delete(goal);
     }

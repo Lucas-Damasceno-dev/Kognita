@@ -12,5 +12,6 @@ public record CreateTaskRequest(
     UUID subjectId,
     LocalDate dueDate,
     String skillCategory,
-    Boolean requiresProof
+    Boolean requiresProof,
+    String difficulty
 ) {}

@@ -38,7 +38,7 @@ public class ChallengeAttemptService {
         var user = userService.findEntityById(userId);
         var task = taskService.findEntityById(request.taskId());
         if (!task.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         var attempt = new ChallengeAttempt();
         attempt.setTask(task);
@@ -51,6 +51,20 @@ public class ChallengeAttemptService {
         
         if (!request.usedAi()) {
             challengeGoalService.incrementProgress(userId);
+            // Atualiza curva de esquecimento (spaced repetition) na Task
+            int currentInterval = task.getReviewIntervalDays() != null ? task.getReviewIntervalDays() : 0;
+            int nextInterval;
+            if (currentInterval == 0) {
+                nextInterval = 1;
+            } else if (currentInterval == 1) {
+                nextInterval = 7;
+            } else if (currentInterval == 7) {
+                nextInterval = 14;
+            } else {
+                nextInterval = 30;
+            }
+            task.setReviewIntervalDays(nextInterval);
+            task.setNextReviewDate(LocalDate.now().plusDays(nextInterval));
         }
         
         return ChallengeAttemptResponse.from(repository.save(attempt));
@@ -60,7 +74,7 @@ public class ChallengeAttemptService {
     public ChallengeAttemptResponse update(UUID id, CreateChallengeAttemptRequest request, UUID userId) {
         var attempt = repository.findById(id).orElseThrow();
         if (!attempt.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         attempt.setHowISolved(request.howISolved());
         attempt.setNotes(request.notes());
@@ -71,7 +85,7 @@ public class ChallengeAttemptService {
     public void delete(UUID id, UUID userId) {
         var attempt = repository.findById(id).orElseThrow();
         if (!attempt.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         repository.delete(attempt);
     }

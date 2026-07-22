@@ -54,7 +54,7 @@ public class ImportService {
                 }
 
                 if (topicName != null && !topicName.trim().isEmpty()) {
-                    taskService.create(new CreateTaskRequest(topicName, null, "pending", "medium", subject.id(), null, title, false), userId);
+                    taskService.create(new CreateTaskRequest(topicName, null, "pending", "medium", subject.id(), null, title, false, "easy"), userId);
                     count++;
                 }
             }

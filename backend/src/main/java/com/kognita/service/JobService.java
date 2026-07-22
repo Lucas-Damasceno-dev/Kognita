@@ -72,14 +72,33 @@ public class JobService {
         List<String> skillsMissing = new ArrayList<>();
 
         for (String skill : userSkills) {
-            if (jobDescriptionLower.contains(skill.toLowerCase())) {
+            if (skill != null && jobDescriptionLower.contains(skill.toLowerCase())) {
                 skillsFound.add(skill);
-            } else {
+            }
+        }
+
+        java.util.List<String> commonSkills = java.util.List.of(
+            "Java", "Spring", "Python", "Django", "JavaScript", "TypeScript", "React", "Angular", 
+            "Vue", "Node", "Express", "Go", "Golang", "Rust", "C++", "C#", "SQL", "PostgreSQL", 
+            "MySQL", "MongoDB", "Redis", "Docker", "Kubernetes", "AWS", "Azure", "GCP", 
+            "DevOps", "CI/CD", "Git", "Maven", "Gradle", "GraphQL", "REST", "HTML", "CSS"
+        );
+
+        java.util.Set<String> userSkillsSet = new java.util.HashSet<>();
+        for (String s : userSkills) {
+            if (s != null) {
+                userSkillsSet.add(s.toLowerCase().trim());
+            }
+        }
+
+        for (String skill : commonSkills) {
+            if (jobDescriptionLower.contains(skill.toLowerCase()) && !userSkillsSet.contains(skill.toLowerCase())) {
                 skillsMissing.add(skill);
             }
         }
 
-        double readiness = userSkills.isEmpty() ? 0 : (double) skillsFound.size() / userSkills.size();
+        double totalRelevantSkills = skillsFound.size() + skillsMissing.size();
+        double readiness = totalRelevantSkills == 0 ? 0.0 : (double) skillsFound.size() / totalRelevantSkills;
         String readinessLevel = readiness > 0.7 ? "High" : (readiness > 0.4 ? "Medium" : "Low");
 
         return new JobAnalysisResponse(skillsFound, skillsMissing, readinessLevel);

@@ -19,7 +19,10 @@ public record TaskResponse(
     boolean requiresProof,
     boolean verifiedByGit,
     OffsetDateTime createdAt,
-    OffsetDateTime updatedAt
+    OffsetDateTime updatedAt,
+    String difficulty,
+    LocalDate nextReviewDate,
+    Integer reviewIntervalDays
 ) {
     public static TaskResponse from(Task task) {
         return new TaskResponse(
@@ -36,7 +39,10 @@ public record TaskResponse(
             task.isRequiresProof(),
             task.isVerifiedByGit(),
             task.getCreatedAt(),
-            task.getUpdatedAt()
+            task.getUpdatedAt(),
+            task.getDifficulty(),
+            task.getNextReviewDate(),
+            task.getReviewIntervalDays()
         );
     }
 }

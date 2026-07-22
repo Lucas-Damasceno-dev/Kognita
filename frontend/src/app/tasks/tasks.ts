@@ -42,6 +42,7 @@ export class Tasks implements OnInit {
   subjectId = signal('');
   skillCategory = signal('');
   dueDate = signal('');
+  difficulty = signal<'easy' | 'medium' | 'hard'>('easy');
   
   showForm = signal(false);
   editingId = signal<string | null>(null);
@@ -317,6 +318,7 @@ export class Tasks implements OnInit {
     this.subjectId.set(item.subjectId || '');
     this.skillCategory.set(item.skillCategory || '');
     this.dueDate.set(item.dueDate || '');
+    this.difficulty.set(item.difficulty || 'easy');
     this.showForm.set(true);
   }
 
@@ -353,6 +355,7 @@ export class Tasks implements OnInit {
     this.subjectId.set('');
     this.skillCategory.set('');
     this.dueDate.set('');
+    this.difficulty.set('easy');
     this.showForm.set(false);
     this.saving.set(false);
   }
@@ -369,13 +372,14 @@ export class Tasks implements OnInit {
     if (!this.title().trim()) return;
     this.saving.set(true);
 
-    const req = {
+    const req: any = {
       title: this.title(),
       description: this.description() || undefined,
       priority: this.priority(),
       subjectId: this.subjectId() || undefined,
       skillCategory: this.skillCategory() || undefined,
       dueDate: this.dueDate() || undefined,
+      difficulty: this.difficulty(),
     };
     const obs = this.editingId()
       ? this.api.updateTask(this.editingId()!, req)

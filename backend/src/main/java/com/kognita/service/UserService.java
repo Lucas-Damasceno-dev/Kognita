@@ -19,6 +19,21 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class UserService {
 
+    private static final java.util.Map<String, Integer> TITLE_PRICES = java.util.Map.of(
+        "Sobrevivente do Código", 100,
+        "Destruidor de Bugs", 250,
+        "Codificador de Elite", 500,
+        "Mestre da Resiliência", 800,
+        "Lendário Sem IA", 1200
+    );
+
+    private static final java.util.Map<String, Integer> BORDER_PRICES = java.util.Map.of(
+        "border-bronze", 150,
+        "border-silver", 300,
+        "border-gold", 500,
+        "border-rainbow", 1000
+    );
+
     private final UserRepository repository;
     private final PasswordEncoder passwordEncoder;
     private final ChallengeAttemptRepository challengeAttemptRepository;
@@ -273,12 +288,26 @@ public class UserService {
     }
 
     @Transactional
+    public void awardXp(UUID userId, int amount, String source, String description) {
+        var user = repository.findById(userId).orElseThrow();
+        user.setTotalExperience(user.getTotalExperience() + amount);
+        repository.save(user);
+
+        var tx = new com.kognita.model.XpTransaction();
+        tx.setUser(user);
+        tx.setAmount(amount);
+        tx.setSource(source);
+        tx.setDescription(description);
+        xpTransactionRepository.save(tx);
+    }
+
+    @Transactional
     public UserResponse buyStreakFreeze(UUID userId) {
         var user = repository.findById(userId).orElseThrow();
         if (user.getTotalExperience() < 200) {
             throw new IllegalArgumentException("Experiência insuficiente para comprar congelador");
         }
-        user.setTotalExperience(user.getTotalExperience() - 200);
+        awardXp(userId, -200, "SHOP", "Compra de Congelador de Sequência");
         user.setStreakFreezes((user.getStreakFreezes() != null ? user.getStreakFreezes() : 0) + 1);
         return UserResponse.from(repository.save(user));
     }
@@ -293,38 +322,30 @@ public class UserService {
     @Transactional
     public UserResponse buyTitle(UUID userId, String title, int cost) {
         var user = repository.findById(userId).orElseThrow();
-        if (user.getTotalExperience() < cost) {
+        Integer actualCost = TITLE_PRICES.get(title);
+        if (actualCost == null) {
+            throw new IllegalArgumentException("Título inválido");
+        }
+        if (user.getTotalExperience() < actualCost) {
             throw new IllegalArgumentException("Experiência insuficiente para comprar título");
         }
-        user.setTotalExperience(user.getTotalExperience() - cost);
+        awardXp(userId, -actualCost, "SHOP", "Compra de título: " + title);
         user.setTitle(title);
-        
-        var tx = new com.kognita.model.XpTransaction();
-        tx.setUser(user);
-        tx.setAmount(-cost);
-        tx.setSource("SHOP");
-        tx.setDescription("Compra de título: " + title);
-        xpTransactionRepository.save(tx);
-        
         return UserResponse.from(repository.save(user));
     }
 
     @Transactional
     public UserResponse buyBorder(UUID userId, String border, int cost) {
         var user = repository.findById(userId).orElseThrow();
-        if (user.getTotalExperience() < cost) {
+        Integer actualCost = BORDER_PRICES.get(border);
+        if (actualCost == null) {
+            throw new IllegalArgumentException("Borda inválida");
+        }
+        if (user.getTotalExperience() < actualCost) {
             throw new IllegalArgumentException("Experiência insuficiente para comprar borda");
         }
-        user.setTotalExperience(user.getTotalExperience() - cost);
+        awardXp(userId, -actualCost, "SHOP", "Compra de borda de avatar: " + border);
         user.setAvatarBorder(border);
-        
-        var tx = new com.kognita.model.XpTransaction();
-        tx.setUser(user);
-        tx.setAmount(-cost);
-        tx.setSource("SHOP");
-        tx.setDescription("Compra de borda de avatar: " + border);
-        xpTransactionRepository.save(tx);
-        
         return UserResponse.from(repository.save(user));
     }
 
@@ -342,15 +363,7 @@ public class UserService {
             throw new IllegalArgumentException("Missão diária já resgatada hoje");
         }
         
-        user.setTotalExperience(user.getTotalExperience() + 50);
-        
-        var tx = new com.kognita.model.XpTransaction();
-        tx.setUser(user);
-        tx.setAmount(50);
-        tx.setSource("DAILY_QUEST");
-        tx.setDescription("Missões diárias concluídas");
-        xpTransactionRepository.save(tx);
-        
+        awardXp(userId, 50, "DAILY_QUEST", "Missões diárias concluídas");
         return UserResponse.from(repository.save(user));
     }
 }

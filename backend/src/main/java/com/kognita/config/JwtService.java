@@ -19,7 +19,16 @@ public class JwtService {
     public JwtService(
             @Value("${jwt.secret}") String secret,
             @Value("${jwt.expiration:86400000}") long expiration) {
-        this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (secretBytes.length < 32) {
+            try {
+                java.security.MessageDigest digest = java.security.MessageDigest.getInstance("SHA-256");
+                secretBytes = digest.digest(secretBytes);
+            } catch (java.security.NoSuchAlgorithmException e) {
+                // Should not happen as SHA-256 is built-in
+            }
+        }
+        this.key = Keys.hmacShaKeyFor(secretBytes);
         this.expiration = expiration;
     }
 

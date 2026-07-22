@@ -50,6 +50,13 @@ public final class GlobalExceptionHandler {
                 .body(ApiResponse.error("Data integrity violation"));
     }
 
+    @ExceptionHandler(com.kognita.exception.NotAuthorizedException.class)
+    public ResponseEntity<ApiResponse<Void>> handleNotAuthorized(final com.kognita.exception.NotAuthorizedException ex) {
+        logger.warn("Not authorized access: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(ApiResponse.error(ex.getMessage()));
+    }
+
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<Void>> handleGeneral(final RuntimeException ex) {
         logger.error("Internal server error: {}", ex.getMessage(), ex);

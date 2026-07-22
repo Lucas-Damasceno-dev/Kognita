@@ -52,7 +52,7 @@ public class SubjectService {
     public SubjectResponse findById(UUID id, UUID userId) {
         var subject = repository.findById(id).orElseThrow();
         if (!subject.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         return SubjectResponse.from(subject);
     }
@@ -73,7 +73,7 @@ public class SubjectService {
     public SubjectResponse update(UUID id, CreateSubjectRequest request, UUID userId) {
         var subject = repository.findById(id).orElseThrow();
         if (!subject.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         subject.setName(request.name());
         subject.setDescription(request.description());
@@ -86,7 +86,7 @@ public class SubjectService {
     public void delete(UUID id, UUID userId) {
         var subject = repository.findById(id).orElseThrow();
         if (!subject.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         taskRepository.deleteBySubjectId(id);
         if (subject.getName() != null) {
@@ -96,7 +96,7 @@ public class SubjectService {
     }
 
     public boolean isWeeklySubject(UUID subjectId, UUID userId) {
-        var subjects = repository.findByUserId(userId);
+        var subjects = repository.findByUserIdAndArchivedFalse(userId);
         if (subjects == null || subjects.isEmpty()) {
             return false;
         }
@@ -119,7 +119,7 @@ public class SubjectService {
     public SubjectResponse archive(UUID id, UUID userId) {
         var subject = repository.findById(id).orElseThrow();
         if (!subject.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         subject.setArchived(true);
         return SubjectResponse.from(repository.save(subject));

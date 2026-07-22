@@ -244,6 +244,10 @@ export class ApiService {
     return this.http.get<ChallengeAttempt[]>(`${this.api}/challenge-attempts/history`, { params });
   }
 
+  getChallengeAttempts(): Observable<ChallengeAttempt[]> {
+    return this.http.get<ChallengeAttempt[]>(`${this.api}/challenge-attempts`);
+  }
+
   // Error Logs
   getErrorLogs(): Observable<ErrorLog[]> {
     return this.http.get<ErrorLog[]>(`${this.api}/error-logs`);

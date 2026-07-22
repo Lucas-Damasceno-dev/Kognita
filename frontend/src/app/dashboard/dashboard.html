@@ -76,19 +76,25 @@
       </div>
     </header>
 
-    <!-- Previsão Inteligente de Prontidão para Prova (1.4) -->
-    <app-exam-readiness
-      [tasks]="allTasks()"
-      [subjects]="subjects()"
-      [sessions]="sessions()"
-      [errorLogs]="errorLogs()"
-    ></app-exam-readiness>
-
-    <!-- Árvore de Conhecimento / Skill Tree (1.3) -->
-    <app-skill-tree
-      [subjects]="subjects()"
-      [tasks]="allTasks()"
-    ></app-skill-tree>
+    <!-- Dashboard Tabs -->
+    <div class="dashboard-tabs-container">
+      <div class="dashboard-tabs">
+        <button 
+          class="tab-btn-dashboard" 
+          [class.active]="activeTab() === 'foco'" 
+          (click)="activeTab.set('foco')"
+          aria-label="Aba Foco Diário">
+          🎯 Foco Diário
+        </button>
+        <button 
+          class="tab-btn-dashboard" 
+          [class.active]="activeTab() === 'evolucao'" 
+          (click)="activeTab.set('evolucao')"
+          aria-label="Aba Evolução & Métricas">
+          📊 Evolução & Métricas
+        </button>
+      </div>
+    </div>
 
     @if (showAutoScheduler()) {
       <app-auto-scheduler
@@ -98,8 +104,25 @@
       ></app-auto-scheduler>
     }
 
-    <!-- Main Content Fit Grid (3 Colunas) -->
-    <div class="dashboard-fit-grid">
+    @if (activeTab() === 'evolucao') {
+      <!-- Previsão Inteligente de Prontidão para Prova (1.4) -->
+      <app-exam-readiness
+        [tasks]="allTasks()"
+        [subjects]="subjects()"
+        [sessions]="sessions()"
+        [errorLogs]="errorLogs()"
+      ></app-exam-readiness>
+
+      <!-- Árvore de Conhecimento / Skill Tree (1.3) -->
+      <app-skill-tree
+        [subjects]="subjects()"
+        [tasks]="allTasks()"
+      ></app-skill-tree>
+    }
+
+    @if (activeTab() === 'foco') {
+      <!-- Main Content Fit Grid (3 Colunas) -->
+      <div class="dashboard-fit-grid">
       <!-- Coluna 1 (Foco & Missões) -->
       <div class="dashboard-col col-1">
         <!-- Card Missões Diárias (Compacto) -->
@@ -390,6 +413,27 @@
           </section>
         }
 
+        <!-- Revisões Devidas (Curva de Esquecimento) -->
+        @if (reviewTasks().length > 0) {
+          <section class="glass-card review-tasks-card">
+            <div class="card-header">
+              <h2 class="card-title">🔄 Revisões Devidas</h2>
+              <span class="pending-count-badge">{{ reviewTasks().length }}</span>
+            </div>
+            <div class="upcoming-list">
+              @for (task of reviewTasks(); track task.id) {
+                <div class="upcoming-item" style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                  <div style="display: flex; flex-direction: column; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                    <span class="upcoming-title" [title]="task.title" style="font-weight: 600;">{{ task.title }}</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Próxima revisão devida! (Intervalo: {{ task.reviewIntervalDays }}d)</span>
+                  </div>
+                  <button class="btn btn-primary btn-sm" (click)="reopenForReview(task.id)">Revisar</button>
+                </div>
+              }
+            </div>
+          </section>
+        }
+
         <!-- Desafios Pendentes (Card Principal com scroll interno) -->
         <section class="glass-card pending-card">
           <div class="card-header">
@@ -444,5 +488,6 @@
         </section>
       </div>
     </div>
+    }
   </div>
 }

@@ -71,6 +71,15 @@ public class Task {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @Column(name = "next_review_date")
+    private LocalDate nextReviewDate;
+
+    @Column(name = "review_interval_days")
+    private Integer reviewIntervalDays = 0;
+
+    @Column(length = 10)
+    private String difficulty = "easy";
+
     @PrePersist
     protected void onCreate() {
         createdAt = OffsetDateTime.now();
@@ -110,4 +119,11 @@ public class Task {
     public void setVerifiedByGit(boolean verifiedByGit) { this.verifiedByGit = verifiedByGit; }
     public OffsetDateTime getCreatedAt() { return createdAt; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
+
+    public LocalDate getNextReviewDate() { return nextReviewDate; }
+    public void setNextReviewDate(LocalDate nextReviewDate) { this.nextReviewDate = nextReviewDate; }
+    public Integer getReviewIntervalDays() { return reviewIntervalDays; }
+    public void setReviewIntervalDays(Integer reviewIntervalDays) { this.reviewIntervalDays = reviewIntervalDays; }
+    public String getDifficulty() { return difficulty; }
+    public void setDifficulty(String difficulty) { this.difficulty = difficulty; }
 }

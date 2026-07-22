@@ -39,7 +39,7 @@ public class TaskService {
     public TaskResponse findById(UUID id, UUID userId) {
         var task = repository.findById(id).orElseThrow();
         if (!task.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         return TaskResponse.from(task);
     }
@@ -58,10 +58,20 @@ public class TaskService {
         if (request.requiresProof() != null) {
             task.setRequiresProof(request.requiresProof());
         }
+        if (request.difficulty() != null) {
+            task.setDifficulty(request.difficulty());
+            if ("easy".equals(request.difficulty())) {
+                task.setExperiencePoints(10);
+            } else if ("medium".equals(request.difficulty())) {
+                task.setExperiencePoints(30);
+            } else if ("hard".equals(request.difficulty())) {
+                task.setExperiencePoints(50);
+            }
+        }
         if (request.subjectId() != null) {
             var subject = subjectService.findEntityById(request.subjectId());
             if (!subject.getUser().getId().equals(userId)) {
-                throw new RuntimeException("Not authorized");
+                throw new com.kognita.exception.NotAuthorizedException("Not authorized");
             }
             task.setSubject(subject);
         }
@@ -72,7 +82,7 @@ public class TaskService {
     public TaskResponse update(UUID id, CreateTaskRequest request, UUID userId) {
         var task = repository.findById(id).orElseThrow();
         if (!task.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         task.setTitle(request.title());
         task.setDescription(request.description());
@@ -83,10 +93,20 @@ public class TaskService {
         if (request.requiresProof() != null) {
             task.setRequiresProof(request.requiresProof());
         }
+        if (request.difficulty() != null) {
+            task.setDifficulty(request.difficulty());
+            if ("easy".equals(request.difficulty())) {
+                task.setExperiencePoints(10);
+            } else if ("medium".equals(request.difficulty())) {
+                task.setExperiencePoints(30);
+            } else if ("hard".equals(request.difficulty())) {
+                task.setExperiencePoints(50);
+            }
+        }
         if (request.subjectId() != null) {
             var subject = subjectService.findEntityById(request.subjectId());
             if (!subject.getUser().getId().equals(userId)) {
-                throw new RuntimeException("Not authorized");
+                throw new com.kognita.exception.NotAuthorizedException("Not authorized");
             }
             task.setSubject(subject);
         } else {
@@ -99,16 +119,14 @@ public class TaskService {
     public TaskResponse updateStatus(UUID id, String status, UUID userId) {
         var task = repository.findById(id).orElseThrow();
         if (!task.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         if ("completed".equals(status) && !"completed".equals(task.getStatus())) {
-            var user = task.getUser();
             int xp = task.getExperiencePoints();
             if (task.getSubject() != null && subjectService.isWeeklySubject(task.getSubject().getId(), userId)) {
                 xp = (int) (xp * 1.5);
             }
-            user.setTotalExperience(user.getTotalExperience() + xp);
-            userService.save(user);
+            userService.awardXp(userId, xp, "TASK", "Tarefa concluída: " + task.getTitle());
         }
         task.setStatus(status);
         return TaskResponse.from(repository.save(task));
@@ -126,7 +144,7 @@ public class TaskService {
     public void delete(UUID id, UUID userId) {
         var task = repository.findById(id).orElseThrow();
         if (!task.getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not authorized");
+            throw new com.kognita.exception.NotAuthorizedException("Not authorized");
         }
         repository.delete(task);
     }

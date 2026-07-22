@@ -43,7 +43,14 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             chain.doFilter(request, response);
             return;
         }
-        var user = userRepository.findById(java.util.UUID.fromString(userId));
+        java.util.UUID uuid;
+        try {
+            uuid = java.util.UUID.fromString(userId);
+        } catch (IllegalArgumentException e) {
+            chain.doFilter(request, response);
+            return;
+        }
+        var user = userRepository.findById(uuid);
         if (user.isEmpty()) {
             chain.doFilter(request, response);
             return;

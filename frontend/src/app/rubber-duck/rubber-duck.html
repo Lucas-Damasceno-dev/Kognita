@@ -1,0 +1,105 @@
+<div class="rubber-duck-container glass-card-mesh animate-fade-in">
+  <div class="duck-header">
+    <div class="duck-icon-large">🦆</div>
+    <h2>Método do Pato de Borracha (SOS Debug)</h2>
+    <p class="subtitle">Explique seu problema em voz alta (ou escrevendo aqui) para organizar suas conexões mentais e encontrar a solução sem muletas de IA.</p>
+  </div>
+
+  <!-- Step Progress Indicator -->
+  <div class="step-indicator">
+    <div class="step-dot" [class.active]="step() >= 1" [class.completed]="step() > 1">1</div>
+    <div class="step-line" [class.completed]="step() > 1"></div>
+    <div class="step-dot" [class.active]="step() >= 2" [class.completed]="step() > 2">2</div>
+    <div class="step-line" [class.completed]="step() > 2"></div>
+    <div class="step-dot" [class.active]="step() >= 3" [class.completed]="step() > 3">3</div>
+    <div class="step-line" [class.completed]="step() > 3"></div>
+    <div class="step-dot" [class.active]="step() >= 4" [class.completed]="step() > 4">4</div>
+    <div class="step-line" [class.completed]="step() > 4"></div>
+    <div class="step-dot" [class.active]="step() >= 5" [class.completed]="step() > 5">5</div>
+  </div>
+
+  <div class="duck-content-box">
+    <!-- STEP 1: O Título -->
+    @if (step() === 1) {
+      <div class="step-panel animate-slide-in">
+        <div class="duck-bubble">
+          <p><strong>Pato diz:</strong> Quac! O que está quebrado? Dê um título simples ou copie a mensagem de erro principal.</p>
+        </div>
+        <div class="form-group">
+          <label for="title">O que está acontecendo? (Título)</label>
+          <input type="text" id="title" class="form-control" [(ngModel)]="title" placeholder="Ex: NullPointerException ao carregar posts no Dashboard..." />
+        </div>
+      </div>
+    }
+
+    <!-- STEP 2: Comportamento Esperado -->
+    @if (step() === 2) {
+      <div class="step-panel animate-slide-in">
+        <div class="duck-bubble">
+          <p><strong>Pato diz:</strong> Entendi. E qual era o comportamento *esperado* desse código? O que ele deveria fazer?</p>
+        </div>
+        <div class="form-group">
+          <label for="expected">Comportamento Esperado</label>
+          <textarea id="expected" class="form-control" rows="5" [(ngModel)]="expectedBehavior" placeholder="Descreva o que deveria acontecer. Ex: Deveria renderizar uma lista de 5 cards com dados da API..."></textarea>
+        </div>
+      </div>
+    }
+
+    <!-- STEP 3: Comportamento Atual -->
+    @if (step() === 3) {
+      <div class="step-panel animate-slide-in">
+        <div class="duck-bubble">
+          <p><strong>Pato diz:</strong> Certo. E o que está acontecendo *de fato*? Cole mensagens de erro, logs ou descreva o comportamento estranho.</p>
+        </div>
+        <div class="form-group">
+          <label for="actual">Comportamento Atual / Mensagem de Erro</label>
+          <textarea id="actual" class="form-control code-font" rows="5" [(ngModel)]="actualBehavior" placeholder="Ex: O console mostra 'Cannot read properties of undefined (reading name)' e a tela fica em branco..."></textarea>
+        </div>
+      </div>
+    }
+
+    <!-- STEP 4: Tentativas -->
+    @if (step() === 4) {
+      <div class="step-panel animate-slide-in">
+        <div class="duck-bubble">
+          <p><strong>Pato diz:</strong> Hum. E o que você já tentou fazer para resolver? (Ex: deu console.log, inspecionou rede, verificou imports?)</p>
+        </div>
+        <div class="form-group">
+          <label for="attempts">O que você já tentou?</label>
+          <textarea id="attempts" class="form-control" rows="5" [(ngModel)]="attempts" placeholder="Ex: Coloquei um console.log no retorno do serviço, a API está retornando status 200 mas o payload vem em formato diferente..."></textarea>
+        </div>
+      </div>
+    }
+
+    <!-- STEP 5: Eureka / Solução -->
+    @if (step() === 5) {
+      <div class="step-panel animate-slide-in">
+        <div class="duck-bubble success-bubble">
+          <p><strong>Pato diz:</strong> Quac! Quac! Quac! Leia o que você escreveu acima. As conexões neurais já se formaram! Qual é a solução?</p>
+        </div>
+        <div class="form-group">
+          <label for="solution">Eureka! Qual é a Solução/Correção?</label>
+          <textarea id="solution" class="form-control" rows="5" [(ngModel)]="solution" placeholder="Ex: Descobri que o campo da API era 'user_name' e eu estava mapeando como 'username'. Corrigi a interface TypeScript."></textarea>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="duck-footer-actions">
+    @if (step() > 1) {
+      <button class="btn btn-secondary" (click)="prevStep()" [disabled]="isSaving()">Voltar</button>
+    }
+    <div class="spacer"></div>
+    @if (step() < 5) {
+      <button class="btn btn-primary" (click)="nextStep()">Continuar</button>
+    } @else {
+      <button class="btn btn-success" (click)="saveToDiary()" [disabled]="isSaving()">
+        @if (isSaving()) {
+          <app-loading size="sm"></app-loading> Salvando...
+        } @else {
+          Salvar no Diário de Erros ✨
+        }
+      </button>
+    }
+  </div>
+</div>
